@@ -1,0 +1,815 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.monitor.MonitorOrderAgingAbnormalMapper">
+
+    <select id="queryAgingAbnormalList"
+            resultType="com.youming.youche.order.domain.monitor.MonitorOrderAgingAbnormal">
+        SELECT
+        moad.id AS id,
+        moad.order_id AS orderId,
+        moad.plate_number AS plateNumber,
+        moad.start_date AS startDate,
+        moad.end_date AS endDate,
+        moad.line_detail AS lineDetail,
+        moad.start_nand AS startNand,
+        moad.start_eand AS startEand,
+        moad.end_nand AS endNand,
+        moad.end_eand AS endEand,
+        moad.type AS type,
+        moad.line_type AS lineType,
+        moad.continue_time AS continueTime,
+        moad.create_time AS createTime,
+        moad.update_time AS updateTime,
+        moad.tenant_id AS tenantId
+        FROM
+        <if test="isHis == 'true'">
+            monitor_order_aging_abnormal_h moad,
+        </if>
+        <if test="isHis == 'false'">
+            monitor_order_aging_abnormal moad,
+        </if>
+        ( SELECT o.order_id FROM
+        <if test="isOrderHis == 'true'">
+            order_info_h o
+            LEFT JOIN order_transit_line_info_h t
+        </if>
+        <if test="isOrderHis == 'false'">
+            order_info o
+            LEFT JOIN order_transit_line_info t
+        </if>
+        ON t.order_id = o.order_id
+        <where>
+            1 = 1
+            <if test="tenantId != null and tenantId > 0">
+                AND o.tenant_id = #{tenantId}
+            </if>
+            <if test="orderId != null and orderId > 0">
+                AND o.order_id = #{orderId}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND (o.source_region= #{sourceRegion} OR t.region= #{sourceRegion})
+            </if>
+            <if test="desRegion != null and desRegion > 0">
+                AND (o.des_region= #{desRegion} OR t.region= #{desRegion})
+            </if>
+        </where>
+        GROUP BY order_id ) o,
+        tenant_vehicle_rel v
+        WHERE
+        moad.plate_number = v.plate_number
+        AND moad.order_id = o.order_id
+        AND v.tenant_id = moad.tenant_id
+        <if test="orderId != null and orderId > 0">
+            AND moad.order_id = #{orderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND moad.plate_number = #{plateNumber}
+        </if>
+        <if test="orgId != null and orgId >0 ">
+            AND v.org_id = #{orgId}
+        </if>
+        <if test="type != null and type > 0">
+            AND moad.type = #{type}
+        </if>
+        <if test="tenantId != null and tenantId >0">
+            AND moad.tenant_id = #{tenantId}
+        </if>
+        GROUP BY
+        moad.plate_number
+    </select>
+
+    <select id="queryVehicleCount" resultType="java.lang.Integer">
+        SELECT
+        count(*) AS num
+        FROM
+        (
+        SELECT
+        tvr.plate_number AS vehiclenum,
+        tvr.org_id AS orgid,
+        tvr.vehicle_class AS vehicleclass
+        FROM
+        tenant_vehicle_rel tvr
+        WHERE
+        tvr.tenant_id = #{tenantId}
+        AND tvr.auth_state = 2 UNION ALL
+        SELECT
+        ttr.trailer_number AS vehiclenum,
+        ttr.attached_root_org_two_id AS orgid,
+        6 AS vehicleclass
+        FROM
+        tenant_trailer_rel ttr
+        WHERE
+        ttr.tenant_id = #{tenantId}
+        AND ttr.is_autit = 1
+        ) AS allvehicle
+        <where>
+            1 = 1
+            <if test="vehicleNum != null and vehicleNum != ''">
+                AND vehicleNum LIKE CONCAT('%',#{vehicleNum},'%')
+            </if>
+            <if test="orgId > 0">
+                AND orgId = #{orgId}
+            </if>
+            <if test="type > 0">
+                AND vehicleClass = #{type}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryNoneOrderVehicle" resultType="java.util.Map">
+        <choose>
+            <when test="isCount == 'true'">
+                SELECT count(t.plate_number) AS count
+            </when>
+            <otherwise>
+                SELECT
+                t.plate_number AS platenumber,
+                t.vehicle_code AS vehiclecode,
+                car_driver_phone cardriverphone,
+                t.create_date AS createdate,
+                ifnull( tmp.vehicle_code, 0 ) AS ordervehiclecode
+            </otherwise>
+        </choose>
+        FROM
+        tenant_vehicle_rel t
+        LEFT JOIN (
+        SELECT
+        max( arrivedate ),
+        vehicle_code,
+        plate_number,
+        leisuredate,
+        car_driver_phone
+        FROM
+        (
+        SELECT
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))) AS arrivedate,
+        timestampdiff(
+        HOUR,
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))),
+        sysdate()) AS leisuredate,
+        s.vehicle_code,
+        s.plate_number,
+        s.car_driver_phone
+        FROM
+        order_scheduler s, order_info o
+        <where>
+            o.order_id=s.order_id AND o.order_state>=7 AND o.order_state !=15
+            <if test="tenantId != null and tenantId > 0 ">
+                AND s.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND s.vehicle_class = #{vehicleClass}
+                </when>
+                <otherwise>
+                    AND s.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY vehicle_code,plate_number
+        UNION ALL
+        SELECT
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))) AS arrivedate,
+        timestampdiff(
+        HOUR,
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))),
+        sysdate()) AS leisuredate,
+        s.vehicle_code,
+        s.plate_number,
+        s.car_driver_phone
+        FROM
+        order_scheduler_h s, order_info_h o
+        <where>
+            o.order_id=s.order_id AND o.order_state>=7 AND o.order_state !=15
+            <if test="tenantId != null and tenantId > 0 ">
+                AND s.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND s.vehicle_class = #{vehicleClass}
+                </when>
+                <otherwise>
+                    AND s.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY vehicle_code,plate_number
+        ) tmp
+        WHERE 1 = 1
+        GROUP BY vehicle_code, plate_number
+        ) tmp ON t.vehicle_code = tmp.vehicle_code
+        <where>
+            1=1
+            <if test="tenantId != null and tenantId > 0">
+                AND t.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND t.vehicle_class = #{vehicleClass} and t.auth_state = 2
+                </when>
+                <otherwise>
+                    AND t.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        <if test="orgId != null and orgId > 0 ">
+            AND t.org_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND t.plate_number = #{plateNumber}
+        </if>
+        <choose>
+            <when test="hourEnd > 0">
+                AND ((
+                tmp.leisuredate <![CDATA[ > ]]> #{hour} and tmp.leisuredate <![CDATA[ < ]]> #{hourEnd}) or
+                (
+                tmp.vehicle_code IS NULL
+                AND TIMESTAMPDIFF(
+                HOUR,
+                t.create_date,
+                SYSDATE()) <![CDATA[ > ]]> #{hour}) and TIMESTAMPDIFF(hour,t.create_date,sysdate()) <![CDATA[ < ]]>
+                #{hourEnd} )
+            </when>
+            <otherwise>
+                AND (
+                tmp.leisuredate <![CDATA[ > ]]> #{hour} or
+                (
+                tmp.vehicle_code IS NULL
+                AND TIMESTAMPDIFF(
+                HOUR,
+                t.create_date,
+                SYSDATE()) <![CDATA[ > ]]> #{hour}))
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getValidityTrailerCountQuery" resultType="java.lang.Integer">
+        SELECT
+        count( 1 ) AS vehiclecount
+        FROM
+        trailer_management AS a
+        WHERE
+        a.tenant_id = #{tenantId}
+        AND ( ${fieldName} <![CDATA[ <= ]]> #{expireDate} OR ${fieldName} IS NULL )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND trailer_number = #{plateNumber}
+        </if>
+    </select>
+
+    <select id="getSearchVehicleCountQuery" resultType="java.lang.Integer">
+        SELECT
+        count( DISTINCT a.plate_number ) AS vehiclecount
+        FROM
+        vehicle_data_info AS a
+        INNER JOIN tenant_vehicle_rel AS b ON b.vehicle_code = a.id
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        (
+        b.vehicle_class = 3
+        AND b.tenant_id = #{tenantId}
+        AND ( c.tenant_id = a.tenant_id OR c.tenant_id IS NULL )
+        OR b.vehicle_class != 3
+        AND b.tenant_id = #{tenantId}
+        AND ( c.tenant_id = #{tenantId} OR c.tenant_id IS NULL ))
+        AND ( c.${fieldName} <![CDATA[ <= ]]> #{expireDate} OR c.${fieldName} IS NULL )
+        AND b.auth_state = #{state}
+        <if test="vehicleClass > 0">
+            AND b.vehicle_class = #{vehicleClass}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND a.plate_number= #{plateNumber}
+        </if>
+    </select>
+
+    <select id="getSearchTrailerCountQuery" resultType="java.lang.Integer">
+        SELECT
+        count( 0 ) AS vehiclecount
+        FROM
+        tenant_trailer_rel AS a,
+        trailer_management AS b
+        WHERE
+        a.trailer_id = b.id
+        AND b.tenant_id = #{tenantId}
+        AND ( ${fieldName} <![CDATA[ <= ]]> #{expireDate} OR ${fieldName} IS NULL )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND b.trailer_number=#{plateNumber}
+        </if>
+    </select>
+
+    <select id="queryMaintainWarningTrailer" resultType="java.util.Map">
+        SELECT
+        outertab.maintain_dis AS maintaindis,
+        outertab.maintain_warn_dis AS maintanwarndis,
+        outertab.id AS vehiclecode,
+        '6' AS vehicleclass,
+        sum( outertab.distance ) AS distance,
+        outertab.prev_maintain_time AS premaintaintime,
+        outertab.trailer_plate AS platenumber,
+        car_driver_phone AS cardriverphone
+        FROM
+        (
+        SELECT
+        tvcr.maintain_dis,
+        tvcr.prev_maintain_time,
+        maintain_warn_dis,
+        tvr.id,
+        tmp.order_id,
+        tmp.depend_time,
+        tmp.trailer_plate,
+        tmp.distance AS distance,
+        tmp.car_driver_phone
+        FROM
+        tenant_trailer_rel tvcr,
+        trailer_management tvr
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        o.order_id,
+        s.depend_time,
+        s.trailer_plate,
+        s.trailer_id,
+        sum( s.distance ) AS distance,
+        s.car_driver_phone
+        FROM
+        order_info o,
+        order_scheduler s
+        WHERE
+        o.order_id = s.order_id
+        AND o.tenant_id = #{tenantId}
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.trailer_plate = #{plateNumber}
+        </if>
+        AND o.order_state <![CDATA[ >= ]]> 7
+        GROUP BY
+        s.trailer_id UNION ALL
+        SELECT
+        o.order_id,
+        s.depend_time,
+        s.trailer_plate,
+        s.trailer_id,
+        sum( s.distance ) AS distance,
+        s.car_driver_phone
+        FROM
+        order_info_h o,
+        order_scheduler_h s
+        WHERE
+        o.order_id = s.order_id
+        AND o.tenant_id = #{tenantId}
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.trailer_plate = #{plateNumber}
+        </if>
+        AND o.order_state != 15
+        GROUP BY
+        s.trailer_id
+        ) tab
+        GROUP BY
+        tab.trailer_id
+        ) tmp ON tvr.id = tmp.trailer_id
+        WHERE
+        tvr.tenant_id = #{tenantId}
+        <if test="orgId != null and orgId > 0">
+            AND tvcr.attached_root_org_two_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND tvr.trailer_number = #{plateNumber}
+        </if>
+        AND ( tmp.depend_time <![CDATA[ > ]]> tvcr.prev_maintain_time OR tvcr.prev_maintain_time IS NULL )
+        AND tvr.id = tvcr.trailer_id
+        GROUP BY
+        tvcr.trailer_id
+        ) outertab
+        GROUP BY
+        outertab.id
+        HAVING
+        sum( outertab.distance ) / 1000 <![CDATA[ >= ]]> ifnull( maintaindis, 0 )- ifnull( maintanwarndis, 0)
+    </select>
+
+    <select id="queryMaintainWarningVehicle" resultType="java.util.Map">
+        SELECT
+        outertab.maintain_dis AS maintaindis,
+        outertab.maintain_warn_dis AS maintanwarndis,
+        outertab.vehicle_code AS vehiclecode,
+        sum( outertab.distance ) AS distance,
+        outertab.prev_maintain_time AS premaintaintime,
+        outertab.plate_number AS platenumber,
+        car_driver_phone AS cardriverphone
+        FROM
+        (
+        SELECT
+        tvcr.maintain_dis,
+        tvcr.prev_maintain_time,
+        maintain_warn_dis,
+        tvr.vehicle_code,
+        tmp.order_id,
+        tmp.depend_time,
+        tmp.plate_number,
+        tmp.distance AS distance,
+        tmp.car_driver_phone
+        FROM
+        tenant_vehicle_cert_rel tvcr,
+        tenant_vehicle_rel tvr
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        o.order_id,
+        s.depend_time,
+        s.plate_number,
+        s.vehicle_code,
+        sum( s.distance ) AS distance,
+        s.car_driver_phone
+        FROM
+        order_info o,
+        order_scheduler s
+        WHERE
+        o.order_id = s.order_id
+        AND o.tenant_id = #{tenantId}
+        AND s.vehicle_class = 1
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        AND o.order_state >= 7
+        GROUP BY
+        s.vehicle_code UNION ALL
+        SELECT
+        o.order_id,
+        s.depend_time,
+        s.plate_number,
+        s.vehicle_code,
+        sum( s.distance ) AS distance,
+        s.car_driver_phone
+        FROM
+        order_info_h o,
+        order_scheduler_h s
+        WHERE
+        o.order_id = s.order_id
+        AND o.tenant_id = #{tenantId}
+        AND s.vehicle_class = 1
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        AND o.order_state != 15
+        GROUP BY
+        s.vehicle_code
+        ) tab
+        GROUP BY
+        tab.vehicle_code
+        ) tmp ON tvr.vehicle_code = tmp.vehicle_code
+        WHERE
+        tvr.tenant_id = #{tenantId}
+        AND tvr.vehicle_class = 1
+        <if test="orgId != null and orgId > 0">
+            AND tvr.attached_root_org_two_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND tvr.plate_number = #{plateNumber}
+        </if>
+        AND ( tmp.depend_time > tvcr.prev_maintain_time OR tvcr.prev_maintain_time IS NULL )
+        AND tvr.vehicle_code = tvcr.vehicle_code
+        GROUP BY
+        tvcr.vehicle_code
+        ) outertab
+        GROUP BY
+        outertab.vehicle_code
+        HAVING
+        sum( outertab.distance ) / 1000 >= ifnull( maintaindis, 0 )- ifnull( maintanwarndis,0 )
+    </select>
+
+    <select id="queryAgingDependPlateNumberList" resultType="java.util.Map">
+        SELECT
+        moad.plate_number AS platenumber,
+        moad.order_id AS orderid,
+        v.vehicle_class AS vehicleclass
+        FROM
+        <choose>
+            <when test="isHis">
+                monitor_order_aging_depend_h moad,
+            </when>
+            <otherwise>
+                monitor_order_aging_depend moad,
+            </otherwise>
+        </choose>
+        ( SELECT o.order_id FROM
+        <choose>
+            <when test="isOrderHis">
+                order_info_h o LEFT JOIN order_transit_line_info_h
+            </when>
+            <otherwise>
+                order_info o LEFT JOIN order_transit_line_info
+            </otherwise>
+        </choose>
+        t ON t.order_id = o.order_id
+        WHERE 1 = 1
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+        <if test="orderId != null and orderId > 0">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="sourceRegion != null and sourceRegion > 0">
+            AND ( o.source_region = #{sourceRegion} OR t.region =#{sourceRegion})
+        </if>
+        <if test="desRegion != null and desRegion > 0">
+            AND ( o.des_region = #{desRegion} OR t.region = #{desRegion})
+        </if>
+        GROUP BY order_id ) o,
+        tenant_vehicle_rel v
+        WHERE
+        moad.plate_number = v.plate_number
+        AND moad.order_id = o.order_id
+        AND v.tenant_id = moad.tenant_id
+        <if test="orderId != null and orderId > 0">
+            AND moad.order_id = #{orderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND moad.plate_number = #{plateNumber}
+        </if>
+        <if test="orderId != null and orderId > 0">
+            AND v.org_id = #{orgId}
+        </if>
+        <if test="type != null and type > 0">
+            AND moad.type = #{type}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND moad.tenant_id = #{tenantId}
+        </if>
+        GROUP BY moad.plate_number
+    </select>
+
+    <select id="queryAgingAbnormalPlateNumberList" resultType="java.util.Map">
+        SELECT
+        moad.plate_number AS platenumber,
+        moad.order_id AS orderid,
+        v.vehicle_class AS vehicleclass
+        FROM
+        <choose>
+            <when test="isHis">
+                monitor_order_aging_abnormal_h moad,
+            </when>
+            <otherwise>
+                monitor_order_aging_abnormal moad,
+            </otherwise>
+        </choose>
+        (
+        SELECT o.order_id FROM
+        <choose>
+            <when test="isOrderHis">
+                order_info_h o LEFT JOIN order_transit_line_info_h t
+            </when>
+            <otherwise>
+                order_info o LEFT JOIN order_transit_line_info t
+            </otherwise>
+        </choose>
+        ON t.order_id = o.order_id
+        WHERE 1 = 1
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+        <if test="orderId != null and orderId > 0">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="sourceRegion != null and sourceRegion > 0">
+            AND ( o.source_region = #{sourceRegion} OR t.region = #{sourceRegion})
+        </if>
+        <if test="desRegion != null and desRegion > 0">
+            AND ( o.des_region = #{desRegion} OR t.region = #{desRegion})
+        </if>
+        GROUP BY order_id ) o,
+        tenant_vehicle_rel v
+        WHERE
+        moad.plate_number = v.plate_number
+        AND moad.order_id = o.order_id
+        AND v.tenant_id = moad.tenant_id
+        <if test="orderId != null and orderId > 0">
+            AND moad.order_id = #{orderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND moad.plate_number = #{plateNumber}
+        </if>
+        <if test="orgId != null and orgId > 0">
+            AND v.org_id = #{orgId}
+        </if>
+        <if test="type != null and type > 0">
+            AND moad.type = #{type}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND moad.tenant_id = #{tenantId}
+        </if>
+        GROUP BY moad.plate_number
+    </select>
+
+    <select id="queryAgingArrivePlateNumberList" resultType="java.util.Map">
+        SELECT
+        moad.plate_number AS platenumber,
+        moad.order_id AS orderid,
+        v.vehicle_class AS vehicleclass
+        FROM
+        <choose>
+            <when test="isHis">
+                monitor_order_aging_arrive_h moad,
+            </when>
+            <otherwise>
+                monitor_order_aging_arrive moad,
+            </otherwise>
+        </choose>
+        (
+        SELECT o.order_id FROM
+        <choose>
+            <when test="isOrderHis">
+                order_info_h o LEFT JOIN order_transit_line_info_h
+            </when>
+            <otherwise>
+                order_info o LEFT JOIN order_transit_line_info
+            </otherwise>
+        </choose>
+        t ON t.order_id = o.order_id
+        WHERE 1 = 1
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+        <if test="orderId != null and orderId > 0">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="sourceRegion != null and sourceRegion > 0">
+            AND ( o.source_region = #{sourceRegion} OR t.region = #{sourceRegion})
+        </if>
+        <if test="desRegion != null and desRegion > 0">
+            AND ( o.des_region = #{desRegion} OR t.region = #{desRegion})
+        </if>
+        GROUP BY order_id ) o,
+        tenant_vehicle_rel v
+        WHERE
+        moad.plate_number = v.plate_number
+        AND moad.order_id = o.order_id
+        AND v.tenant_id = moad.tenant_id
+        <if test="orderId != null and orderId > 0">
+            AND moad.order_id = #{orderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND moad.plate_number = #{plateNumber}
+        </if>
+        <if test="orgId != null and orgId > 0">
+            AND v.org_id = #{orgId}
+        </if>
+        <if test="type != null and type > 0">
+            AND moad.type = #{type}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND moad.tenant_id = #{tenantId}
+        </if>
+        GROUP BY moad.plate_number
+    </select>
+
+    <select id="queryMaintainWarningVehicleBY" resultType="java.util.Map">
+        SELECT
+        app.car_no platenumber,
+        app.contract_mobile cardriverphone
+        FROM
+        service_repair_order app
+        WHERE
+        app.order_status = 1
+        AND app.work_type = 'GHCBY'
+        AND app.tenant_id = #{tenantId}
+        <if test="plateNumber != null and plateNumber != ''">
+            AND app.car_no = #{plateNumber}
+        </if>
+    </select>
+
+    <select id="queryMaintainWarningVehicleWX" resultType="java.util.Map">
+        SELECT
+        uri.vehicle_code AS vehiclecode,
+        uri.plate_number AS platenumber
+        FROM
+        user_repair_info uri
+        WHERE
+        uri.state = 1
+        AND uri.app_repair_state = 3
+        AND uri.tenant_id = #{tenantId}
+        <if test="plateNumber != null and plateNumber != ''">
+            AND uri.plate_number = #{plateNumber}
+        </if>
+    </select>
+
+    <select id="queryMaturityDoc" resultType="com.youming.youche.record.vo.LicenseVo">
+        SELECT * FROM (
+        SELECT
+        *,
+        case
+        when (TIMESTAMPDIFF(DAY,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate) <![CDATA[<=]]>0) then '已到期'
+        when(TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=0 and (DATE_FORMAT(effectiveDate, '%m' ) - DATE_FORMAT(now(), '%m' ))=0) then '本月到期'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=0)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=1 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '一个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=1)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=2 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '两个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=2)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=3 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '三个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=3 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))>0)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)>3) then '三个月以后'
+        end as leftDate
+        FROM
+        (
+        select * from (
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.annualreview_data, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.effective_date, '%Y-%m-%d' ) AS effectiveDate,
+        c.annualreview_type AS annualreviewType,
+        c.annualreview_cost AS annualreviewCost,
+        c.service_provider AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN vehicle_annual_review AS c ON a.id = c.vehicle_id
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1
+        and c.annualreview_data IS NOT NULL
+        AND c.effective_date IS NOT NULL
+        having 1 order by c.effective_date DESC) as f GROUP BY plateNumber,annualreviewType UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        3 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.busi_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.busi_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        4 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.other_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.other_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        5 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1
+        ) AS t
+        WHERE t.annualreviewData IS NOT NULL
+        AND t.effectiveDate IS NOT NULL
+        ORDER BY
+        plateNumber,annualreviewType,effectiveDate) as g
+        <where>
+            g.leftDate !='三个月以后'
+            <if test="plateNumber != null and plateNumber != ''">
+                AND g.plateNumber = #{plateNumber}
+            </if>
+        </where>
+    </select>
+
+</mapper>

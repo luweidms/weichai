@@ -1,0 +1,821 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.user.UserDataInfoRecordMapper">
+
+    <!---->
+    <select id="doQueryCarDriverExport" resultType="com.youming.youche.record.dto.driver.DoQueryDriversDto">
+        select
+        u.MOBILE_PHONE as loginAcct,
+        u.LINKMAN as linkman,
+        IFNULL(r.CAR_USER_TYPE, -1) as carUserType,
+        u.TENANT_ID as attachTenantId,
+        def.name as attachTenantName,
+        def.link_man as attachTennantLinkman,
+        def.link_phone as attachTennantLinkPhone,
+        (SELECT count(*) from tenant_vehicle_rel where tenant_vehicle_rel.tenant_Id=r.TENANT_ID and
+        tenant_vehicle_rel.DRIVER_USER_ID = r.user_id) as vehicleNum,
+        IFNULL(r.STATE, -1) as state,
+        IFNULL(r.HAS_VER,0) as hasVer,
+        IFNULL(u.id,0) as userId,
+        DATE_FORMAT(r.create_date,'%Y-%m-%d %H:%i:%s') as createDate ,
+        IFNULL(r.id,0) as relId,
+        r.state_reason as authReason,
+        r.AUTH_MAN_ID as authUserId,
+        r.AUTH_ORG_ID as authOrgId,
+        u.identification as identification,
+        DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as driverLicenseExpiredTime,
+        DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as qcCertiExpriedTime
+        from user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        left JOIN TENANT_USER_REL r on r.USER_ID = u.ID
+        WHERE r.TENANT_ID=#{tenantId} AND u.user_type IN (${userType})
+        <if test="doQueryDriversVo.onlyC!='' and doQueryDriversVo.onlyC!=null">
+            AND u.tenant_Id=-1
+        </if>
+        <if test="doQueryDriversVo.hasVer!='' and doQueryDriversVo.hasVer!=null">
+            AND r.HAS_VER = 0
+        </if>
+        <if test="doQueryDriversVo.driverLicenseExpired!='' and doQueryDriversVo.driverLicenseExpired!=null">
+            AND DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')  <![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="doQueryDriversVo.qcCertiExpired!='' and doQueryDriversVo.qcCertiExpired!=null">
+            AND DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')<![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="doQueryDriversVo.carUserType>0">
+            AND r.CAR_USER_TYPE = #{doQueryDriversVo.carUserType}
+        </if>
+        <if test="doQueryDriversVo.attachTenantName!=null and doQueryDriversVo.attachTenantName!=''">
+            AND def.name like CONCAT('%',#{doQueryDriversVo.attachTenantName},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkman!=null and doQueryDriversVo.attachTennantLinkman!=''">
+            AND def.link_man like CONCAT('%',#{doQueryDriversVo.attachTennantLinkman},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkPhone!=null and doQueryDriversVo.attachTennantLinkPhone!=''">
+            AND def.link_phone like CONCAT('%',#{doQueryDriversVo.attachTennantLinkPhone },'%')
+        </if>
+        <if test="doQueryDriversVo.loginAcct!=null and doQueryDriversVo.loginAcct!=''">
+            AND u.MOBILE_PHONE = #{doQueryDriversVo.loginAcct}
+        </if>
+        <if test="doQueryDriversVo.state >0">
+            AND r.state = #{doQueryDriversVo.state}
+        </if>
+        <if test="doQueryDriversVo.linkman!=null and doQueryDriversVo.linkman!=''">
+            AND u.LINKMAN like CONCAT('%',#{doQueryDriversVo.linkman },'%')
+        </if>
+        ORDER BY r.id DESC
+    </select>
+    <!-- 分页查询司机档案-->
+    <select id="doQueryCarDriver" resultType="com.youming.youche.record.dto.driver.DoQueryDriversDto">
+        select
+        u.MOBILE_PHONE as loginAcct,
+        u.LINKMAN as linkman,
+        IFNULL(r.CAR_USER_TYPE, -1) as carUserType,
+        u.TENANT_ID as attachTenantId,
+        def.name as attachTenantName,
+        def.link_man as attachTennantLinkman,
+        def.link_phone as attachTennantLinkPhone,
+        (SELECT count(*) from tenant_vehicle_rel where tenant_vehicle_rel.tenant_Id=r.TENANT_ID and
+        tenant_vehicle_rel.DRIVER_USER_ID = r.user_id) as vehicleNum,
+        IFNULL(r.STATE, -1) as state,
+        IFNULL(r.HAS_VER,0) as hasVer,
+        IFNULL(u.id,0) as userId,
+        DATE_FORMAT(r.create_date,'%Y-%m-%d %H:%i:%s') as createDate ,
+        IFNULL(r.id,0) as relId,
+        r.state_reason as authReason,
+        r.AUTH_MAN_ID as authUserId,
+        r.AUTH_ORG_ID as authOrgId,
+        u.identification as identification,
+        DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as driverLicenseExpiredTime,
+        DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as qcCertiExpriedTime
+        from user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        left JOIN TENANT_USER_REL r on r.USER_ID = u.ID
+        WHERE r.TENANT_ID=#{tenantId} AND u.user_type IN (${userType})
+        <if test="doQueryDriversVo.onlyC!='' and doQueryDriversVo.onlyC!=null">
+            AND u.tenant_Id=-1
+        </if>
+        <if test="doQueryDriversVo.hasVer!='' and doQueryDriversVo.hasVer!=null">
+            AND r.HAS_VER = 0
+        </if>
+        <if test="doQueryDriversVo.driverLicenseExpired!='' and doQueryDriversVo.driverLicenseExpired!=null">
+            AND DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')  <![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="doQueryDriversVo.qcCertiExpired!='' and doQueryDriversVo.qcCertiExpired!=null">
+            AND DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')<![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="doQueryDriversVo.carUserType>0">
+            AND r.CAR_USER_TYPE = #{doQueryDriversVo.carUserType}
+        </if>
+        <if test="doQueryDriversVo.attachTenantName!=null and doQueryDriversVo.attachTenantName!=''">
+            AND def.name like CONCAT('%',#{doQueryDriversVo.attachTenantName},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkman!=null and doQueryDriversVo.attachTennantLinkman!=''">
+            AND def.link_man like CONCAT('%',#{doQueryDriversVo.attachTennantLinkman},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkPhone!=null and doQueryDriversVo.attachTennantLinkPhone!=''">
+            AND def.link_phone like CONCAT('%',#{doQueryDriversVo.attachTennantLinkPhone },'%')
+        </if>
+        <if test="doQueryDriversVo.loginAcct!=null and doQueryDriversVo.loginAcct!=''">
+            AND u.MOBILE_PHONE = #{doQueryDriversVo.loginAcct}
+        </if>
+        <if test="doQueryDriversVo.state >0">
+            AND r.state = #{doQueryDriversVo.state}
+        </if>
+        <if test="doQueryDriversVo.linkman!=null and doQueryDriversVo.linkman!=''">
+            AND u.LINKMAN like CONCAT('%',#{doQueryDriversVo.linkman },'%')
+        </if>
+        <if test="doQueryDriversVo.driverUserId != null and doQueryDriversVo.driverUserId > 0">
+            AND u.id <![CDATA[ <> ]]> #{doQueryDriversVo.driverUserId}
+        </if>
+        ORDER BY r.id DESC
+    </select>
+
+    <select id="doQueryOBMCarDriver" resultType="com.youming.youche.record.dto.driver.DoQueryOBMDriversDto">
+        SELECT
+        u.MOBILE_PHONE mobilePhone,
+        u.LINKMAN linkman,
+        u.identification identification,
+        u.TENANT_ID tenantId,
+        def.NAME attachTenantName,
+        def.link_man attachTenantLinkman,
+        def.link_phone attachTenantLinkPhone,
+        ( SELECT count(*) from vehicle_data_info where vehicle_data_info.driver_user_id=u.id
+        ) AS vehicleNum,
+        u.id userId,
+        ifnull(u.AUTH_STATE,1) state,
+        u.HAS_VER hasVer,
+        u.VERIF_REASON authReason,
+        ifnull(u.AUTH_MAN_ID,-1) authUserId,
+        u.id relId,
+        u.create_time createDate
+        FROM
+        user_data_info u
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        AND r.CAR_USER_TYPE = 1
+        LEFT JOIN sys_tenant_def def ON def.id = r.TENANT_ID
+        WHERE
+        u.user_type IN ( 3 )
+        <if test="doQueryOBMDriversVo.attachTenantName!=null and doQueryOBMDriversVo.attachTenantName!=''">
+            AND def.name like CONCAT('%',#{doQueryOBMDriversVo.attachTenantName},'%')
+        </if>
+        <if test="doQueryOBMDriversVo.attachTenantLinkman!=null and doQueryOBMDriversVo.attachTenantLinkman!=''">
+            AND def.link_man like CONCAT('%',#{doQueryOBMDriversVo.attachTenantLinkman},'%')
+        </if>
+        <if test="doQueryOBMDriversVo.attachTenantLinkPhone!=null and doQueryOBMDriversVo.attachTenantLinkPhone!=''">
+            AND def.link_phone like CONCAT('%',#{doQueryOBMDriversVo.attachTenantLinkPhone},'%')
+        </if>
+        <if test="doQueryOBMDriversVo.loginAcct!=null and doQueryOBMDriversVo.loginAcct!=''">
+            AND u.MOBILE_PHONE = #{doQueryOBMDriversVo.loginAcct}
+        </if>
+        <if test="doQueryOBMDriversVo.state != null and  doQueryOBMDriversVo.state>0">
+            <choose>
+                <when test="doQueryOBMDriversVo.state == 1">
+                    and (u.AUTH_STATE = 1 or u.AUTH_STATE is null)
+                </when>
+                <otherwise>
+                    and u.AUTH_STATE = 2
+                </otherwise>
+            </choose>
+        </if>
+        <if test="doQueryOBMDriversVo.linkman!=null and doQueryOBMDriversVo.linkman!=''">
+            AND u.LINKMAN like CONCAT('%',#{doQueryOBMDriversVo.linkman},'%')
+        </if>
+        <if test="hasVer>0">
+            AND u.TENANT_ID=-1 AND u.HAS_VER = 0
+        </if>
+        <if test="doQueryOBMDriversVo.attach==1">
+            AND u.TENANT_ID=-1
+        </if>
+        <if test="doQueryOBMDriversVo.attach==2">
+            AND u.TENANT_ID>0
+        </if>
+        <if test="doQueryOBMDriversVo.dateBegin!=null and doQueryOBMDriversVo.dateBegin!=''">
+            AND DATE_FORMAT(u.create_time ,"%Y-%m-%d %H:%i:%S")  <![CDATA[ >= ]]>  DATE_FORMAT(#{doQueryOBMDriversVo.dateBegin} ,"%Y-%m-%d %H:%i:%S")
+        </if>
+        <if test="doQueryOBMDriversVo.dateEnd!=null and doQueryOBMDriversVo.dateEnd!=''">
+            AND DATE_FORMAT(u.create_time ,"%Y-%m-%d %H:%i:%S")    <![CDATA[ <= ]]>  DATE_FORMAT(#{doQueryOBMDriversVo.dateEnd} ,"%Y-%m-%d %H:%i:%S")
+        </if>
+        ORDER BY u.create_time DESC
+    </select>
+
+    <select id="getUserQuery" resultType="java.util.Map">
+        select
+            *
+        from user_data_info a ,tenant_user_rel b where a.id = b.user_id
+                                                   and a.id=#{id}
+                                                   and b.tenant_id=#{tenantId}
+        LIMIT 0,1
+    </select>
+
+    <!-- 我邀请的 -->
+    <select id="doQueryApplyRecords" resultType="com.youming.youche.record.vo.ApplyRecordVo">
+        select
+        apply_record.id id,
+        user_data_info.mobile_phone mobilePhone,
+        user_data_info.linkman linkman,
+        apply_record.apply_car_user_type applyCarUserType,
+        apply_record.be_apply_tenant_id beApplyTenantId,
+        sys_tenant_def.name attachTenantName,
+        sys_tenant_def.link_phone attachTennantLinkPhone,
+        apply_record.create_time createDate,
+        apply_record.state state,
+        apply_record.read_state readState,
+        apply_record.audit_remark auditRemark,
+        apply_record.audit_date auditDate,
+        apply_record.new_apply_id newApplyId
+        from apply_record
+        left join sys_tenant_def on apply_record.be_apply_tenant_id = sys_tenant_def.id,
+        user_data_info
+        where apply_record.busi_id=user_data_info.id
+        and apply_record.apply_tenant_id=#{tenantId}
+        and apply_record.apply_type=1
+        <if test="applyRecordQueryDto.billId!=null and applyRecordQueryDto.billId!=''">
+            and user_data_info.mobile_phone like CONCAT('%',#{applyRecordQueryDto.billId },'%')
+        </if>
+        <if test="applyRecordQueryDto.tenantName!=null and applyRecordQueryDto.tenantName!=''">
+            and sys_tenant_def.name like CONCAT('%',#{applyRecordQueryDto.tenantName },'%')
+        </if>
+        <if test="applyRecordQueryDto.tenantLinkPhone!=null and applyRecordQueryDto.tenantLinkPhone!=''">
+            and sys_tenant_def.link_phone like CONCAT('%',#{applyRecordQueryDto.tenantLinkPhone },'%')
+        </if>
+        <if test="applyRecordQueryDto.carUserType > -1">
+            and apply_record.apply_car_user_type =#{applyRecordQueryDto.carUserType }
+        </if>
+        <if test="applyRecordQueryDto.applyState > -1">
+            and apply_record.state =#{applyRecordQueryDto.applyState }
+        </if>
+        GROUP BY user_data_info.mobile_phone,APPLY_RECORD.ID
+        ORDER BY APPLY_RECORD.ID DESC
+    </select>
+    <!-- 被邀请 -->
+    <select id="doQueryBeApplyRecords" resultType="com.youming.youche.record.vo.ApplyRecordVo">
+        select
+        apply_record.id id,
+        user_data_info.mobile_phone mobilePhone,
+        user_data_info.linkman linkman,
+        apply_record.apply_car_user_type applyCarUserType,
+        apply_record.be_apply_tenant_id beApplyTenantId,
+        sys_tenant_def.name attachTenantName,
+        sys_tenant_def.link_phone attachTennantLinkPhone,
+        apply_record.create_time createDate,
+        apply_record.state state,
+        apply_record.read_state readState,
+        apply_record.audit_remark auditRemark,
+        apply_record.audit_date auditDate,
+        apply_record.new_apply_id newApplyId
+        from apply_record
+        left join sys_tenant_def on apply_record.apply_tenant_id = sys_tenant_def.id,
+        user_data_info
+        where apply_record.busi_id=user_data_info.id
+        and apply_record.be_apply_tenant_id=#{tenantId}
+        and apply_record.apply_type=1
+        <if test="applyRecordQueryDto.billId!=null and applyRecordQueryDto.billId!=''">
+            and user_data_info.mobile_phone like CONCAT('%',#{applyRecordQueryDto.billId },'%')
+        </if>
+        <if test="applyRecordQueryDto.tenantName!=null and applyRecordQueryDto.tenantName!=''">
+            and sys_tenant_def.name like CONCAT('%',#{applyRecordQueryDto.tenantName },'%')
+        </if>
+        <if test="applyRecordQueryDto.tenantLinkPhone!=null and applyRecordQueryDto.tenantLinkPhone!=''">
+            and sys_tenant_def.link_phone like CONCAT('%',#{applyRecordQueryDto.tenantLinkPhone },'%')
+        </if>
+        <if test="applyRecordQueryDto.carUserType > -1">
+            and apply_record.apply_car_user_type =#{applyRecordQueryDto.carUserType }
+        </if>
+        <if test="applyRecordQueryDto.applyState > -1">
+            and apply_record.state =#{applyRecordQueryDto.applyState }
+        </if>
+        ORDER BY APPLY_RECORD.ID DESC
+    </select>
+
+    <select id="doQueryDriverHis" resultType="com.youming.youche.record.vo.driver.DriverQueryVo">
+        select
+        s.LOGIN_ACCT as loginAcct,
+        u.LINKMAN as linkMan,
+        r.CAR_USER_TYPE as carUserType,
+        ifnull(u.TENANT_ID,-1) as attachTenantId,
+        def.name as attachTenantName,
+        def.link_man as attachTennantLinkman,
+        def.link_phone as attachTennantLinkPhone,
+        ifnull(u.id,0) as userId,
+        r.create_date as createDate,
+        ifnull(r.rel_id,0) as relId,
+        ifnull(r.state_reason,'-') as authReason
+        from user_data_info u
+        left JOIN sys_tenant_def def ON def.id = u.TENANT_ID ,
+        TENANT_USER_REL_VER r
+        inner JOIN sys_user s on s.user_info_id = r.USER_ID
+        WHERE r.USER_ID = u.ID and r.TENANT_ID=#{tenantId} AND u.user_type IN (1,3)
+        AND r.ver_state=9
+        <if test="driverQueryDto.carUserType!=null and driverQueryDto.carUserType>0">
+            AND r.CAR_USER_TYPE = #{driverQueryDto.carUserType}
+        </if>
+        <if test="driverQueryDto.attachTenantName!=null and driverQueryDto.attachTenantName!=''">
+            AND def.name like CONCAT('%',#{driverQueryDto.attachTenantName },'%')
+        </if>
+        <if test="driverQueryDto.loginAcct!=null and driverQueryDto.loginAcct!=''">
+            AND s.LOGIN_ACCT =#{driverQueryDto.loginAcct }
+        </if>
+        <if test="driverQueryDto.attachTennantLinkman!=null and driverQueryDto.attachTennantLinkman!=''">
+            AND def.link_man like CONCAT('%',#{driverQueryDto.attachTennantLinkman },'%')
+        </if>
+        <if test="driverQueryDto.attachTennantLinkPhone!=null and driverQueryDto.attachTennantLinkPhone!=''">
+            AND def.link_phone like CONCAT('%',#{driverQueryDto.attachTennantLinkPhone },'%')
+        </if>
+        <if test="driverQueryDto.linkman!=null and driverQueryDto.linkman!=''">
+            AND u.LINKMAN like CONCAT('%',#{driverQueryDto.linkman },'%')
+        </if>
+        ORDER BY r.create_time DESC
+
+    </select>
+
+    <select id="getVehicle" resultType="java.util.Map">
+        select *
+        from
+            tenant_Vehicle_Rel a,
+            vehicle_Data_Info b
+        where a.vehicle_Code=b.id
+          and b.driver_User_Id=#{userId}
+          and a.tenant_Id=#{tenantId}
+    </select>
+
+    <select id="querStaffName" resultType="java.lang.String">
+        SELECT
+            linkman
+        FROM
+            user_data_info
+        WHERE
+            id IN (${userIdList})
+    </select>
+
+    <!--查询本车队所有司机以及所有平台司机-->
+    <select id="queryAllTenantDriverOrPtDriver" resultType="com.youming.youche.record.vo.UserDataInfoBackVo">
+        SELECT
+        u.id AS userId,
+        u.linkman AS linkman,
+        u.mobile_phone AS mobilePhone,
+        r.car_user_type AS carUserType,
+        u.tenant_id as  tenantId,
+        IFNULL(r.STATE, -1) AS state
+        FROM
+        user_data_info u
+        LEFT JOIN tenant_user_rel r ON u.id = r.user_id
+        AND r.tenant_id = #{tenantId}
+        <where>
+            u.user_type = 3
+            AND ( u.tenant_id = - 1
+            OR u.tenant_id IS NULL
+            OR EXISTS ( SELECT * FROM tenant_user_rel r WHERE r.user_id = u.id AND r.tenant_id = #{tenantId} ) )
+            <if test="linkman != null and linkman !=''">
+                and u.linkman like concat('%',#{linkman},'%')
+            </if>
+            <if test="loginAcct !=null and loginAcct !=''">
+                and u.mobile_phone like concat('%',#{loginAcct},'%')
+            </if>
+        </where>
+        order by  r.create_time desc
+    </select>
+
+
+    <!-- &lt;!&ndash;查询本车队所有司机以及所有平台司机&ndash;&gt;
+     <select id="queryAllTenantDriverOrPtDriver" resultType="com.youming.youche.record.vo.UserDataInfoBackVo">
+         SELECT
+                 u.id AS userId,
+                 u.linkman AS linkman,
+                 u.mobile_phone AS mobilePhone,
+                 r.car_user_type AS carUserType
+         FROM
+                 user_data_info u
+                         LEFT JOIN tenant_user_rel r ON u.id = r.user_id
+                         AND r.tenant_id	= #{tenantId}
+         <where>
+             u.user_type = 3
+             AND ( u.tenant_id = - 1
+             OR u.tenant_id IS NULL
+             OR EXISTS ( SELECT * FROM tenant_user_rel r WHERE r.user_id = u.id AND r.tenant_id = #{tenantId} ) )
+             <if test="linkman != null and linkman !=''">
+                 and u.linkman like '$%{linkman}%'
+             </if>
+             <if test="loginAcct !=null and loginAcct !=''">
+                 and u.mobile_phone like '$%{loginAcct}%'
+             </if>
+         </where>
+         ORDER BY
+                 r.create_date DESC
+     </select>
+ -->
+
+    <!--根据手机号查询用户信息-->
+    <select id="queryUserInfoByMobile" resultType="com.youming.youche.record.domain.user.UserDataInfo">
+        select * from user_data_info where mobile_phone = #{mobilePhone} limit 0,1
+    </select>
+
+
+    <select id="selectDriverApplyRecordVo" resultType="com.youming.youche.record.vo.driver.DriverApplyRecordVo">
+        SELECT
+            apply_record.id id,
+            user_data_info.mobile_phone mobilePhone,
+            user_data_info.USER_PRICE userPrice,
+            apply_record.apply_car_user_type applyCarUserType,
+            apply_record.be_apply_tenant_id beApplyTenantId,
+            sys_tenant_def.NAME tenantName,
+            sys_tenant_def.LINK_MAN tennantLinkMan,
+            sys_tenant_def.link_phone tennantLinkPhone,
+            sys_tenant_def.STATE tenantState,
+            apply_record.create_date createDate,
+            apply_record.state state,
+            apply_record.APPLY_REMARK applyRemark,
+            apply_record.APPLY_FILE_ID applyFile,
+            apply_record.audit_remark auditRemark,
+            apply_record.audit_date auditDate,
+            apply_record.new_apply_id newApplyId
+        FROM
+            apply_record
+                LEFT JOIN sys_tenant_def ON apply_record.be_apply_tenant_id = sys_tenant_def.id,
+            user_data_info
+        WHERE
+            apply_record.busi_id = user_data_info.id
+          and apply_record.id=#{applyId}
+    </select>
+
+    <select id="getBeApplyRecord" resultType="com.youming.youche.record.vo.BeApplyRecordVo">
+        SELECT
+            apply_record.id id,
+            user_data_info.mobile_phone mobilePhone,
+            user_data_info.user_price userPrice,
+            apply_record.apply_car_user_type applyCarUserType,
+            apply_record.be_apply_tenant_id beApplyTenantId,
+            sys_tenant_def.NAME tenantName,
+            sys_tenant_def.LINK_MAN tennantLinkMan,
+            sys_tenant_def.link_phone tennantLinkPhone,
+            apply_record.create_time createDate,
+            apply_record.state state,
+            apply_record.APPLY_REMARK applyRemark,
+            apply_record.APPLY_FILE_ID applyFile,
+            apply_record.audit_remark auditRemark,
+            apply_record.audit_date auditDate,
+            apply_record.new_apply_id newApplyId,
+            apply_record.busi_id userId,
+            apply_record.apply_tenant_id tenantId,
+            apply_record.apply_driver_user_id applyDriverUserId,
+            apply_record.apply_plate_numbers applyPlateNumbers,
+            ( SELECT count(*)
+              FROM tenant_vehicle_rel
+              WHERE tenant_vehicle_rel.driver_user_id = apply_record.busi_id
+                AND tenant_vehicle_rel.tenant_Id = apply_record.be_apply_tenant_id ) vehicleNum
+        FROM
+            apply_record
+                LEFT JOIN sys_tenant_def ON apply_record.apply_tenant_id = sys_tenant_def.id,
+            user_data_info
+        WHERE
+            apply_record.busi_id = user_data_info.id
+          AND apply_record.id = #{applyId}
+    </select>
+
+    <select id="getBeApplyRecordVehicle" resultType="com.youming.youche.record.vo.BeApplyRecordVehicleVo">
+        SELECT
+            vehicle_data_info.plate_number plateNumber,
+            vehicle_Length vehicleLength,
+            vehicle_Status vehicleStatus
+        FROM
+            vehicle_data_info,
+            tenant_vehicle_rel
+        WHERE
+            vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+          AND vehicle_data_info.driver_user_id =#{userId}
+          AND tenant_vehicle_rel.tenant_Id =#{tenantId}
+          AND tenant_vehicle_rel.VEHICLE_CLASS = 1
+          AND tenant_vehicle_rel.AUTH_STATE=2
+    </select>
+
+
+    <select id="getUserDataInfoByMoblile" resultType="com.youming.youche.record.domain.user.UserDataInfo">
+        select * from user_data_info u where   u.mobile_phone =#{mobilePhone}  ORDER BY u.id desc
+    </select>
+
+    <select id="queryStaffInfo" resultType="com.youming.youche.record.dto.StaffDataInfoDto">
+        SELECT
+        udi.id AS userid,
+        udi.linkman AS linkman,
+        udi.mobile_phone AS mobilephone,
+        udi.identification AS identification,
+        so.id AS operatorid,
+        so.login_acct AS loginacct,
+        so.PASSWORD AS PASSWORD,
+        tsr.id AS staffid,
+        tsr.employee_number AS employeenumber,
+        tsr.staff_position AS staffposition,
+        tsr.lock_flag AS lockflag,
+        (
+        SELECT
+        group_concat( o.role_id )
+        FROM
+        sys_role_oper_rel o
+        WHERE
+        o.state = 1
+        AND o.operator_id = so.id
+        AND o.tenant_id = tsr.tenant_id
+        GROUP BY
+        o.operator_id
+        ) AS roleids,
+        (
+        SELECT
+        group_concat( u.org_id )
+        FROM
+        sys_user_org_rel u
+        WHERE
+        u.state = 1
+        AND u.id = udi.id
+        AND u.tenant_id = tsr.tenant_id
+        GROUP BY
+        u.id
+        ) AS orgids
+        FROM
+        user_data_info udi
+        INNER JOIN sys_user so ON udi.id = so.user_info_id
+        INNER JOIN tenant_staff_rel tsr ON udi.id = tsr.user_info_id
+        WHERE
+        tsr.state =1
+        <if test="staffDataInfoIn.userId != null and staffDataInfoIn.userId > 0">
+            AND udi.id = #{staffDataInfoIn.userId}
+        </if>
+        <if test="staffDataInfoIn.loginAcct != null and staffDataInfoIn.loginAcct != ''">
+            AND so.LOGIN_ACCT LIKE CONCAT('%',#{staffDataInfoIn.loginAcct},'%')
+        </if>
+        <if test="staffDataInfoIn.mobilePhone != null and staffDataInfoIn.mobilePhone != ''">
+            AND udi.MOBILE_PHONE LIKE CONCAT('%',CONCAT(#{staffDataInfoIn.mobilePhone}),'%')
+        </if>
+        <if test="staffDataInfoIn.linkman != null and staffDataInfoIn.linkman != ''">
+            AND udi.LINKMAN = #{staffDataInfoIn.linkman}
+        </if>
+        <if test="staffDataInfoIn.employeeNumber != null and staffDataInfoIn.employeeNumber != ''">
+            AND tsr.EMPLOYEE_NUMBER LIKE CONCAT('%',#{staffDataInfoIn.employeeNumber},'%')
+        </if>
+        <if test="staffDataInfoIn.staffPosition != null and staffDataInfoIn.staffPosition != ''">
+            AND tsr.STAFF_POSITION LIKE CONCAT('%',#{staffDataInfoIn.staffPosition},'%')
+        </if>
+        <if test="staffDataInfoIn.lockFlag != null and staffDataInfoIn.lockFlag > 0">
+            AND tsr.LOCK_FLAG = #{staffDataInfoIn.lockFlag}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND tsr.TENANT_ID = #{tenantId}
+        </if>
+        <if test="staffDataInfoIn.orgId != null and staffDataInfoIn.orgId >0">
+            AND exists(SELECT * FROM sys_user_org_rel suor WHERE suor.TENANT_ID = tsr.TENANT_ID AND
+            suor.USER_ID=udi.USER_ID AND suor.ORG_ID = #{staffDataInfoIn.orgId})
+        </if>
+        order by tsr.create_time desc
+    </select>
+
+    <select id="doQueryBeApplyRecordsNew" resultType="com.youming.youche.record.vo.ApplyRecordVo">
+        select
+        apply_record.id id,
+        user_data_info.mobile_phone mobilePhone,
+        user_data_info.linkman linkman,
+        apply_record.apply_car_user_type applyCarUserType,
+        apply_record.be_apply_tenant_id beApplyTenantId,
+        sys_tenant_def.name attachTenantName,
+        sys_tenant_def.link_phone attachTennantLinkPhone,
+        apply_record.create_time createDate,
+        apply_record.state state,
+        apply_record.read_state readState,
+        apply_record.audit_remark auditRemark,
+        apply_record.audit_date auditDate,
+        apply_record.new_apply_id newApplyId
+        from apply_record
+        left join sys_tenant_def on apply_record.apply_tenant_id = sys_tenant_def.id,
+        user_data_info
+        where apply_record.busi_id=user_data_info.id
+        and apply_record.be_apply_tenant_id=#{tenantId}
+        and apply_record.apply_type=1
+        <if test="applyRecordQueryVo.billId!=null and applyRecordQueryVo.billId!=''">
+            and user_data_info.mobile_phone like CONCAT('%',#{applyRecordQueryVo.billId },'%')
+        </if>
+        <if test="applyRecordQueryVo.tenantName!=null and applyRecordQueryVo.tenantName!=''">
+            and sys_tenant_def.name like CONCAT('%',#{applyRecordQueryVo.tenantName },'%')
+        </if>
+        <if test="applyRecordQueryVo.mobilePhone!=null and applyRecordQueryVo.mobilePhone!=''">
+            and user_data_info.mobile_phone like CONCAT('%',#{applyRecordQueryVo.mobilePhone },'%')
+        </if>
+        <if test="applyRecordQueryVo.carUserType > -1">
+            and apply_record.apply_car_user_type = #{applyRecordQueryVo.carUserType}
+        </if>
+        <if test="applyRecordQueryVo.applyState > -1">
+            and apply_record.state = #{applyRecordQueryVo.applyState}
+        </if>
+        <if test="applyRecordQueryVo.carUserTypes != '' and applyRecordQueryVo.carUserTypes != null">
+            and apply_record.apply_car_user_type in (${applyRecordQueryVo.carUserTypes})
+        </if>
+        <if test="applyRecordQueryVo.states != null and applyRecordQueryVo.states != ''">
+            and apply_record.state in (${applyRecordQueryVo.states})
+        </if>
+        ORDER BY APPLY_RECORD.ID DESC
+    </select>
+
+    <select id="queryStaffInfoPage" resultType="com.youming.youche.record.dto.StaffDataInfoDto">
+        SELECT
+        udi.id AS userid,
+        udi.linkman AS linkman,
+        udi.mobile_phone AS mobilephone,
+        udi.identification AS identification,
+        so.id AS operatorid,
+        so.login_acct AS loginacct,
+        so.PASSWORD AS PASSWORD,
+        tsr.id AS staffid,
+        tsr.employee_number AS employeenumber,
+        tsr.staff_position AS staffposition,
+        tsr.lock_flag AS lockflag,
+        (
+        SELECT
+        group_concat( o.role_id )
+        FROM
+        sys_role_oper_rel o
+        WHERE
+        o.state = 1
+        AND o.operator_id = so.id
+        AND o.tenant_id = tsr.tenant_id
+        GROUP BY
+        o.operator_id
+        ) AS roleids,
+        (
+        SELECT
+        group_concat( u.org_id )
+        FROM
+        sys_user_org_rel u
+        WHERE
+        u.state = 1
+        AND u.id = udi.id
+        AND u.tenant_id = tsr.tenant_id
+        GROUP BY
+        u.id
+        ) AS orgids,
+        attached_org_id AS attachedOrgId
+        FROM
+        user_data_info udi
+        INNER JOIN sys_user so ON udi.id = so.user_info_id
+        INNER JOIN tenant_staff_rel tsr ON udi.id = tsr.user_info_id
+        WHERE
+        tsr.state =1
+        <if test="staffDataInfoIn.userId != null and staffDataInfoIn.userId > 0">
+            AND udi.id = #{staffDataInfoIn.userId}
+        </if>
+        <if test="staffDataInfoIn.loginAcct != null and staffDataInfoIn.loginAcct != ''">
+            AND so.LOGIN_ACCT LIKE CONCAT('%',#{staffDataInfoIn.loginAcct},'%')
+        </if>
+        <if test="staffDataInfoIn.mobilePhone != null and staffDataInfoIn.mobilePhone != ''">
+            AND udi.MOBILE_PHONE LIKE CONCAT('%',CONCAT(#{staffDataInfoIn.mobilePhone}),'%')
+        </if>
+        <if test="staffDataInfoIn.linkman != null and staffDataInfoIn.linkman != ''">
+            AND udi.LINKMAN LIKE CONCAT('%',#{staffDataInfoIn.linkman},'%')
+        </if>
+        <if test="staffDataInfoIn.employeeNumber != null and staffDataInfoIn.employeeNumber != ''">
+            AND tsr.EMPLOYEE_NUMBER LIKE CONCAT('%',#{staffDataInfoIn.employeeNumber},'%')
+        </if>
+        <if test="staffDataInfoIn.staffPosition != null and staffDataInfoIn.staffPosition != ''">
+            AND tsr.STAFF_POSITION LIKE CONCAT('%',#{staffDataInfoIn.staffPosition},'%')
+        </if>
+        <if test="staffDataInfoIn.lockFlag != null and staffDataInfoIn.lockFlag > 0">
+            AND tsr.LOCK_FLAG = #{staffDataInfoIn.lockFlag}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND tsr.TENANT_ID = #{tenantId}
+        </if>
+        <if test="staffDataInfoIn.orgId != null and staffDataInfoIn.orgId >0">
+            AND exists(SELECT * FROM sys_user_org_rel suor WHERE suor.TENANT_ID = tsr.TENANT_ID AND
+            suor.USER_ID=udi.USER_ID AND suor.ORG_ID = #{staffDataInfoIn.orgId})
+        </if>
+        order by tsr.CREATE_DATE desc
+    </select>
+
+    <select id="getTableUserDriverCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        r.tenant_id as tenantId, count(1) as count
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+        u.user_type IN ( 1, 3 )
+        and u.DRIVER_LICENSE_EXPIRED_TIME <![CDATA[ <= ]]> now()
+        and r.tenant_id is not null
+        group by r.tenant_id
+
+    </select>
+
+    <select id="getTableUserQcCertiCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        r.tenant_id as tenant_id, count(1) as count
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+        u.user_type IN ( 1, 3 )
+        and u.qc_certi_expired_time <![CDATA[ <= ]]> now()
+        and r.tenant_id is not null
+        group by r.tenant_id
+
+    </select>
+
+
+    <select id="getTableDriverCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        r.tenant_id,
+        IFNULL( COUNT( 1 ), 0 ) AS count
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+        user_type IN ( 1, 3 )
+        and r.tenant_id is not null
+        GROUP BY
+        r.tenant_id
+    </select>
+
+    <select id="getDriverTenantId" resultType="java.lang.Long">
+        SELECT
+            u.tenant_id tenantid
+        FROM
+            user_data_info u
+            LEFT JOIN tenant_user_rel r ON r.user_id = u.id
+            AND r.car_user_type = 1
+            LEFT JOIN sys_tenant_def def ON def.id = r.tenant_id
+        WHERE
+            u.user_type IN ( 3 )
+            AND u.id = #{userId}
+    </select>
+
+    <select id="doQueryCarDriverWx" resultType="com.youming.youche.record.dto.driver.DoQueryDriversDto">
+        select
+        u.MOBILE_PHONE as loginAcct,
+        u.LINKMAN as linkman,
+        IFNULL(r.CAR_USER_TYPE, -1) as carUserType,
+        u.TENANT_ID as attachTenantId,
+        def.name as attachTenantName,
+        def.link_man as attachTennantLinkman,
+        def.link_phone as attachTennantLinkPhone,
+        (SELECT count(*) from tenant_vehicle_rel where tenant_vehicle_rel.tenant_Id=r.TENANT_ID and
+        tenant_vehicle_rel.DRIVER_USER_ID = r.user_id) as vehicleNum,
+        IFNULL(r.STATE, -1) as state,
+        IFNULL(r.HAS_VER,0) as hasVer,
+        IFNULL(u.id,0) as userId,
+        DATE_FORMAT(r.create_date,'%Y-%m-%d %H:%i:%s') as createDate ,
+        IFNULL(r.id,0) as relId,
+        r.state_reason as authReason,
+        r.AUTH_MAN_ID as authUserId,
+        r.AUTH_ORG_ID as authOrgId,
+        u.identification as identification,
+        DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as driverLicenseExpiredTime,
+        DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s') as qcCertiExpriedTime
+        from user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        left JOIN TENANT_USER_REL r on r.USER_ID = u.ID
+        WHERE r.TENANT_ID=#{tenantId} AND u.user_type IN (${userType})
+        <if test="doQueryDriversVo.onlyC!='' and doQueryDriversVo.onlyC!=null">
+            AND u.tenant_Id=-1
+        </if>
+        <if test="doQueryDriversVo.hasVer!='' and doQueryDriversVo.hasVer!=null">
+            AND r.HAS_VER = 0
+        </if>
+        <if test="doQueryDriversVo.driverLicenseExpired!='' and doQueryDriversVo.driverLicenseExpired!=null">
+            AND DATE_FORMAT(u.DRIVER_LICENSE_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')  <![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="doQueryDriversVo.qcCertiExpired!='' and doQueryDriversVo.qcCertiExpired!=null">
+            AND DATE_FORMAT(u.QC_CERTI_EXPIRED_TIME,'%Y-%m-%d %H:%i:%s')<![CDATA[ < ]]>
+            DATE_FORMAT(#{expiredDate},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="carUserTypeStr != null and carUserTypeStr != ''">
+            AND r.CAR_USER_TYPE in (${carUserTypeStr})
+        </if>
+        <if test="doQueryDriversVo.attachTenantName!=null and doQueryDriversVo.attachTenantName!=''">
+            AND def.name like CONCAT('%',#{doQueryDriversVo.attachTenantName},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkman!=null and doQueryDriversVo.attachTennantLinkman!=''">
+            AND def.link_man like CONCAT('%',#{doQueryDriversVo.attachTennantLinkman},'%')
+        </if>
+        <if test="doQueryDriversVo.attachTennantLinkPhone!=null and doQueryDriversVo.attachTennantLinkPhone!=''">
+            AND def.link_phone like CONCAT('%',#{doQueryDriversVo.attachTennantLinkPhone },'%')
+        </if>
+        <if test="doQueryDriversVo.loginAcct!=null and doQueryDriversVo.loginAcct!=''">
+            AND u.MOBILE_PHONE = #{doQueryDriversVo.loginAcct}
+        </if>
+        <if test="doQueryDriversVo.state >0">
+            AND r.state = #{doQueryDriversVo.state}
+        </if>
+        <if test="doQueryDriversVo.linkman!=null and doQueryDriversVo.linkman!=''">
+            AND u.LINKMAN like CONCAT('%',#{doQueryDriversVo.linkman },'%')
+        </if>
+        <if test="doQueryDriversVo.driverUserId != null and doQueryDriversVo.driverUserId > 0">
+            AND u.id <![CDATA[ <> ]]> #{doQueryDriversVo.driverUserId}
+        </if>
+        ORDER BY r.id DESC
+    </select>
+
+</mapper>

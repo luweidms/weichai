@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.statistic.StatementDepartmentMonthMapper">
+    <select id="dailySummary" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDto">
+        select ifnull(sum(sdm.own_income), 0) ownIncome,
+        ifnull(sum(sdm.own_cost), 0) ownCost,
+        ifnull(sum(sdm.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(sdm.diversion_income), 0) diversionIncome,
+        ifnull(sum(sdm.diversion_cost), 0) diversionCost,
+        ifnull(sum(sdm.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(sdm.merchants_income), 0) merchantsIncome,
+        ifnull(sum(sdm.merchants_cost), 0) merchantsCost,
+        ifnull(sum(sdm.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(sdm.own_income + sdm.diversion_income + sdm.merchants_income), 0) sumIncome,
+        ifnull(sum(sdm.own_cost + sdm.diversion_cost + sdm.merchants_cost), 0) sumCost,
+        ifnull(sum(socm.oil_fee), 0) oilFee,
+        ifnull(sum(socm.cash), 0) cash,
+        ifnull(sum(socm.toll_fee), 0) tollFee,
+        ifnull(sum(socm.wage_fee), 0) wageFee,
+        ifnull(sum(socm.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socm.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socm.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socm.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socm.maintain_fee), 0) maintainFee,
+        ifnull(sum(socm.parking_fee), 0) parkingFee,
+        ifnull(sum(socm.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socm.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socm.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socm.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socm.employees_credit_fee), 0) employeesCreditFee
+        from statement_department_month sdm
+        left join statement_own_cost_month socm on sdm.id = socm.statement_id
+        where sdm.tenant_id = #{tenantId}
+        and socm.type = 1
+        <if test="startMonth != null and startMonth != ''">
+            and sdm.create_month between #{startMonth} and #{endMonth}
+        </if>
+    </select>
+
+    <select id="monthDetail" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDetailDto">
+        select ifnull(sum(sdm.own_income), 0) ownIncome,
+        ifnull(sum(sdm.own_cost), 0) ownCost,
+        ifnull(sum(sdm.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(sdm.diversion_income), 0) diversionIncome,
+        ifnull(sum(sdm.diversion_cost), 0) diversionCost,
+        ifnull(sum(sdm.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(sdm.merchants_income), 0) merchantsIncome,
+        ifnull(sum(sdm.merchants_cost), 0) merchantsCost,
+        ifnull(sum(sdm.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(sdm.own_income + sdm.diversion_income + sdm.merchants_income), 0) sumIncome,
+        ifnull(sum(sdm.own_cost + sdm.diversion_cost + sdm.merchants_cost), 0) sumCost,
+        ifnull(sum(socm.cash), 0) cash,
+        ifnull(sum(socm.oil_fee), 0) oilFee,
+        ifnull(sum(socm.toll_fee), 0) tollFee,
+        ifnull(sum(socm.wage_fee), 0) wageFee,
+        ifnull(sum(socm.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socm.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socm.maintain_fee), 0) maintainFee,
+        ifnull(sum(socm.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socm.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socm.parking_fee), 0) parkingFee,
+        ifnull(sum(socm.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socm.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socm.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socm.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socm.employees_credit_fee), 0) employeesCreditFee,
+        sdm.department_id id,
+        so.org_name name,
+        socm.type type
+        from statement_department_month sdm
+        left join sys_organize so on sdm.department_id = so.id
+        left join statement_own_cost_month socm on sdm.id = socm.statement_id
+        where sdm.tenant_id = #{tenantId}
+        and socm.type = 1
+        <if test="startMonth != null and startMonth != ''">
+            and sdm.create_month between #{startMonth} and #{endMonth}
+        </if>
+        group by sdm.department_id
+    </select>
+
+    <select id="sumSalary" resultType="java.lang.Long">
+        select ifnull(sum(paid_salary_fee), 0)
+        from cm_salary_info_new cs
+                 left join tenant_user_rel tur
+                           on cs.car_driver_id = tur.user_id
+        where tur.attached_org_id = #{orgId}
+          and cs.paid_date between #{startDateTime} and #{endDateTime}
+    </select>
+
+
+    <select id="getTableBossBusinessMonthInfo"
+            resultType="com.youming.youche.table.domain.workbench.BossWorkbenchMonthInfo">
+        SELECT a.tenant_id,
+               a.time,
+               ifnull(sum(a.own_income + a.diversion_income + a.merchants_income), 0) AS businessIncome,
+               ifnull(sum(a.own_cost + a.diversion_cost + a.merchants_cost), 0)       AS businessCost,
+               ifnull(
+                       sum(a.own_income + a.diversion_income + a.merchants_income - a.own_cost - a.diversion_cost -
+                           a.merchants_cost),
+                       0
+                   )                                                                  AS businessProfit
+        FROM (
+                 SELECT total.*
+                 FROM (
+                          SELECT (@i := @i + 1)                     pm,
+                                 tenant_id,
+                                 ifnull(sdd.own_income, 0)       AS own_income,
+                                 ifnull(sdd.diversion_income, 0) AS diversion_income,
+                                 ifnull(sdd.merchants_income, 0) AS merchants_income,
+                                 ifnull(sdd.own_cost, 0)         AS own_cost,
+                                 ifnull(sdd.diversion_cost, 0)   AS diversion_cost,
+                                 ifnull(sdd.merchants_cost, 0)   AS merchants_cost,
+                                 sdd.create_month                AS time,
+                                 sdd.create_time,
+                                 sdd.department_id
+                          FROM statement_department_month sdd,
+                               (SELECT @i := 0) t
+                          WHERE create_month = DATE_FORMAT(ADDDATE(now(), INTERVAL -1 MONTH), '%Y-%m')
+                          ORDER BY create_time DESC
+                      ) AS total
+                 GROUP BY total.tenant_id,
+                          total.time,
+                          department_id
+             ) AS a
+        GROUP BY a.tenant_id,
+                 a.time
+    </select>
+
+    <select id="getTableWechatOperationWorkbenchInfo"
+            resultType="com.youming.youche.table.domain.workbench.WechatOperationWorkbenchInfo">
+        SELECT a.tenant_id,
+               a.time,
+               ifnull(sum(a.own_income), 0)             ownIncome,
+               ifnull(sum(a.own_cost), 0)               ownCost,
+               ifnull(sum(a.own_gross_margin), 0)       ownGrossMargin,
+               ifnull(sum(a.diversion_income), 0)       diversionIncome,
+               ifnull(sum(a.diversion_cost), 0)         diversionCost,
+               ifnull(sum(a.diversion_gross_margin), 0) diversionGrossMargin,
+               ifnull(sum(a.merchants_income), 0)       merchantsIncome,
+               ifnull(sum(a.merchants_cost), 0)         merchantsCost,
+               ifnull(sum(a.merchants_gross_margin), 0) merchantsGrossMargin,
+               ifnull(sum(a.wage_fee), 0)               wageFee,
+               ifnull(sum(a.oil_fee), 0)                oilFee,
+               ifnull(sum(a.toll_fee), 0)               tollFee
+        FROM (
+                 SELECT total.*
+                 FROM (
+                          SELECT (@i := @i + 1)                        pm,
+                                 tenant_id,
+                                 ifnull(sdd.own_income, 0)             own_income,
+                                 ifnull(sdd.own_cost, 0)               own_cost,
+                                 ifnull(sdd.own_gross_margin, 0)       own_gross_margin,
+                                 ifnull(sdd.diversion_income, 0)       diversion_income,
+                                 ifnull(sdd.diversion_cost, 0)         diversion_cost,
+                                 ifnull(sdd.diversion_gross_margin, 0) diversion_gross_margin,
+                                 ifnull(sdd.merchants_income, 0)       merchants_income,
+                                 ifnull(sdd.merchants_cost, 0)         merchants_cost,
+                                 ifnull(sdd.merchants_gross_margin, 0) merchants_gross_margin,
+                                 ifnull(socd.wage_fee, 0)              wage_fee,
+                                 ifnull(socd.oil_fee, 0)               oil_fee,
+                                 ifnull(socd.toll_fee, 0)              toll_fee,
+                                 sdd.create_month AS                   time,
+                                 sdd.create_time,
+                                 sdd.department_id
+                          FROM statement_department_month sdd
+                                   left join statement_own_cost_month socd on sdd.id = socd.statement_id,
+                               (SELECT @i := 0) t
+                          WHERE create_month = DATE_FORMAT(ADDDATE(now(), INTERVAL -1 MONTH), '%Y-%m')
+                            and socd.type = 1
+                          ORDER BY create_time DESC
+                      ) AS total
+                 GROUP BY total.tenant_id,
+                          total.time,
+                          department_id
+             ) AS a
+        GROUP BY a.tenant_id,
+                 a.time
+    </select>
+</mapper>

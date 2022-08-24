@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.cm.CmCustomerInfoMapper">
+    <!--导出查询-->
+    <select id="exportCustomer" resultType="com.youming.youche.record.domain.cm.CmCustomerInfo">
+        SELECT
+        cci.id           AS id,
+        cci.customer_name         AS customerName,
+        cci.company_name          AS companyName,
+        cci.address               AS address,
+        cci.line_name             AS lineName,
+        cci.line_tel              AS lineTel,
+        cci.line_phone            AS linePhone,
+        cci.sale_daparment        AS saleDaparment,
+        cci.lookup_name           AS lookupName,
+        cci.ein_number            AS einNumber,
+        cci.pay_way               AS payWay,
+        cci.maret_sale            AS maretSale,
+        cci.customer_level        AS customerLevel,
+        cci.odd_way               AS oddWay,
+        cci.state                 AS state,
+        cci.org_id                AS orgId,
+        cci.tenant_id             AS tenantId,
+        date_format(cci.create_time,'%Y-%m-%d %H:%i:%s')           AS createTime,
+        date_format(cci.update_time,'%Y-%m-%d %H:%i:%s')               AS updateTime,
+        cci.op_id                 AS opId,
+        cci.recive_time           AS reciveTime,
+        cci.invoice_time          AS invoiceTime,
+        cci.collection_time       AS collectionTime,
+        cci.settle_cycle          AS settleCycle,
+        cci.yongyou_code          AS yongyouCode,
+        cci.customer_category     AS customerCategory,
+        cci.age_fine_rule         AS ageFineRule,
+        cci.customer_code         AS customerCode,
+        cci.auth_state            AS authState,
+        cci.audit_content         AS auditContent,
+        cci.type                  AS type,
+        cci.is_auth               AS isAuth,
+        cci.recive_province_id    AS reciveProvinceId,
+        cci.recive_city_id        AS reciveCityId,
+        cci.recive_address        AS reciveAddress,
+        cci.reconciliation_time   AS reconciliationTime,
+        cci.reconciliation_day    AS reconciliationDay,
+        cci.reconciliation_month  AS reconciliationMonth,
+        cci.recive_month          AS reciveMonth,
+        cci.recive_day            AS reciveDay,
+        cci.invoice_month         AS invoiceMonth,
+        cci.invoice_day           AS invoiceDay,
+        cci.collection_month      AS collectionMonth,
+        cci.collection_day        AS collectionDay,
+        (SELECT COUNT(1)
+        FROM cm_customer_line l
+        WHERE l.customer_id = cci.id and l.tenant_id = #{user.tenantId}) AS lineNumber
+        FROM cm_customer_info cci
+        WHERE
+        cci.tenant_id = #{user.tenantId}
+        and cci.type = 1
+        <if test="customerInfo.customerCode != null and customerInfo.customerCode!= ''">
+            and cci.customer_code like CONCAT ('%',#{customerInfo.customerCode},'%')
+        </if>
+        <if test="customerInfo.companyName != null and customerInfo.companyName!= ''">
+            and cci.company_name like CONCAT ('%',#{customerInfo.companyName},'%')
+        </if>
+        <if test="customerInfo.customerName != null and customerInfo.customerName != ''">
+            and cci.customer_name like CONCAT ('%',#{customerInfo.customerName},'%')
+        </if>
+        <choose>
+            <when test="customerInfo.state != null and customerInfo.state != ''">
+                and cci.state = #{customerInfo.state}
+            </when>
+            <otherwise>
+                and cci.state &gt;= 0
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="customerInfo.authState != null and customerInfo.authState != ''">
+                and cci.auth_state = #{customerInfo.authState}
+            </when>
+            <otherwise>
+                and cci.auth_state &gt;= 0
+            </otherwise>
+        </choose>
+        <if test="customerInfo.lineName != null and customerInfo.lineName != ''">
+            and cci.line_name like CONCAT ('%',#{customerInfo.lineName},'%')
+        </if>
+        <if test="customerInfo.linePhone != null and customerInfo.linePhone != ''">
+            and (cci.line_phone like CONCAT ('%',#{customerInfo.linePhone},'%')
+            or cci.line_tel like CONCAT ('%',#{customerInfo.linePhone},'%'))
+        </if>
+        <if test="customerInfo.maretSale != null and customerInfo.maretSale != ''">
+            and cci.maret_sale like CONCAT ('%',#{customerInfo.maretSale},'%')
+        </if>
+        <if test="customerInfo.address != null and customerInfo.address != ''">
+            and cci.address like CONCAT ('%',#{customerInfo.address},'%')
+        </if>
+        ORDER BY cci.company_name,
+        cci.id DESC
+    </select>
+
+
+    <!--查询客户档案list-->
+    <select id="selectAllCustomer" resultType="com.youming.youche.record.domain.cm.CmCustomerInfo">
+        SELECT
+        cci.id           AS id,
+        cci.customer_name         AS customerName,
+        cci.company_name          AS companyName,
+        cci.address               AS address,
+        cci.line_name             AS lineName,
+        cci.line_tel              AS lineTel,
+        cci.line_phone            AS linePhone,
+        cci.sale_daparment        AS saleDaparment,
+        cci.lookup_name           AS lookupName,
+        cci.ein_number            AS einNumber,
+        cci.pay_way               AS payWay,
+        cci.maret_sale            AS maretSale,
+        cci.customer_level        AS customerLevel,
+        cci.odd_way               AS oddWay,
+        cci.state                 AS state,
+        cci.org_id                AS orgId,
+        cci.tenant_id             AS tenantId,
+        date_format(cci.create_time,'%Y-%m-%d %H:%i:%s')           AS createTime,
+        date_format(cci.update_time,'%Y-%m-%d %H:%i:%s')               AS updateTime,
+        cci.op_id                 AS opId,
+        cci.recive_time           AS reciveTime,
+        cci.invoice_time          AS invoiceTime,
+        cci.collection_time       AS collectionTime,
+        cci.settle_cycle          AS settleCycle,
+        cci.yongyou_code          AS yongyouCode,
+        cci.customer_category     AS customerCategory,
+        cci.age_fine_rule         AS ageFineRule,
+        cci.customer_code         AS customerCode,
+        cci.auth_state            AS authState,
+        cci.audit_content         AS auditContent,
+        cci.type                  AS type,
+        cci.is_auth               AS isAuth,
+        cci.recive_province_id    AS reciveProvinceId,
+        cci.recive_city_id        AS reciveCityId,
+        cci.recive_address        AS reciveAddress,
+        cci.reconciliation_time   AS reconciliationTime,
+        cci.reconciliation_day    AS reconciliationDay,
+        cci.reconciliation_month  AS reconciliationMonth,
+        cci.recive_month          AS reciveMonth,
+        cci.recive_day            AS reciveDay,
+        cci.invoice_month         AS invoiceMonth,
+        cci.invoice_day           AS invoiceDay,
+        cci.collection_month      AS collectionMonth,
+        cci.collection_day        AS collectionDay,
+        (SELECT COUNT(1)
+        FROM cm_customer_line l
+        WHERE l.customer_id = cci.id and l.tenant_id = #{user.tenantId}) AS lineNumber
+        FROM cm_customer_info cci
+        WHERE
+        cci.tenant_id = #{user.tenantId}
+        and cci.type = 1
+        <if test="customerInfo.customerCode != null and customerInfo.customerCode!= ''">
+            and cci.customer_code like CONCAT ('%',#{customerInfo.customerCode},'%')
+        </if>
+        <if test="customerInfo.companyName != null and customerInfo.companyName!= ''">
+            and cci.company_name like CONCAT ('%',#{customerInfo.companyName},'%')
+        </if>
+        <if test="customerInfo.customerName != null and customerInfo.customerName != ''">
+            and cci.customer_name like CONCAT ('%',#{customerInfo.customerName},'%')
+        </if>
+        <choose>
+            <when test="customerInfo.state != null and customerInfo.state != ''">
+                and cci.state = #{customerInfo.state}
+            </when>
+            <otherwise>
+                and cci.state &gt;= 0
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="customerInfo.authState != null and customerInfo.authState != ''">
+                and cci.auth_state = #{customerInfo.authState}
+            </when>
+            <otherwise>
+                and cci.auth_state &gt;= 0
+            </otherwise>
+        </choose>
+        <if test="customerInfo.lineName != null and customerInfo.lineName != ''">
+            and cci.line_name like CONCAT ('%',#{customerInfo.lineName},'%')
+        </if>
+        <if test="customerInfo.linePhone != null and customerInfo.linePhone != ''">
+            and (cci.line_phone like CONCAT ('%',#{customerInfo.linePhone},'%')
+            or cci.line_tel like CONCAT ('%',#{customerInfo.linePhone},'%'))
+        </if>
+        <if test="customerInfo.maretSale != null and customerInfo.maretSale != ''">
+            and cci.maret_sale like CONCAT ('%',#{customerInfo.maretSale},'%')
+        </if>
+        <if test="customerInfo.address != null and customerInfo.address != ''">
+            and cci.address like CONCAT ('%',#{customerInfo.address},'%')
+        </if>
+        ORDER BY cci.id DESC
+    </select>
+    <!--根据id查询客户档案-->
+    <select id="selectCustomerById" resultType="com.youming.youche.record.domain.cm.CmCustomerInfo">
+        SELECT
+        cci.id           AS id,
+        cci.customer_name         AS customerName,
+        cci.company_name          AS companyName,
+        cci.address               AS address,
+        cci.line_name             AS lineName,
+        cci.line_tel              AS lineTel,
+        cci.line_phone            AS linePhone,
+        cci.sale_daparment        AS saleDaparment,
+        cci.lookup_name           AS lookupName,
+        cci.ein_number            AS einNumber,
+        cci.pay_way               AS payWay,
+        cci.maret_sale            AS maretSale,
+        cci.customer_level        AS customerLevel,
+        cci.odd_way               AS oddWay,
+        cci.state                 AS state,
+        cci.org_id                AS orgId,
+        org.org_name              AS orgName,
+        cci.tenant_id             AS tenantId,
+        cci.create_time           AS createTime,
+        cci.update_time               AS updateTime,
+        cci.op_id                 AS opId,
+        cci.recive_time           AS reciveTime,
+        cci.invoice_time          AS invoiceTime,
+        cci.collection_time       AS collectionTime,
+        cci.settle_cycle          AS settleCycle,
+        cci.yongyou_code          AS yongyouCode,
+        cci.customer_category     AS customerCategory,
+        cci.age_fine_rule         AS ageFineRule,
+        cci.customer_code         AS customerCode,
+        cci.auth_state            AS authState,
+        cci.audit_content         AS auditContent,
+        cci.type                  AS type,
+        cci.is_auth               AS isAuth,
+        cci.recive_province_id    AS reciveProvinceId,
+        cci.recive_city_id        AS reciveCityId,
+        cci.recive_address        AS reciveAddress,
+        cci.reconciliation_time   AS reconciliationTime,
+        cci.reconciliation_day    AS reconciliationDay,
+        cci.reconciliation_month  AS reconciliationMonth,
+        cci.recive_month          AS reciveMonth,
+        cci.recive_day            AS reciveDay,
+        cci.invoice_month         AS invoiceMonth,
+        cci.invoice_day           AS invoiceDay,
+        cci.collection_month      AS collectionMonth,
+        cci.collection_day        AS collectionDay
+        FROM cm_customer_info cci
+        left join sys_organize org on org.id = cci.org_id
+        WHERE
+        cci.tenant_id = #{tenantId}
+        and cci.type = 1
+        and cci.id = #{id}
+    </select>
+    <!--判断客户档案是否存在-->
+    <select id="checkCustomer" resultType="java.lang.Integer">
+        SELECT 1
+        FROM  cm_customer_info cci
+        WHERE
+        cci.TENANT_ID= #{customerInfo.tenantId}
+        AND cci.STATE= #{customerInfo.state}
+        <if test="customerInfo.companyName != null and customerInfo.companyName != ''">
+            AND cci.COMPANY_NAME= #{customerInfo.companyName}
+        </if>
+        AND cci.TYPE= 1
+    </select>
+    <!--新增客户档案-->
+    <insert id="insertCustomerInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        cm_customer_info
+        (id,
+        customer_code,
+        company_name,
+        customer_name,
+        lookup_name,
+        address,
+        line_name,
+        <if test="customerInfo.lineTel != null and customerInfo.lineTel != ''">
+            line_tel,
+        </if>
+        line_phone,
+        odd_way,
+        recive_province_id,
+        recive_city_id,
+        recive_address,
+        pay_way,
+        recive_time,
+        reconciliation_time,
+        invoice_time,
+        collection_time,
+        org_id,
+        tenant_id,
+        `state`,
+        `type`,
+        auth_state,
+        create_time,
+        update_time
+        )
+        values(
+        null,
+        #{customerInfo.customerCode},
+        #{customerInfo.companyName},
+        #{customerInfo.customerName},
+        #{customerInfo.lookupName},
+        #{customerInfo.address},
+        #{customerInfo.lineName},
+        <if test="customerInfo.lineTel != null and customerInfo.lineTel != ''">
+            #{customerInfo.lineTel},
+        </if>
+        #{customerInfo.linePhone},
+        #{customerInfo.oddWay},
+        #{customerInfo.reciveProvinceId},
+        #{customerInfo.reciveCityId},
+        #{customerInfo.reciveAddress},
+        #{customerInfo.payWay},
+        #{customerInfo.reciveTime},
+        #{customerInfo.reconciliationTime},
+        #{customerInfo.invoiceTime},
+        #{customerInfo.collectionTime},
+        #{customerInfo.orgId},
+        #{customerInfo.tenantId},
+        1,
+        1,
+        #{customerInfo.authState},
+        NOW(),
+        NOW()
+        )
+    </insert>
+    <!--修改客户档案-->
+    <update id="updateCustomerInfo">
+        update
+        cm_customer_info
+        set
+        company_name = #{customerInfo.companyName},
+        customer_name = #{customerInfo.customerName},
+        lookup_name = #{customerInfo.lookupName},
+        address = #{customerInfo.address},
+        line_name = #{customerInfo.lineName},
+        line_tel = #{customerInfo.lineTel},
+        line_phone = #{customerInfo.linePhone},
+        odd_way = #{customerInfo.oddWay},
+        recive_province_id = #{customerInfo.reciveProvinceId},
+        recive_city_id = #{customerInfo.reciveCityId},
+        recive_address = #{customerInfo.reciveAddress},
+        pay_way = #{customerInfo.payWay},
+        recive_time = #{customerInfo.reciveTime},
+        reconciliation_time = #{customerInfo.reconciliationTime},
+        invoice_time = #{customerInfo.invoiceTime},
+        collection_time = #{customerInfo.collectionTime},
+        org_id = #{customerInfo.orgId},
+        tenant_id = #{tenantId},
+        `state` = #{customerInfo.state},
+        `type` = 1,
+        auth_state = #{customerInfo.authState},
+        create_time = #{customerInfo.createTime},
+        update_time = #{customerInfo.updateTime}
+        where id = #{customerInfo.id}
+        and tenant_id = #{tenantId}
+    </update>
+    <!--根据用户全称查询客户档案list-->
+    <select id="doQueryCustomerByCompanyName" resultType="com.youming.youche.record.domain.cm.CmCustomerInfo">
+        SELECT
+        cci.id           AS id,
+        cci.customer_name         AS customerName,
+        cci.company_name          AS companyName,
+        cci.address               AS address,
+        cci.line_name             AS lineName,
+        cci.line_tel              AS lineTel,
+        cci.line_phone            AS linePhone,
+        cci.sale_daparment        AS saleDaparment,
+        cci.lookup_name           AS lookupName,
+        cci.ein_number            AS einNumber,
+        cci.pay_way               AS payWay,
+        cci.maret_sale            AS maretSale,
+        cci.customer_level        AS customerLevel,
+        cci.odd_way               AS oddWay,
+        cci.state                 AS state,
+        cci.org_id                AS orgId,
+        cci.tenant_id             AS tenantId,
+        date_format(cci.create_time,'yyyy-MM-dd HH:mm:ss')           AS createTime,
+        date_format(cci.update_time,'yyyy-MM-dd HH:mm:ss')               AS updateTime,
+        cci.op_id                 AS opId,
+        cci.recive_time           AS reciveTime,
+        cci.invoice_time          AS invoiceTime,
+        cci.collection_time       AS collectionTime,
+        cci.settle_cycle          AS settleCycle,
+        cci.yongyou_code          AS yongyouCode,
+        cci.customer_category     AS customerCategory,
+        cci.age_fine_rule         AS ageFineRule,
+        cci.customer_code         AS customerCode,
+        cci.auth_state            AS authState,
+        cci.audit_content         AS auditContent,
+        cci.type                  AS type,
+        cci.is_auth               AS isAuth,
+        cci.recive_province_id    AS reciveProvinceId,
+        cci.recive_city_id        AS reciveCityId,
+        cci.recive_address        AS reciveAddress,
+        cci.reconciliation_time   AS reconciliationTime,
+        cci.reconciliation_day    AS reconciliationDay,
+        cci.reconciliation_month  AS reconciliationMonth,
+        cci.recive_month          AS reciveMonth,
+        cci.recive_day            AS reciveDay,
+        cci.invoice_month         AS invoiceMonth,
+        cci.invoice_day           AS invoiceDay,
+        cci.collection_month      AS collectionMonth,
+        cci.collection_day        AS collectionDay
+        FROM cm_customer_info cci
+        WHERE
+        cci.tenant_id != #{customerInfo.tenantId}
+        and cci.type = 1
+        <if test="customerInfo.companyName != null and customerInfo.companyName!= ''">
+            and cci.company_name like CONCAT ('%',#{customerInfo.companyName},'%')
+        </if>
+        <if test="customerInfo.customerName != null and customerInfo.customerName != ''">
+            and cci.customer_name like CONCAT ('%',#{customerInfo.customerName},'%')
+        </if>
+        <if test="customerInfo.lineName != null and customerInfo.lineName != ''">
+            and cci.line_name like CONCAT ('%',#{customerInfo.lineName},'%')
+        </if>
+        <if test="customerInfo.linePhone != null and customerInfo.linePhone != ''">
+            and (cci.line_phone like CONCAT ('%',#{customerInfo.linePhone},'%')
+            or cci.line_tel like CONCAT ('%',#{customerInfo.linePhone},'%'))
+        </if>
+        <if test="customerInfo.address != null and customerInfo.address != ''">
+            and cci.address like CONCAT ('%',#{customerInfo.address},'%')
+        </if>
+        <if test="customerInfo.maretSale != null and customerInfo.maretSale != ''">
+            and cci.maret_sale like CONCAT ('%',#{customerInfo.maretSale},'%')
+        </if>
+        ORDER BY
+        cci.id DESC
+    </select>
+    <!--获取订单号最大值-->
+    <select id="queryMaxCode" resultType="java.lang.Long">
+        select
+        max(cast(substring(CUSTOMER_CODE,2,length(CUSTOMER_CODE)) as signed)) maxId
+        from CM_CUSTOMER_INFO
+        where TENANT_ID = #{tenantId}
+        and TYPE = 1
+    </select>
+
+    <select id="doQueryBackUserList" resultType="com.youming.youche.record.dto.BackUserDto">
+        SELECT
+            u.LINKMAN AS linkman,u.id AS userId,
+            u.MOBILE_PHONE mobiPhone,t.CAR_USER_TYPE carUserType
+        FROM user_data_info as u
+                 INNER JOIN tenant_user_rel AS t
+                            ON u.id = t.user_id
+        WHERE t.CAR_USER_TYPE = 1
+          AND t.TENANT_ID = #{tenantId}
+          AND t.STATE = 1
+          AND u.LINKMAN LIKE CONCAT ('%',#{linkman},'%')
+        UNION SELECT
+                  s.STAFF_NAME AS linkman, u.id AS userId,
+                  u.MOBILE_PHONE AS mobiPhone,0 AS carUserType
+        FROM user_data_info as u INNER JOIN tenant_staff_rel AS s ON s.user_info_id = u.id
+        WHERE
+              s.TENANT_ID = #{tenantId}
+          AND s.state = 1
+          AND s.STAFF_NAME LIKE CONCAT ('%',#{linkman},'%')
+    </select>
+
+    <select id="doQueryBackUserListPhone" resultType="com.youming.youche.record.dto.BackUserDto">
+        SELECT
+            u.linkman AS linkman,u.id AS userId,
+            u.mobile_phone mobiPhone,t.car_user_type carUserType
+        FROM user_data_info as u
+                 INNER JOIN tenant_user_rel AS t
+                            ON u.id = t.user_id
+        WHERE t.car_user_type = 1
+          AND t.tenant_id = #{tenantId}
+          AND t.state = 1
+          AND u.mobile_phone = #{phone}
+        UNION SELECT
+                  s.staff_name AS linkman, u.id AS userId,
+                  u.mobile_phone AS mobiPhone,0 AS carUserType
+        FROM user_data_info as u INNER JOIN tenant_staff_rel AS s ON s.user_info_id = u.id
+        WHERE
+            s.tenant_id = #{tenantId}
+          AND s.state = 1
+    </select>
+
+    <select id="getTableCustomerCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from cm_customer_info group by tenant_id
+    </select>
+</mapper>

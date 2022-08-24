@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderCostReportMapper">
+    <select id="getListById" resultType="com.youming.youche.order.dto.order.OrderCostReportDto">
+        SELECT id                       costId,
+               order_id                 orderId,
+               start_km                 startKm,
+               start_km_file            startKmFile,
+               start_km_url             startKmUrl,
+               loading_km               loadingKm,
+               loading_km_file          loadingKmFile,
+               loading_km_url           loadingKmUrl,
+               unloading_km             unloadingKm,
+               unloading_km_file        unloadingKmFile,
+               unloading_km_url         unloadingKmUrl,
+               end_km                   endKm,
+               end_km_file              endKmFile,
+               end_km_url               endKmUrl,
+               is_full_oil              isFullOil,
+               state                    orderCostState,
+               sub_time                 subTime,
+               audit_remark             auditRemark,
+               LOAD_MILEAGE          AS loadMileage,
+               CAPACITY_LOAD_MILEAGE AS capacityLoadMileage,
+               CHECK_TIME            AS checkTime
+        FROM order_cost_report
+        WHERE order_id = #{orderId}
+    </select>
+    <select id="getOrderCostDetailReport" resultType="com.youming.youche.order.domain.order.OrderCostDetailReport">
+        SELECT *
+        from order_cost_detail_report
+        where rel_id = #{id}
+          and state != 3
+          and state != 5
+    </select>
+    <select id="getOrderCostDetailReports" resultType="com.youming.youche.order.domain.order.OrderCostDetailReport">
+        SELECT *
+        from order_cost_detail_report
+        where rel_id = #{id}
+        ORDER BY id, table_type
+    </select>
+    <select id="getOrderCostOtherReport" resultType="com.youming.youche.order.vo.OrderCostOtherReportVO">
+        SELECT *
+        from order_cost_other_report
+        where rel_id = #{id}
+          and state != 3
+          and state != 5
+    </select>
+    <select id="getOrderCostOtherReports" resultType="com.youming.youche.order.vo.OrderCostOtherReportVO">
+        SELECT *
+        from order_cost_other_report
+        where rel_id = #{id}
+        ORDER BY id
+    </select>
+    <select id="getTotalAmtByOrderIds" resultType="java.util.Map">
+        SELECT sum(amount)   totalAmt,
+               sum(oil_rise) totalOil
+        FROM order_cost_detail_report
+        WHERE order_id IN (${orderIds})
+          AND state = 5
+          AND table_type = 1
+    </select>
+    <select id="getKilometreByOrderIds" resultType="java.util.Map">
+        SELECT order_id                   orderId,
+               sum(start_km)              startKm,
+               sum(loading_km)            loadingKm,
+               sum(unloading_km)          unloadingKm,
+               sum(end_km)                endKm,
+               sum(load_mileage)          loadMileage,
+               sum(capacity_load_mileage) capacityLoadMileage
+        FROM order_cost_report
+        WHERE order_id IN (${orders})
+          AND state = 5
+        GROUP BY order_id
+    </select>
+
+    <select id="getTotalAmtByOrderId" resultType="java.util.Map">
+        SELECT
+        sum( amount ) totalAmt
+        FROM
+        order_cost_detail_report
+        WHERE
+        order_id = #{orderId}
+        AND state = 5
+        <if test="tableType != null">
+            AND table_type = 2
+        </if>
+    </select>
+
+    <select id="getOrderCostOtherReportAmountByOrderId" resultType="long">
+        select sum(CONSUME_FEE) totalAmt
+        from order_cost_other_report
+        where ORDER_ID = #{orderId}
+        and STATE = 5
+    </select>
+</mapper>

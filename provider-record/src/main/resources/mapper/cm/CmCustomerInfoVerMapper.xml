@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.cm.CmCustomerInfoVerMapper">
+    <!--根据id查询客户档案-->
+    <select id="selectCustomerVerById" resultType="com.youming.youche.record.domain.cm.CmCustomerInfoVer">
+        SELECT
+        cci.customer_id           AS customerId,
+        cci.customer_name         AS customerName,
+        cci.company_name          AS companyName,
+        cci.address               AS address,
+        cci.line_name             AS lineName,
+        cci.line_tel              AS lineTel,
+        cci.line_phone            AS linePhone,
+        cci.sale_daparment        AS saleDaparment,
+        cci.lookup_name           AS lookupName,
+        cci.ein_number            AS einNumber,
+        cci.pay_way               AS payWay,
+        cci.maret_sale            AS maretSale,
+        cci.customer_level        AS customerLevel,
+        cci.odd_way               AS oddWay,
+        cci.state                 AS state,
+        cci.org_id                AS orgId,
+        cci.tenant_id             AS tenantId,
+        cci.create_time           AS createTime,
+        cci.update_time           AS updateTime,
+        cci.op_id                 AS opId,
+        cci.recive_time           AS reciveTime,
+        cci.invoice_time          AS invoiceTime,
+        cci.collection_time       AS collectionTime,
+        cci.settle_cycle          AS settleCycle,
+        cci.yongyou_code          AS yongyouCode,
+        cci.customer_category     AS customerCategory,
+        cci.age_fine_rule         AS ageFineRule,
+        cci.customer_code         AS customerCode,
+        cci.auth_state            AS status,
+        cci.audit_content         AS auditContent,
+        cci.type                  AS type,
+        cci.is_auth               AS isAuth,
+        cci.recive_province_id    AS reciveProvinceId,
+        cci.recive_city_id        AS reciveCityId,
+        cci.recive_address        AS reciveAddress,
+        cci.reconciliation_time   AS reconciliationTime,
+        cci.reconciliation_day    AS reconciliationDay,
+        cci.reconciliation_month  AS reconciliationMonth,
+        cci.recive_month          AS reciveMonth,
+        cci.recive_day            AS reciveDay,
+        cci.invoice_month         AS invoiceMonth,
+        cci.invoice_day           AS invoiceDay,
+        cci.collection_month      AS collectionMonth,
+        cci.collection_day        AS collectionDay,
+        (SELECT COUNT(1)
+        FROM cm_customer_line l
+        WHERE l.CUSTOMER_ID = cci.CUSTOMER_ID) AS lineNumber
+        FROM cm_customer_info_ver cci
+        WHERE
+        cci.tenant_id = #{tenantId}
+        and cci.type = 1
+        and cci.customer_id = #{customerId}
+    </select>
+    <!--新增客户档案历史记录-->
+    <insert id="insertCustomerInfoVer">
+        insert into
+        cm_customer_info_ver
+        (id,
+        customer_id,
+        company_name,
+        customer_name,
+        lookup_name,
+        address,
+        line_name,
+        line_tel,
+        line_phone,
+        odd_way,
+        recive_province_id,
+        recive_city_id,
+        recive_address,
+        pay_way,
+        recive_time,
+        reconciliation_time,
+        invoice_time,
+        collection_time,
+        org_id,
+        tenant_id,
+        `state`,
+        `type`,
+        auth_state,
+        create_time,
+        update_time
+        )
+        values(
+        null,
+        #{customerInfo.id},
+        #{customerInfo.companyName},
+        #{customerInfo.customerName},
+        #{customerInfo.lookupName},
+        #{customerInfo.address},
+        #{customerInfo.lineName},
+        #{customerInfo.lineTel},
+        #{customerInfo.linePhone},
+        #{customerInfo.oddWay},
+        #{customerInfo.reciveProvinceId},
+        #{customerInfo.reciveCityId},
+        #{customerInfo.reciveAddress},
+        #{customerInfo.payWay},
+        #{customerInfo.reciveTime},
+        #{customerInfo.reconciliationTime},
+        #{customerInfo.invoiceTime},
+        #{customerInfo.collectionTime},
+        #{customerInfo.orgId},
+        #{customerInfo.tenantId},
+        1,
+        1,
+        1,
+        NOW(),
+        NOW()
+        )
+    </insert>
+    <!--修改客户档案-->
+    <update id="updateCustomerInfoVer">
+        update
+        cm_customer_info_ver
+        set
+        company_name = #{customerInfo.companyName},
+        customer_name = #{customerInfo.customerName},
+        lookup_name = #{customerInfo.lookupName},
+        address = #{customerInfo.address},
+        line_name = #{customerInfo.lineName},
+        line_tel = #{customerInfo.lineTel},
+        line_phone = #{customerInfo.linePhone},
+        odd_way = #{customerInfo.oddWay},
+        recive_province_id = #{customerInfo.reciveProvinceId},
+        recive_city_id = #{customerInfo.reciveCityId},
+        recive_address = #{customerInfo.reciveAddress},
+        pay_way = #{customerInfo.payWay},
+        recive_time = #{customerInfo.reciveTime},
+        reconciliation_time = #{customerInfo.reconciliationTime},
+        invoice_time = #{customerInfo.invoiceTime},
+        collection_time = #{customerInfo.collectionTime},
+        org_id = #{customerInfo.orgId},
+        tenant_id = #{tenantId},
+        `state` = #{customerInfo.state},
+        `type` = 1,
+        auth_state = #{customerInfo.status},
+        create_time = #{customerInfo.createTime},
+        update_time = #{customerInfo.updateTime}
+        where customer_id = #{customerInfo.customerId}
+        and tenant_id = #{tenantId}
+    </update>
+</mapper>

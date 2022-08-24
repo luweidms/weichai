@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysOrganizeMapper">
+
+    <select id="selectAllByUserInfoId" resultType="com.youming.youche.system.domain.SysOrganize">
+    SELECT
+	so.*
+FROM
+	sys_organize AS so
+	LEFT JOIN sys_user_org_rel AS suo ON so.id = suo.org_id
+WHERE
+	suo.user_info_id = #{userInfoId}
+		AND so.tenant_id = #{tenantId}
+
+
+    </select>
+</mapper>

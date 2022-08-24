@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleDateCostRelMapper">
+    <select id="queryAll" resultType="com.youming.youche.record.dto.trailer.VehicleDateCostRelDto">
+        SELECT info.licence_type,
+               info.plate_number,
+               info.brand_model,
+               rel.price,
+               rel.purchase_date,
+               rel.depreciated_month,
+               rel.residual
+        FROM vehicle_data_info info
+                 LEFT JOIN tenant_vehicle_cost_rel rel ON info.plate_number = rel.plate_number
+                 LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+        where info.tenant_id = #{tenantId} and rels.vehicle_class=1
+    </select>
+
+    <insert id="insertS">
+        INSERT INTO tenant_vehicle_zc (licenceType,
+                                       brandModel,
+                                       zcjz,
+                                       syzjqs,
+                                       zcdyzj,
+                                       plate_number,
+                                       states,
+                                       xingzhi)
+        VALUES (#{licenceType},
+                #{brandModel},
+                #{zcjz},
+                #{syzjqs},
+                #{zcdyzj},
+                #{plateNumber},
+                #{states},
+                #{xingzhi})
+    </insert>
+    <insert id="insertSs">
+        INSERT INTO tenant_vehicle_zc (licenceType,
+                                       brandModel,
+                                       zcjz,
+                                       syzjqs,
+                                       zcdyzj,
+                                       plate_number,
+                                       states,
+                                       xingzhi)
+        VALUES (#{licenceType},
+                #{brandModel},
+                #{zcjz},
+                #{syzjqs},
+                #{zcdyzj},
+                #{plateNumber},
+                #{states},
+                #{xingzhi})
+    </insert>
+    <insert id="insertSss">
+        INSERT INTO tenant_vehicle_zc (licenceType,
+                                       brandModel,
+                                       zcjz,
+                                       syzjqs,
+                                       zcdyzj,
+                                       trailer_number,
+                                       states,
+                                       xingzhi)
+        VALUES (#{licenceType},
+                #{brandModel},
+                #{zcjz},
+                #{syzjqs},
+                #{zcdyzj},
+                #{trailerNumber},
+                #{states},
+                #{xingzhi})
+    </insert>
+    <select id="queryGua" resultType="com.youming.youche.record.dto.trailer.TrailerGuaCarDto">
+
+        SELECT man.trailer_number, rel.price, rel.purchase_date, rel.depreciated_month, rel.residual
+        from trailer_management man
+                 RIGHT JOIN tenant_trailer_rel rel on man.trailer_number = rel.trailer_number
+        where man.tenant_id = #{tenantId} GROUP BY man.trailer_number
+    </select>
+    <select id="queryByType" resultType="com.youming.youche.record.dto.trailer.DateCostDto">
+        SELECT zc.id,zc.plate_number,zc.licenceType, info.brand_model, zc.states,zc.xingzhi,zc.zcjz zcjzze ,
+         zc.syzjqs syzjqsze , zc.zcdyzj zcdyzjze, count(zc.id)count,info.light_goods_square as rj , info.vehicle_model as ppxh, info.vehicle_length, info.vehicle_status,info.engine_no,info.vin_no
+        from tenant_vehicle_zc zc
+            LEFT JOIN vehicle_data_info info
+        on zc.plate_number = info.plate_number
+            RIGHT JOIN tenant_vehicle_rel rel ON rel.plate_number = info.plate_number
+        where zc.licenceType = 1
+        GROUP BY zc.id
+
+    </select>
+    <select id="queryByTyperTwo" resultType="com.youming.youche.record.dto.trailer.DateCostDto">
+        SELECT zc.id,zc.plate_number,zc.licenceType, info.brand_model,zc.states,zc.xingzhi, zc.zcjz zcjzze ,
+         zc.syzjqs syzjqsze , zc.zcdyzj zcdyzjze, count(zc.id)count,info.light_goods_square as rj , info.vehicle_model as ppxh, info.vehicle_length, info.vehicle_status,info.engine_no,info.vin_no
+        from tenant_vehicle_zc zc
+            LEFT JOIN vehicle_data_info info
+        on zc.plate_number = info.plate_number
+            RIGHT JOIN tenant_vehicle_rel rel ON rel.plate_number = info.plate_number
+        where zc.licenceType = 2
+        GROUP BY zc.id
+
+    </select>
+    <select id="queryAllDto" resultType="com.youming.youche.record.dto.trailer.TrailerGuaPeiZhiDto">
+        SELECT zc.id,zc.trailer_number,zc.licenceType, zc.brandModel,zc.states,zc.xingzhi, zc.zcjz zcjzze ,
+         zc.syzjqs syzjqsze , zc.zcdyzj zcdyzjze, count(zc.id)count,man.trailer_status,man.trailer_material,man.trailer_volume,man.vin_no
+        from tenant_vehicle_zc zc
+            LEFT JOIN trailer_management man
+        on zc.trailer_number = man.trailer_number
+            RIGHT JOIN tenant_trailer_rel rel on man.trailer_number = rel.trailer_number
+        where zc.licenceType = 3
+        GROUP BY zc.id
+    </select>
+    <select id="queryZcXq" resultType="com.youming.youche.record.dto.trailer.ZcVehicleTrailerDto">
+        SELECT zc.id,zc.licenceType,COUNT(zc.id)count,SUM(zc.zcjz)zcjzze, SUM(zc.syzjqs)syzjqsze, SUM(zc.zcdyzj)zcdyzjze
+        from tenant_vehicle_zc zc
+        where licenceType = 1
+        UNION ALL
+        SELECT zc.id,zc.licenceType,COUNT(zc.id)count,SUM(zc.zcjz)zcjzze, SUM(zc.syzjqs)syzjqsze, SUM(zc.zcdyzj)zcdyzjze
+        from tenant_vehicle_zc zc
+        where licenceType = 2
+        UNION ALL
+        SELECT zc.id,zc.licenceType,COUNT(zc.id)count,SUM(zc.zcjz)zcjzze, SUM(zc.syzjqs)syzjqsze, SUM(zc.zcdyzj)zcdyzjze
+        from tenant_vehicle_zc zc
+        where licenceType = 3
+    </select>
+    <delete id="deleteAll">
+        TRUNCATE TABLE tenant_vehicle_zc
+    </delete>
+
+    <!--  查询资产详情  -->
+    <select id="selectAssetDetails" resultType="com.youming.youche.record.dto.trailer.DateCostDto">
+        SELECT
+        distinct a.id as id,
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        1 AS count,
+        idle AS states,
+        '自有' AS xingzhi,
+        0.00 AS zcjzze,
+        0 AS syzjqsze,
+        0.00 AS zcdyzjze,
+        case
+        when TIMESTAMPDIFF(DAY,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) <![CDATA[<]]>0 then 0
+        when TIMESTAMPDIFF(MONTH,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))=0 and TIMESTAMPDIFF(DAY,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) >0 then 1
+        when TIMESTAMPDIFF(MONTH,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))>0 and (DATE_FORMAT(c.purchase_date, '%d' ) - DATE_FORMAT(now(), '%d' ))<![CDATA[<>]]>0 then TIMESTAMPDIFF(MONTH,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) +1
+        else TIMESTAMPDIFF(MONTH,c.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))
+        end as dqzjys,
+        c.purchase_date AS purchaseDate,
+        c.depreciated_month AS depreciatedMonth,
+        c.price AS price,
+        c.residual AS residual,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        a.vehicle_model AS ppxh,
+        NULL AS caizhi,
+        a.light_goods_square AS rj,
+        a.engine_no AS engineNo,
+        a.vin_no AS vinNo
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cost_rel AS c ON a.id = c.vehicle_code and b.id=c.rel_id
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.id as id,
+        a.trailer_number AS plateNumber,
+        3 AS licenceType,
+        a.brand_model AS brandModel,
+        1 AS count,-- 数量
+        a.idle AS states,
+        '自有' AS xingzhi,
+        0.00 AS zcjzze,
+        0 AS syzjqsze,
+        0.00 AS zcdyzjze,
+        case
+        when TIMESTAMPDIFF(DAY,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) <![CDATA[<]]>0 then 0
+        when TIMESTAMPDIFF(MONTH,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))=0 and TIMESTAMPDIFF(DAY,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) >0 then 1
+        when TIMESTAMPDIFF(MONTH,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))>0 and (DATE_FORMAT(b.purchase_date, '%d' ) - DATE_FORMAT(now(), '%d' ))<![CDATA[<>]]>0 then TIMESTAMPDIFF(MONTH,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d')) +1
+        else TIMESTAMPDIFF(MONTH,b.purchase_date,DATE_FORMAT(NOW(), '%Y-%m-%d'))
+        end as dqzjys,
+        b.purchase_date AS purchaseDate,
+        b.depreciated_month AS depreciatedMonth,
+        b.price AS price,
+        b.residual AS residual,
+        a.trailer_status AS vehicleStatus,
+        a.trailer_length AS vehicleLength,
+        NULL AS ppxh,
+        a.trailer_material AS caizhi,
+        a.trailer_volume AS rj,
+        NULL AS engineNo,
+        NULL AS vinNo
+        FROM
+        trailer_management AS a
+        LEFT JOIN tenant_trailer_rel AS b ON a.id = b.trailer_id
+        WHERE
+        a.tenant_id = #{tenantId} AND b.trailer_owner_ship = 1
+        ORDER BY
+        licenceType
+    </select>
+
+</mapper>

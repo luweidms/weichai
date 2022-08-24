@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.oa.OaFilesMapper">
+
+    <select id="getRepairOrderPicList" resultType="com.youming.youche.record.domain.oa.OaFiles">
+        SELECT
+            FILE_ID AS fileId,
+            FILE_URL AS fileUrl
+        FROM
+            oa_files
+        WHERE
+            REL_ID = #{flowId}
+    </select>
+
+    <delete id="deletePicFileIds">
+        DELETE
+        FROM
+        oa_files
+        WHERE
+        REL_ID = #{flowId}
+        AND REL_TYPE = #{reltype6}
+        <if test="fileName != null and fileName != ''">
+            AND FILE_NAME = #{fileName}
+        </if>
+    </delete>
+
+    <select id="getRepairOrderPicList2" resultType="com.youming.youche.record.domain.oa.OaFiles">
+        SELECT
+            ID AS id,
+            REL_TYPE AS relType,
+            REL_ID AS relId,
+            FILE_ID AS fileId,
+            FILE_NAME AS fileName,
+            FILE_URL AS fileUrl,
+            OP_ID AS opId,
+            OP_DATE AS opDate,
+            REMARK AS remark,
+            TENANT_ID AS tenantId
+        FROM
+            oa_files
+        WHERE
+            REL_ID = #{relId}
+            AND REL_TYPE = #{relType}
+    </select>
+
+    <insert id="insertRecord">
+        INSERT INTO oa_files ( REL_TYPE, REL_ID, FILE_ID, FILE_NAME, FILE_URL, OP_ID, OP_DATE, TENANT_ID )
+        VALUES
+            (#{oaFiles.relType},#{oaFiles.relId},#{oaFiles.fileId},#{oaFiles.fileName},
+            #{oaFiles.fileUrl},#{oaFiles.opId},#{oaFiles.opDate},#{oaFiles.tenantId})
+    </insert>
+
+</mapper>

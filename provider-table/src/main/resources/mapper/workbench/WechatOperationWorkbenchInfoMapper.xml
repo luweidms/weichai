@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.workbench.WechatOperationWorkbenchInfoMapper">
+
+    <select id="getWechatOperationWorkbenchInfo" resultType="com.youming.youche.table.domain.workbench.WechatOperationWorkbenchInfo">
+        select * from wechat_operation_workbench_info where tenant_id = #{tenantId} and type = #{type} and time = #{time}
+        and create_time = ( SELECT max( create_time ) FROM wechat_operation_workbench_info where tenant_id = #{tenantId} and type = #{type} and time = #{time})
+    </select>
+
+    <select id="getWechatOperationWorkbenchInfoNew" resultType="com.youming.youche.table.domain.workbench.WechatOperationWorkbenchInfo">
+        select * from wechat_operation_workbench_info where tenant_id = #{tenantId} and type = #{type} and time = #{time}
+        and create_time = #{localDateTime}
+    </select>
+
+    <select id="maxLocalDateTime" resultType="java.time.LocalDateTime">
+        SELECT max( create_time ) FROM wechat_operation_workbench_info and type = #{type}
+    </select>
+</mapper>

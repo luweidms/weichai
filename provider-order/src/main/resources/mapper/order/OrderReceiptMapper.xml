@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderReceiptMapper">
+
+    <delete id="deleteOrderRecipt">
+        delete from order_receipt where order_id = #{orderId}
+        <if test="flowId != null and flowId != ''">
+            and flow_id = #{flowId}
+        </if>
+    </delete>
+
+    <sql id="sbHead">
+        SELECT  o.`TO_TENANT_ID`,o.`ORDER_ID` AS orderId,o.`TENANT_NAME` AS tenantName,s.`DEPEND_TIME` AS dependTime,
+                o.`SOURCE_REGION` AS sourceRegion,o.`DES_REGION` AS desRegion,o.`ORDER_STATE` AS orderState,
+                f.`PRE_TOTAL_FEE` AS preTotalFee,f.`FINAL_FEE` AS finalFee,s.`PLATE_NUMBER` AS plateNumber,
+                g.`RECIVE_TYPE` AS reciveType,f.`TOTAL_FEE` AS totalFee,g.`NAND` AS nand,g.`EAND` AS eand,
+                g.`NAND_DES` AS nandDes,g.`EAND_DES` AS eandDes,g.`RECIVE_STATE` AS reciveState,f.`PRE_OIL_FEE` AS preOilFee,
+                f.`PRE_OIL_VIRTUAL_FEE` AS preOilVirtualFee,s.`VEHICLE_CLASS` AS vehicleClass,fe.`SALARY` AS salary,
+                fe.`COPILOT_SALARY` AS copilotSalary,IFNULL(fe.DRIVER_SWITCH_SUBSIDY,0) as driverSwitchSubsidy,s.`ARRIVE_TIME` AS arriveTime,oe.payment_Way as paymentWay,o.TENANT_ID AS tenantId,g.local_Phone AS localPhone,g.local_User_Name AS localUserName
+                ,g.`ADDR_DTL` AS source,g.`DES_DTL` AS des,s.distance as distance,s.car_Driver_Id as carDriverId,IFNULL(f.ARRIVE_PAYMENT_STATE,0) as arrivePaymentState,IFNULL(f.ARRIVE_PAYMENT_FEE,0) as arrivePaymentFee
+    </sql>
+    <sql id="sbWhere">
+        WHERE o.`ORDER_ID` = f.`ORDER_ID` AND o.`ORDER_ID` = g.`ORDER_ID` AND o.`ORDER_ID` = s.`ORDER_ID`
+        AND o.`ORDER_ID` = fe.`ORDER_ID`  AND o.`ORDER_ID` = oe.`ORDER_ID`
+        AND (o.TO_TENANT_ID is null or o.TO_TENANT_ID &lt;= 0)
+        <if test="vehicleCode>0">
+            AND s.vehicle_Code =#{vehicleCode}
+        </if>
+        <if test="userId>0">
+            AND s.car_Driver_Id =#{userId}
+        </if>
+        <if test="tenantId>0">
+            AND o.tenant_Id =#{tenantId}
+        </if>
+        AND o.ORDER_STATE !=15
+    </sql>
+    
+    <select id="queryCooperationOrderList" resultType="com.youming.youche.order.dto.OrderListAppOutDto">
+        select * from (
+        <include refid="sbHead"/>
+        ,1 as isHis  FROM order_info_h o,order_fee_h f,order_goods_h g,`order_scheduler_h` s,`order_fee_ext_h` fe ,`order_info_ext_h` oe
+        <include refid="sbWhere"/>
+        UNION
+        <include refid="sbHead"/>
+        ,0 as isHis  FROM order_info o,order_fee f,order_goods g,`order_scheduler` s,`order_fee_ext` fe ,`order_info_ext` oe
+        <include refid="sbWhere"/>
+        ) tmp ORDER BY tmp.dependTime DESC
+    </select>
+
+
+    <select id="queryDriverOrderPlateNumber" resultType="com.youming.youche.order.dto.QueryDriverOrderDto">
+        SELECT PLATE_NUMBER plateNumber,CASE VEHICLE_CLASS WHEN 1 THEN tenant_Name ELSE '' END as tenantName,s.depend_time dependTime,o.order_id orderId
+        FROM `order_scheduler` s,ORDER_INFO o
+        WHERE o.order_id = s.order_id AND `CAR_DRIVER_ID` =#{userId}
+        AND (VEHICLE_CLASS = 1 OR (VEHICLE_CLASS in (3,2,4) AND (to_tenant_id IS NULL OR to_tenant_id &lt;= 0)))
+        AND o.ORDER_STATE &gt;= 7
+        GROUP BY o.order_Id ORDER BY s.depend_time DESC
+    </select>
+
+    <select id="queryDriverOrderPlateNumberState" resultType="com.youming.youche.order.dto.QueryDriverOrderDto">
+        SELECT PLATE_NUMBER plateNumber,CASE VEHICLE_CLASS WHEN 1 THEN tenant_Name ELSE '' END as tenantName,s.depend_time dependTime,o.order_id orderId
+        FROM `order_scheduler` s,ORDER_INFO o ,Order_Driver_Switch_Info ds
+        WHERE o.order_id = s.order_id AND ds.order_Id = o.order_Id and ds.state=1  AND  ds.receive_User_Id =#{userId}
+        AND (VEHICLE_CLASS = 1 OR (VEHICLE_CLASS in (3,2,4) AND (to_tenant_id IS NULL OR to_tenant_id &lt;= 0)))
+        AND o.ORDER_STATE &gt;= 7
+        GROUP BY o.order_Id ORDER BY s.depend_time DESC
+    </select>
+</mapper>

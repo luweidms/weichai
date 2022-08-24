@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysRoleMapper">
+
+    <select id="getOwn" resultType="com.youming.youche.system.domain.SysRole">
+        SELECT
+        r.*
+        FROM
+        sys_user AS u
+        LEFT JOIN sys_user_role AS ur ON u.id = ur.user_id
+        LEFT JOIN sys_role AS r ON r.id = ur.role_id
+        WHERE
+        u.id = #{userId}
+        And r.tenant_id = #{tenantId}
+    </select>
+    <select id="selectAllByRoleNameAndOpNameAndTenantId" resultType="com.youming.youche.system.dto.SysRoleDto">
+        SELECT
+        sr.id AS roleId,
+        sr.role_type AS roleType,
+        sr.role_name AS roleName,
+        sr.create_time AS createTime,
+        su.NAME AS opName,
+        ( SELECT count( 1 ) FROM sys_user_role sur WHERE sur.role_id = sr.id AND sur.tenant_id = #{tenantId} ) AS
+        `count`
+        FROM
+        sys_role sr
+        LEFT JOIN sys_user su ON sr.op_user_id = su.id
+        WHERE
+        sr.state = 1
+        AND sr.tenant_id = #{tenantId}
+        <if test="roleName != null and roleName != ''">
+            and sr.role_name like concat('%',#{roleName},'%')
+        </if>
+        <if test="opName != null and opName != ''">
+            and su.name like concat('%',#{opName},'%')
+        </if>
+    </select>
+    <select id="selectCountByUserIdAndTenantIdAndMenuId" resultType="java.lang.Integer">
+
+        SELECT
+	count(p.id)
+FROM
+	sys_user AS u
+	LEFT JOIN sys_user_role AS ur ON u.id = ur.user_id
+	LEFT JOIN sys_role AS r ON r.id = ur.role_id
+	LEFT JOIN sys_role_permission AS rp ON r.id = rp.role_id
+	LEFT JOIN sys_permission AS sp ON sp.id = rp.permission_id
+	LEFT JOIN sys_permission_menu AS p ON p.permission_id = sp.id
+	-- 		LEFT JOIN sys_menu AS m ON m.id = p.menu_id
+
+WHERE
+	sp.type = 1
+	AND u.id = #{userId}
+	AND p.menu_id = #{menuId}
+    AND r.tenant_id = #{tenantId}
+    </select>
+    <select id="selectCountByUserIdAndTenantIdAndBtnId" resultType="java.lang.Integer">
+        SELECT
+        count(p.id)
+FROM
+	sys_user AS u
+	LEFT JOIN sys_user_role AS ur ON u.id = ur.user_id
+	LEFT JOIN sys_role AS r ON r.id = ur.role_id
+	LEFT JOIN sys_role_permission AS rp ON r.id = rp.role_id
+	LEFT JOIN sys_permission AS sp ON sp.id = rp.permission_id
+	LEFT JOIN sys_permission_btn AS p ON p.permission_id = sp.id
+<!--	LEFT JOIN sys_menu_btn AS m ON m.id = p.btn_id-->
+
+WHERE
+	sp.type = 2
+	AND
+	u.id = #{userId}
+    AND p.btn_id = #{btnId}
+        AND r.tenant_id = #{tenantId}
+    </select>
+
+</mapper>

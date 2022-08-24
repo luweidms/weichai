@@ -1,0 +1,118 @@
+base:
+  config:
+    nacos:
+      hostname: 127.0.0.1
+      port: 8848
+    db:
+      hostname: 124.71.179.190
+#      hostname: 192.168.20.109
+      port: 3307
+    redis:
+      hostname: 124.71.179.190
+      port: 6379
+      password: youche123
+#    mongodb:
+#      hostname: 192.168.188.36
+#      port: 27017
+spring:
+  application:
+    name: provider-order
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    alibaba:
+      seata:
+        tx-service-group: tx_group
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${base.config.db.hostname}:${base.config.db.port}/youche?serverTimezone=Asia/Shanghai&useLegacyDatetimeCode=false&nullNamePatternMatchesAll=true&zeroDateTimeBehavior=CONVERT_TO_NULL&tinyInt1isBit=false&autoReconnect=true&useSSL=false&pinGlobalTxToPhysicalConnection=true
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      idle-timeout: 600000
+      maximum-pool-size: 10
+      auto-commit: true
+      pool-name: MyHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  redis:
+    # Redis数据库索引（默认为0)
+    database: 0
+    # Redis服务器地址
+    host: ${base.config.redis.hostname}
+    # Redis服务器连接端口
+    port: ${base.config.redis.port}
+    # Redis服务器连接密码（默认为空）
+    password: ${base.config.redis.password}
+    jedis:
+      pool:
+        #连接池最大连接数（使用负值表示没有限制）
+        max-active: 8
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 0
+        # 连接超时时间（毫秒）
+    timeout: 5000
+
+
+logging:
+  level:
+    com.youming.youche.order.mapper: debug
+    com.example.demo.dao : debug
+  #将日志输出到文件
+ # config: classpath:dev-log.xml
+
+server:
+  port: 8006
+
+dubbo:
+  scan:
+    base-packages: com.youming.youche.order.provider.service
+  protocol:
+    name: dubbo
+    port: -1
+  #    host: 192.168.20.103 # 本机ip
+  registry:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+    group: YOUCHE_GROUP
+  metadata-report:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+  provider:
+    loadbalance: roundrobin
+    filter: -exception,dubboExceptionFilter
+    timeout: 50000
+    retries: 0
+  consumer:
+    check: false
+    timeout: 50000
+    retries: 0
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+seata:
+  config:
+    type: nacos
+    nacos:
+      server-addr: 1.116.37.17:8848
+      group: "SEATA_GROUP"
+      namespace: "c86e0f15-2904-4c2a-a7a2-f9c3a58b6973"
+      username: "nacos"
+      password: "nacos"
+  registry:
+    type: nacos
+    nacos:
+      application: seata-server
+      server-addr: 1.116.37.17:8848
+      group: "SEATA_GROUP"
+      namespace: "c86e0f15-2904-4c2a-a7a2-f9c3a58b6973"
+      username: "nacos"
+      password: "nacos"

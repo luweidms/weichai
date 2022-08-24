@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.youka.ConsumeOilFlowExtMapper">
+<select id="selectByIds" resultType="com.youming.youche.market.domain.youka.ConsumeOilFlowExt">
+    SELECT *from consume_oil_flow_ext where  flow_id =#{flowIds}
+</select>
+    <select id="selectQuaryState" resultType="com.youming.youche.market.domain.youka.ConsumeOilFlowExt">
+        SELECT *from consume_oil_flow_ext where  state =#{rebate}
+    </select>
+<select id="selectByresultFlowIds" resultType="com.youming.youche.market.domain.youka.ConsumeOilFlowExt">
+    SELECT *from consume_oil_flow_ext where flow_id in
+    <foreach item="item" index="index" collection="resultFlowIds" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+</select>
+</mapper>

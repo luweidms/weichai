@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="provider-system" />
+        <module name="business-record" />
+        <module name="provider-finance" />
+        <module name="api-cloud" />
+        <module name="business-finance" />
+        <module name="business-system" />
+        <module name="business-capital" />
+        <module name="business-market" />
+        <module name="provider-table" />
+        <module name="provider-order" />
+        <module name="provider-record" />
+        <module name="business-cloud" />
+        <module name="provider-cloud" />
+        <module name="business-order" />
+        <module name="api-order" />
+        <module name="business-table" />
+        <module name="api-table" />
+        <module name="provider-market" />
+        <module name="api-market" />
+        <module name="youche-utils" />
+        <module name="youche-task" />
+        <module name="api-capital" />
+        <module name="api-finance" />
+        <module name="api-system" />
+        <module name="provider-capital" />
+        <module name="api-record" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-capital" options="-parameters" />
+      <module name="api-cloud" options="-parameters" />
+      <module name="api-finance" options="-parameters" />
+      <module name="api-market" options="-parameters" />
+      <module name="api-order" options="-parameters" />
+      <module name="api-record" options="-parameters" />
+      <module name="api-system" options="-parameters" />
+      <module name="api-table" options="-parameters" />
+      <module name="business-capital" options="-parameters" />
+      <module name="business-cloud" options="-parameters" />
+      <module name="business-finance" options="-parameters" />
+      <module name="business-market" options="-parameters" />
+      <module name="business-order" options="-parameters" />
+      <module name="business-record" options="-parameters" />
+      <module name="business-system" options="-parameters" />
+      <module name="business-table" options="-parameters" />
+      <module name="provider-capital" options="-parameters" />
+      <module name="provider-cloud" options="-parameters" />
+      <module name="provider-finance" options="-parameters" />
+      <module name="provider-market" options="-parameters" />
+      <module name="provider-order" options="-parameters" />
+      <module name="provider-record" options="-parameters" />
+      <module name="provider-system" options="-parameters" />
+      <module name="provider-table" options="-parameters" />
+      <module name="youche-task" options="-parameters" />
+      <module name="youche-utils" options="-parameters" />
+    </option>
+  </component>
+</project>

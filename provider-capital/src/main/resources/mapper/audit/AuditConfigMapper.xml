@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.capital.provider.mapper.audit.AuditConfigMapper">
+
+
+
+    <!--根据审核编码获取 审核配置对象-->
+    <select id="getAuditConfigByCode" resultType="com.youming.youche.capital.domain.audit.AuditConfig">
+      select * from audit_config where AUDIT_CODE = #{auditCode}
+    </select>
+
+    <!--条件统计数据-->
+    <select id="getAuditingNodeNum" resultType="java.lang.Long">
+        select count(id) from audit_node_inst  where audit_code = #{auditCode} and busi_id = #{busiId} and status = #{status}
+    </select>
+
+    <!---->
+    <select id="getAuditNodeRuleConfigByNode" resultType="com.youming.youche.capital.vo.AuditNodeRuleConfigVo">
+        select
+                r.id,
+                r.audit_id as auditId,
+                r.rule_name as ruleName,
+                r.rule_tips as ruleTips,
+                r.rule_type as ruleType,
+                r.target_obj as targetObj,
+                r.op_id as opId,
+                r.version,
+                r.rule_key as ruleKey,
+                r.rule_code as ruleCode,
+                c.rule_value as ruleValue
+        from audit_node_rule_config c, audit_rule_config r  where c.ruleId=r.id and c.nodeId= #{nodeId}
+    </select>
+    <select id="getAuditNodeRuleConfigByNodeVer" resultType="com.youming.youche.capital.vo.AuditNodeRuleConfigVo">
+        select
+        r.id,
+        r.audit_id as auditId,
+        r.rule_name as ruleName,
+        r.rule_tips as ruleTips,
+        r.rule_type as ruleType,
+        r.target_obj as targetObj,
+        r.op_id as opId,
+        r.version,
+        r.rule_key as ruleKey,
+        r.rule_code as ruleCode,
+        c.rule_value as ruleValue
+        from audit_node_rule_config_ver c,audit_rule_config r
+        <where>
+            <if test="tenantId != null">
+                c.tenant_id = #{tenantId}
+            </if>
+            <if test="version == null">
+                and c.version is null
+            </if>
+            <if test="version != null">
+                and c.version = #{version}
+            </if>
+            <if test="nodeId != null">
+                and c.node_id= #{nodeId}
+            </if>
+        </where>
+    </select>
+</mapper>

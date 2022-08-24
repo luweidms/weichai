@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.OaLoanMapper">
+
+    <select id="selectAllByMore" resultType="com.youming.youche.finance.dto.OaLoanOutDto">
+        SELECT
+        o.*,
+        u.mobile_phone    AS  mobilePhone,
+        u.linkman    AS  userName
+        FROM
+        oa_loan o,
+        user_data_info u
+        where
+        o.user_info_id = u.id
+        AND o.tenant_id = #{tenantId}
+        <if test="waitDeal">
+            <choose>
+                <when test="busiIdByUserId!=null and busiIdByUserId.size() &gt; 0">
+                    and o.id in
+                    <foreach collection="busiIdByUserId" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+            <!--  and o.state in(0.1) -->
+                </when>
+                <otherwise>
+                    and o.id = ''
+                </otherwise>
+            </choose>
+        </if>
+                <if test="!aBoolean">
+                    <if test="subOrgList!=null and subOrgList.size() &gt; 0">
+                        AND o.org_id in (
+                        <foreach collection="subOrgList" item="btnId" separator=",">
+                            #{btnId}
+                        </foreach>
+                        )
+                    </if>
+                </if>
+
+        <if test="queryType==1">
+            AND o.classify = 1
+        </if>
+        <if test="queryType==2">
+            AND o.classify = 2 AND (o.LAUNCH = 1 or (o.launch = 2 and o.LOAN_SUBJECT IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )))
+        </if>
+
+        <if test="queryType==3">
+            AND o.launch = 2 AND o.loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )
+        </if>
+
+        <if test="orderId!=null and orderId!=''">
+            AND o.order_id = #{orderId}
+        </if>
+
+        <if test="startTime!=null">
+            AND o.app_date >= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            AND o.app_date  <![CDATA[ <= ]]>  #{endTime}
+        </if>
+
+        <if test="userName!=null and userName!=''">
+            AND u.linkman like CONCAT('%',#{userName},'%')
+        </if>
+
+<!--        <if test="userName!=null and userName!=''">-->
+<!--            and o.user_info_name like CONCAT('%',#{userName},'%')-->
+<!--        </if>-->
+
+        <if test="acctName!=null and acctName!=''">
+            AND o.borrow_name like CONCAT('%',#{acctName},'%')
+        </if>
+
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND u.mobile_phone =  #{mobilePhone}
+        </if>
+
+        <if test="plateNumber!=null and plateNumber!=''">
+            AND o.plate_number like CONCAT('%',#{plateNumber},'%')
+        </if>
+
+        <if test="flowId != null and flowId &gt; 0">
+            AND o.flow_id = #{flowId}
+        </if>
+
+        <if test="loanSubject != null and loanSubject &gt; 0">
+            AND o.loan_subject = #{loanSubject}
+        </if>
+
+        <if test="oaLoanId != null and oaLoanId!=''">
+            AND o.oa_loan_id = #{oaLoanId}
+        </if>
+        <if test="state != null">
+            AND o.sts = #{state}
+        </if>
+
+        <!--        <if test="userName!=null and userName>0">-->
+        <!--            AND o.borrow_name like  #{userName}-->
+        <!--        </if>-->
+
+        ORDER BY o.app_date DESC
+
+    </select>
+
+    <select id="statisticsMenuTab" resultType="com.youming.youche.finance.dto.OaLoanOutDto">
+        select o.*
+        from oa_loan o
+        where o.oa_loan_id = #{oaLoanId}
+    </select>
+
+    <select id="selectCancelAll" resultType="com.youming.youche.finance.dto.OaLoanOutDto">
+        SELECT
+        o.*,
+        u.mobile_phone    AS  mobilePhone,
+        u.linkman    AS  userName
+        FROM
+        oa_loan o,
+        user_data_info u
+        where
+        o.user_info_id = u.id
+        AND o.tenant_id = #{tenantId}
+<!--        <if test="busiIdByUserId!=null and busiIdByUserId.size()>0">-->
+<!--            and o.id in(-->
+<!--            <foreach collection="busiIdByUserId" item="id" separator=",">-->
+<!--                #{id}-->
+<!--            </foreach>-->
+<!--            )-->
+<!--        </if>-->
+
+<!--        <if test="subOrgList!=null and subOrgList.size()>0">-->
+<!--            AND o.org_id in (-->
+<!--            <foreach collection="subOrgList" item="btnId" separator=",">-->
+<!--                #{btnId}-->
+<!--            </foreach>-->
+<!--            )-->
+<!--        </if>-->
+
+        <!--        <if test="queryType==1">-->
+        <!--            AND o.classify = 1-->
+        <!--        </if>-->
+        <!--        <if test="queryType==2">-->
+        <!--            AND o.classify = 2 AND (o.LAUNCH = 1 or (o.launch = 2 and o.LOAN_SUBJECT IN (-->
+        <!--            <foreach collection="subjects" item="btnId" separator=",">-->
+        <!--                #{btnId}-->
+        <!--            </foreach>-->
+        <!--            )))-->
+        <!--        </if>-->
+        <!--        <if test="queryType==3">-->
+        <!--            AND o.launch = 2 AND o.loan_subject IN (-->
+        <!--            <foreach collection="subjects" item="btnId" separator=",">-->
+        <!--                #{btnId}-->
+        <!--            </foreach>-->
+        <!--            )-->
+        <!--        </if>-->
+
+<!--        <if test="queryType!=null">-->
+        <!--            AND o.classify= 1 or o.classify = 2 AND o.loan_subject IN (-->
+        <!--            <foreach collection="subjects" item="btnId" separator=",">-->
+        <!--                #{btnID}-->
+        <!--            </foreach>-->
+        <!--            )-->
+        <!--        </if>-->
+
+<!--        <if test="queryType!=null and  queryType!=''">-->
+<!--            AND o.classify=1  or  o.classify=2-->
+<!--        </if>-->
+
+        <if test="orderId!=null and orderId!=''">
+            AND o.order_id = #{orderId}
+        </if>
+
+        <if test="startTime!=null ">
+            AND o.app_date >= #{startTime}
+        </if>
+        <if test="endTime!=null ">
+            AND o.app_date  <![CDATA[ <= ]]>  #{endTime}
+        </if>
+
+        <if test="userName!=null and userName!=''">
+            AND u.linkman like CONCAT('%',#{userName},'%')
+        </if>
+        <if test="acctName!=null and acctName!=''">
+            AND o.borrow_name like CONCAT('%',#{acctName},'%')
+        </if>
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND u.mobile_phone =  #{mobilePhone}
+        </if>
+
+        <if test="plateNumber!=null and plateNumber!=''">
+            AND o.plate_number like CONCAT('%',#{plateNumber},'%')
+        </if>
+
+        <if test="flowId != null and flowId >0">
+            AND o.flow_id = #{flowId}
+        </if>
+
+        <if test="loanSubject != null and loanSubject >-1">
+            AND o.loan_subject = #{loanSubject}
+        </if>
+
+        <if test="oaLoanId != null and oaLoanId!=''">
+            AND o.oa_loan_id = #{oaLoanId}
+        </if>
+        <if test="state != null">
+            AND o.sts = #{state}
+        </if>
+        and o.sts  in (3,4,5)
+
+        <!--        <if test="userName!=null and userName>0">-->
+        <!--            AND o.borrow_name like  #{userName}-->
+        <!--        </if>-->
+
+        ORDER BY o.app_date DESC
+
+    </select>
+
+    <select id="queryOaLoanTable" resultType="com.youming.youche.finance.dto.OaLoanOutDto">
+
+        SELECT
+        o.*,
+        u.mobile_phone as mobilePhone,
+        u.user_type as userType
+        FROM
+        user_data_info u,
+        oa_loan o
+        WHERE
+        o.user_info_id = u.id
+        AND o.tenant_Id =#{tenantId}
+
+        <if test="queryType==1 ">
+            AND o.classify = 1
+        </if>
+        <if test="queryType==2">
+            AND o.classify = 2 AND (o.LAUNCH = 1 or (o.launch = 2 and o.LOAN_SUBJECT IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )))
+        </if>
+        <if test="queryType==3">
+            AND o.launch = 2 AND o.loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )
+        </if>
+
+        <if test="orderId!=null and orderId!=''">
+            AND o.order_id = #{orderId}
+        </if>
+
+        <if test="startTime!=null ">
+            AND o.app_date >= #{startTime}
+        </if>
+        <if test="endTime!=null  ">
+            AND o.app_date  <![CDATA[ <= ]]>  #{endTime}
+        </if>
+
+        <if test="userName!=null and userName!=''">
+            AND o.user_info_name like CONCAT('%',#{userName},'%')
+        </if>
+        <if test="acctName!=null and acctName!=''">
+            AND o.borrow_name like CONCAT('%',#{acctName},'%')
+        </if>
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND u.mobile_phone = #{mobilePhone}
+        </if>
+
+        <if test="plateNumber!=null and plateNumber!=''">
+            AND o.plate_number like CONCAT('%',#{plateNumber},'%')
+        </if>
+
+        <if test="flowId != null ">
+            AND o.flow_id = #{flowId}
+        </if>
+
+        <if test="loanSubject != null">
+            AND o.loan_subject = #{loanSubject}
+        </if>
+
+        <if test="oaLoanId != null and oaLoanId!=''">
+            AND o.oa_loan_id = #{oaLoanId}
+        </if>
+        <if test="state != null">
+            AND o.sts = #{state}
+        </if>
+        <!-- 未核销金额 -->
+        <if test="noPayedStar!=null">
+             and (o.amount -ifnull(o.payed_amount,0)) >= #{noPayedStar}
+        </if>
+        <if test="noPayedEnd!=null">
+            and (o.amount -ifnull(o.payed_amount,0)) <![CDATA[ <= ]]> #{noPayedEnd}
+        </if>
+
+        <if test="amountStar!=null">
+            AND o.amount >= #{amountStar}
+        </if>
+        <if test="amountEnd!=null">
+            AND o.amount <![CDATA[ <= ]]> #{amountEnd}
+        </if>
+
+        <!-- 报表只能查询 未核销  核销中 已核销 -->
+        and o.sts  in (3,4,5)
+        ORDER BY o.app_date DESC
+    </select>
+
+    <select id="getSelfAndBusinessBank" resultType="com.youming.youche.finance.dto.AccountBankRelDto">
+        SELECT * from (
+        SELECT
+        rel.ACCT_NO  as acctNo,
+        rel.ACCT_NAME as acctName,
+        c.auth_state as authState,
+        rel.bank_name as bankName,
+        rel.bank_type as bankType,
+        rel.pingan_collect_acct_id as collectAcctId,
+        u.mobile_phone as  mobilePhone,
+        u.id as userId,
+        u.linkman as userName,
+        cbai.accLevel
+        FROM ( select * from(SELECT  a.TENANT_ID, a.user_info_id USER_ID, NULL auth_state
+        FROM   tenant_staff_rel a  where a.TENANT_ID= #{tenantId} and a.state = 1
+        UNION  SELECT  d.TENANT_ID, d.USER_ID , d.STATE  auth_state
+        FROM   tenant_user_rel d  where d.TENANT_ID=#{tenantId} UNION select a.TENANT_ID,b.USER_ID,NULL auth_state
+        from tenant_receiver_rel a,user_receiver_info b where a.receiver_id = b.id and a.TENANT_ID= #{tenantId} and b.TENANT_ID= #{tenantId}) f group by f.USER_ID
+        ) c LEFT JOIN account_bank_rel rel on c.USER_ID=rel.USER_ID
+            LEFT JOIN cmb_bank_account_info cbai on cbai.id=rel.acct_id
+            LEFT JOIN user_data_info u on c.USER_ID=u.ID
+        ) t
+        where 1=1
+        <if test="userName!=null and userName!=''">
+            AND t.userName like  CONCAT('%',#{userName},'%')
+        </if>
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND t.mobilePhone like  CONCAT('%',#{mobilePhone},'%')
+        </if>
+        and t.userId IS NOT NULL
+        and (t.accLevel is null or t.accLevel = 0)
+
+    </select>
+
+    <select id="queryOrderByCarDriver" resultType="com.youming.youche.finance.dto.order.OrderSchedulerDto">
+        SELECT
+        o.ORDER_ID AS orderId,
+        s.CAR_DRIVER_ID AS carDriverId,
+        s.CAR_DRIVER_MAN AS carDriverMan,
+        s.CAR_DRIVER_PHONE  AS carDriverPhone,
+        s.PLATE_NUMBER  AS plateNumber,
+        o.SOURCE_REGION AS sourceRegion,
+        o.DES_REGION AS desRegion
+        FROM order_info o,order_scheduler s
+        WHERE o.order_id = s.order_id
+         AND o.order_state !=#{orderState}
+        AND o.TENANT_ID =#{tenantId}
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND s.CAR_DRIVER_PHONE like CONCAT('%',#{mobilePhone},'%')
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND s.CAR_DRIVER_MAN like CONCAT('%',#{userName},'%')
+        </if>
+
+<!--        <if test="subOrgList!=null and subOrgList.size()>0">-->
+<!--            AND o.org_id in (-->
+<!--            <foreach collection="subOrgList" item="btnId" separator=",">-->
+<!--                #{btnId}-->
+<!--            </foreach>-->
+<!--            )-->
+<!--        </if>-->
+
+        ORDER BY s.DEPEND_TIME DESC
+
+    </select>
+
+    <select id="queryOrderByCarDriverHis" resultType="com.youming.youche.finance.dto.order.OrderSchedulerDto">
+        SELECT
+        o.ORDER_ID AS orderId,
+        s.CAR_DRIVER_ID AS carDriverId,
+        s.CAR_DRIVER_MAN AS carDriverMan,
+        s.CAR_DRIVER_PHONE  AS carDriverPhone,
+        s.PLATE_NUMBER  AS plateNumber,
+        o.SOURCE_REGION AS sourceRegion,
+        o.DES_REGION AS desRegion
+        FROM order_info_h o,order_scheduler_h s
+        WHERE o.order_id = s.order_id
+        AND o.order_state !=#{orderState}
+        AND o.TENANT_ID =#{tenantId}
+        <if test="mobilePhone!=null and mobilePhone!=''">
+            AND s.CAR_DRIVER_PHONE like CONCAT('%',#{mobilePhone},'%')
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND s.CAR_DRIVER_MAN like CONCAT('%',#{userName},'%')
+        </if>
+
+        <!--        <if test="subOrgList!=null and subOrgList.size()>0">-->
+        <!--            AND o.org_id in (-->
+        <!--            <foreach collection="subOrgList" item="btnId" separator=",">-->
+        <!--                #{btnId}-->
+        <!--            </foreach>-->
+        <!--            )-->
+        <!--        </if>-->
+
+        ORDER BY s.DEPEND_TIME DESC
+
+    </select>
+
+    <select id="queryOaLoanTableSum" resultType="com.youming.youche.finance.dto.OaLoanOutDto">
+        SELECT
+	o.ID AS Id,
+	o.amount AS amount,
+	o.payed_amount AS payedAmount,
+	o.salary_deduction AS salaryDeduction
+    FROM
+	user_data_info u,
+	oa_loan o
+    WHERE
+	o.user_info_id = u.id
+	AND o.tenant_id =#{tenantId}
+
+        <if test="queryType==1 ">
+            AND o.classify = 1
+        </if>
+        <if test="queryType==2">
+            AND o.classify = 2 AND (o.LAUNCH = 1 or (o.launch = 2 and o.LOAN_SUBJECT IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )))
+        </if>
+        <if test="queryType==3">
+            AND o.launch = 2 AND o.loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )
+        </if>
+
+    <if test="noPayedStar!=null">
+        and (o.amount-ifnull(o.payed_Amount,0))>= #{noPayedStar}
+    </if>
+    <if test="noPayedStar!=null">
+        and (o.amount-ifnull(o.payed_Amount,0)) <![CDATA[ <= ]]>  #{noPayedStar}
+    </if>
+
+    <if test="startTime!=null">
+        AND o.APP_DATE >= #{startTime}
+    </if>
+    <if test="userName!=null and userName!=''">
+        and  o.user_name like CONCAT('%',#{userName},'%')
+    </if>
+    <if test="acctName!=null and acctName!=''">
+        and o.acc_name like CONCAT('%',#{acctName},'%')
+    </if>
+    <if test="mobilePhone!=null and mobilePhone!=''">
+        and u.mobile_phone = #{mobilePhone}
+    </if>
+    <if test="amountStar!=null">
+        AND o.amount >= #{amountStar}
+    </if>
+    <if test="amountEnd!=null">
+        and o.amount <![CDATA[ <= ]]> #{amountEnd}
+    </if>
+    <if test="orderId!=null and orderId !=''">
+        and o.order_id =#{orderId}
+    </if>
+    <if test="plateNumber!=null and plateNumber!=''">
+        AND o.plate_Number like  CONCAT('%',#{plateNumber},'%')
+    </if>
+    <if test="endTime!=null">
+        and o.APP_DATE <![CDATA[ <= ]]> #{endTime}
+    </if>
+     <if test="loanSubject != null ">
+            AND o.loan_subject = #{loanSubject}
+     </if>
+     <if test="oaLoanId!=null and oaLoanId!=''">
+         and o.oa_loan_id = #{oaLoanId}
+     </if>
+     <if test="flowId != null ">
+            AND o.flow_id = #{flowId}
+     </if>
+     <if test="state != null">
+            AND o.sts = #{state}
+     </if>
+        <!-- 报表只能查询 未核销  核销中 已核销 -->
+        and o.sts  in (3,4,5)
+    </select>
+
+    <select id="getTableCostBorrowDriverCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT COUNT(1) FROM oa_loan o, user_data_info u WHERE o.user_info_id = u.id AND o.tenant_id = ifnull(std.id, s.tenant_code) AND o.id IN (
+        SELECT
+        busi_id
+        FROM
+        Audit_Node_Inst i,
+        audit_user u
+        WHERE
+        u.target_Obj_Id = s.user_info_id
+        AND u.node_id = i.node_id
+        AND i.AUDIT_CODE IN ( 21000023 )
+        AND i.TENANT_ID = ifnull(std.id, s.tenant_code)
+        AND i.AUDIT_RESULT = 0
+        ) AND o.launch = 2 AND o.loan_subject IN (
+        <foreach collection="subjects" item="btnId" separator=",">
+            #{btnId}
+        </foreach>
+        )
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getTableCostBorrowStaffCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( 1 )
+        FROM
+        oa_loan o,
+        user_data_info u
+        WHERE
+        o.user_info_id = u.id
+        AND o.tenant_id = ifnull(std.id, s.tenant_code)
+        AND o.id IN (
+        SELECT
+        busi_id
+        FROM
+        Audit_Node_Inst i,
+        audit_user u
+        WHERE
+        u.target_Obj_Id = s.user_info_id
+        AND u.node_id = i.node_id
+        AND i.AUDIT_CODE IN ( 21000022 )
+        AND i.TENANT_ID = ifnull(std.id, s.tenant_code)
+        AND i.AUDIT_RESULT = 0
+        )
+        AND o.classify = 2
+        AND (
+        o.LAUNCH = 1
+        OR ( o.launch = 2 AND o.LOAN_SUBJECT IN (
+        <foreach collection="subjects" item="btnId" separator=",">
+            #{btnId}
+        </foreach>
+        ) )
+        )
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getTableCostBorrowMeDriverCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT user_info_id AS tenantId, IFNULL(COUNT(1), 0) AS count from oa_loan o where o.launch = 2
+        AND o.LOAN_SUBJECT IN (
+        <foreach collection="subjects" item="btnId" separator=",">
+            #{btnId}
+        </foreach>
+        ) group by user_info_id
+    </select>
+
+    <select id="getTableCostBorrowMeStaffCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( 1 )
+        FROM
+        oa_loan o,
+        user_data_info u
+        WHERE
+        o.user_info_id = u.id
+        AND o.tenant_id = ifnull(std.id, s.tenant_code)
+        AND o.classify = 2
+        and o.user_info_id = s.user_info_id
+        AND (
+        o.LAUNCH = 1
+        OR ( o.launch = 2 AND o.LOAN_SUBJECT IN (
+        <foreach collection="subjects" item="btnId" separator=",">
+            #{btnId}
+        </foreach>
+        ) )
+        )
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="doQueryAllPayManager" resultType="java.lang.Integer">
+        SELECT
+        count( 1 )
+        FROM
+        user_data_info u,
+        pay_manager pay
+        LEFT JOIN account_bank_rel bank ON pay.rece_acc_no = bank.pingan_collect_acct_id
+        WHERE
+        pay.pay_tenant_id = #{tenantId}
+        AND u.id = pay.apply_user_id
+        <choose>
+            <when test="lidStr != null and lidStr != ''">
+                AND pay.id IN (${lidStr}) AND ( pay.state = 0 OR pay.state = 4 )
+            </when>
+            <otherwise>
+                and pay.id = ''
+            </otherwise>
+        </choose>
+        <if test="orgStr != null and orgStr != ''">
+            AND ( pay.org_id IN (${orgStr}) OR pay.org_id IS NULL OR pay.org_id = -1 )
+        </if>
+    </select>
+
+    <select id="queryOaLoan" resultType="com.youming.youche.finance.domain.OaLoan">
+        (select o.* from oa_loan o where o.CLASSIFY=2 and o.TENANT_ID= #{tenantId} and  (o.user_id= #{userId} OR o.CAR_PHONE= #{carPhone} ) and o.sts in (3,4,5)
+        and o.LOAN_SUBJECT in
+        <foreach collection="loanType" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        <choose>
+            <when test="loanType.contains(5)">
+                AND LOAN_TRANS_REASON = 2
+            </when>
+            <otherwise>
+                and o.launch=2
+            </otherwise>
+        </choose>
+        <if test="orderId != null and orderId > 0">
+            and o.order_id= #{orderId}
+        </if>
+        )
+    </select>
+
+    <select id="selectOr" resultType="com.youming.youche.finance.domain.OaLoan">
+        select o.* from oa_loan o
+        where o.user_info_id = #{oilExcDto.userId} and o.LOAN_SUBJECT = 8
+        and o.APP_DATE <![CDATA[ >= ]]> #{oilExcDto.createTime} and o.APP_DATE <![CDATA[ <= ]]>  #{oilExcDto.updateTime}
+        and o.TENANT_ID = #{oilExcDto.tenantId} and o.STS in (3,4,5,7) and
+        (o.DEDUCTIBLE_STATE is null or o.DEDUCTIBLE_STATE = 0) order by o.APP_DATE asc
+    </select>
+</mapper>

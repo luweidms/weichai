@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/api-capital/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-cloud/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-finance/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-market/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-record/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-table/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-capital/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-cloud/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-finance/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-market/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-record/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/business-table/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-capital/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-cloud/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-finance/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-market/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-record/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/provider-table/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/youche-task/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/youche-utils/src/main/java" charset="UTF-8" />
+  </component>
+</project>

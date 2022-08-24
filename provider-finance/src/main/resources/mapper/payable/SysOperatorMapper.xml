@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.payable.SysOperatorMapper">
+
+    <select id="getSysOperatorByUserIdOrPhone" resultType="com.youming.youche.finance.domain.payable.SysOperator">
+        SELECT * FROM sys_operator WHERE state <![CDATA[ >= ]]> 0 AND state != 4
+        <choose>
+            <when test="userId != null and userId > 0">
+                AND user_id = #{userId}
+            </when>
+            <otherwise>
+                AND bill_id = #{billId}
+            </otherwise>
+        </choose>
+        LIMIT 1
+    </select>
+</mapper>

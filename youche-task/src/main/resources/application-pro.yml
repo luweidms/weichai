@@ -1,0 +1,104 @@
+base:
+  config:
+    nacos:
+      hostname: 10.17.80.14
+      port: 8848
+    db:
+      hostname: 10.17.80.16
+      port: 3307
+    redis:
+      hostname: 10.17.80.15
+      port: 6379
+      password: youche123
+    xxl-job:
+      hostname: 10.17.80.18
+      port: 8080
+
+spring:
+  application:
+    name: youche-task
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${base.config.nacos.hostname}:${base.config.nacos.port}
+        group: YOUCHE_GROUP
+  redis:
+    # Redis数据库索引（默认为0)
+    database: 0
+    # Redis服务器地址
+    host: ${base.config.redis.hostname}
+    # Redis服务器连接端口
+    port: ${base.config.redis.port}
+    # Redis服务器连接密码（默认为空）
+    password: ${base.config.redis.password}
+    jedis:
+      pool:
+        #连接池最大连接数（使用负值表示没有限制）
+        max-active: 200
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 0
+        # 连接超时时间（毫秒）
+    timeout: 50000
+
+logging:
+  level:
+    com.youming.youche.task.mapper: debug
+  #将日志输出到文件
+  config: classpath:task-log.xml
+
+#server:
+#  port: 9008
+
+dubbo:
+  scan:
+    base-packages: com.youming.youche.task.service
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+    group: YOUCHE_GROUP
+    register: true
+    subscribe: true
+  metadata-report:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+  provider:
+    loadbalance: roundrobin
+    timeout: 5000
+    retries: 0
+  consumer:
+    timeout: 50000
+    retries: 0
+
+
+
+# xxl-job配置
+xxl:
+  job:
+    admin:
+      # 调度中心部署跟地址 [选填]：如调度中心集群部署存在多个地址则用逗号分隔。执行器将会使用该地址进行"执行器心跳注册"和"任务结果回调"；为空则关闭自动注册；
+      addresses: http://${base.config.xxl-job.hostname}:${base.config.xxl-job.port}/xxl-job-admin
+    executor:
+      # 执行器注册 [选填]：优先使用该配置作为注册地址，为空时使用内嵌服务 ”IP:PORT“ 作为注册地址。从而更灵活的支持容器类型执行器动态IP和动态映射端口问题。
+      address:
+      # 执行器AppName [选填]：执行器心跳注册分组依据；为空则关闭自动注册
+      appname: youche-task
+      # 执行器IP [选填]：默认为空表示自动获取IP，多网卡时可手动设置指定IP，该IP不会绑定Host仅作为通讯实用；地址信息用于 "执行器注册" 和 "调度中心请求并触发任务"；
+      ip:
+      # 执行器端口号 [选填]：小于等于0则自动获取；默认端口为9999，单机部署多个执行器时，注意要配置不同执行器端口；
+      port: 9008
+      # 执行器运行日志文件存储磁盘路径 [选填] ：需要对该路径拥有读写权限；为空则使用默认路径；
+      logpath:
+      # 执行器日志文件保存天数 [选填] ： 过期日志自动清理, 限制值大于等于3时生效; 否则, 如-1, 关闭自动清理功能；
+      logretentiondays: 15
+      # 执行器通讯TOKEN [选填]：非空时启用；
+    accessToken:
+
+
+

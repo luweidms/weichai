@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.TenantServiceRelVerMapper">
+    <sql id="saveTenantServiceRelVer">
+        (`ID`, `REL_ID`, `TENANT_ID`, `STATE`, `AUTH_REASON`, `AUTH_MAN_ID`, `AUTH_STATE`, `IS_BILL`,
+            `PAYMENT_DAYS`, `CREATE_TIME`, `OP_ID`, `CREATOR_ID`, `AUTH_DATE`, `OPERATOR_ENTITY`, `SERVICE_USER_ID`,
+            `OP_DATE`, `UPDATE_OP_ID`, `UPDATE_TIME`, `IS_DEL`, `BALANCE_TYPE`, `PAYMENT_MONTH`, `QUOTA_AMT`)
+    </sql>
+    <insert id="saveTenantServiceRelVer">
+        insert into tenant_service_rel_ver
+        <include refid="saveTenantServiceRelVer"></include>
+        values (#{id},#{relId},#{tenantId},#{state},#{authReason},#{authManId},#{authState},#{isBill},#{paymentDays},
+                #{createTime},#{opId},#{creatorId},#{authDate},#{operatorEntity},#{serviceUserId},#{opDate},#{updateOpId},
+                #{updateTime},#{isDel},#{balanceType},#{paymentMonth},#{quotaAmt})
+    </insert>
+    <select id="queryTenantServiceHis" resultType="com.youming.youche.market.dto.facilitator.TenantServiceDto">
+        SELECT
+        udi.MOBILE_PHONE AS loginAcct,
+        si.service_name AS serviceName,
+        si.company_address AS companyAddress,
+        udi.linkman AS linkman,
+        si.service_type AS serviceType,
+        si.service_user_id AS serviceUserId,
+        tsrv.rel_id AS relId
+        FROM
+        tenant_service_rel_ver tsrv
+        INNER JOIN service_info si ON tsrv.service_user_id = si.service_user_id
+        INNER JOIN user_data_info udi ON udi.id = si.service_user_id
+        WHERE
+        tsrv.tenant_id = #{tenantId}
+        AND tsrv.is_del = #{isDel}
+        <if test="loginAcct != null and loginAcct != ''">
+            and udi.mobile_phone like CONCAT('%',#{loginAcct},'%')
+        </if>
+        <if test="serviceName != null and serviceName != ''">
+            and si.service_name like CONCAT('%',#{serviceName},'%')
+        </if>
+        <if test="linkman != null and linkman != ''">
+            and udi.linkman like CONCAT('%',#{linkman},'%')
+        </if>
+        <if test="serviceType != null and serviceType &gt;= 0">
+            and si.service_type = #{serviceType}
+        </if>
+    </select>
+
+
+    <select id="queryProductHis" resultType="com.youming.youche.market.dto.facilitator.ServiceProductDto">
+        select sp.product_name as productName,sp.service_call as serviceCall,sp.address as address
+        ,si.service_name as serviceName,si.service_user_id as serviceUserId,tprr.rel_id as relId
+        ,sp.id as productId,si.service_type as serviceType
+        from tenant_product_rel_ver tprr inner join service_product sp on tprr.product_id = sp.id
+        inner join service_info si on si.service_user_id = sp.service_user_id
+        left join  sys_oper_log log on sp.id = log.busi_id and log.busi_code = 400001 and log.oper_type =5
+        where tprr.tenant_id = #{tenantId} and tprr.is_del = #{isDel}
+        <if test="productName!=null and productName!=''">
+            and sp.product_name like CONCAT('%',#{productName},'%')
+        </if>
+        <if test="serviceCall!=null and serviceCall!=''">
+            and sp.service_call like CONCAT('%',#{serviceCall},'%')
+        </if>
+        <if test="address!=null and address!=''">
+            and sp.address like CONCAT('%',#{address},'%')
+        </if>
+        <if test="serviceName!=null and serviceName!=''">
+            and si.service_Name like CONCAT('%',#{serviceName},'%')
+        </if>
+        order by log.create_Time desc
+    </select>
+
+</mapper>

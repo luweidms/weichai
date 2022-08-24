@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.order.OrderInfoMapper">
+
+    <!--查询车辆在途订单-->
+    <select id="queryVehicleOrderInfoIn" resultType="java.lang.Long">
+        SELECT o.order_id FROM order_info o, order_scheduler s WHERE o.order_id = s.order_id AND s.PLATE_NUMBER = #{plateNumber}
+        UNION ALL
+        SELECT o.order_id FROM order_info_h o,order_scheduler_h s WHERE o.order_id = s.order_id AND s.PLATE_NUMBER = #{plateNumber}
+        LIMIT 0,1
+    </select>
+</mapper>

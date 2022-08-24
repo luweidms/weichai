@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.trailer.TrailerLineRelMapper">
+
+    <!--统计线路编码-->
+    <select id="getTrailerLineRelStr" resultType="java.lang.String">
+        select  group_concat(line_code_rule) from trailer_line_rel where trailer_id = #{trailerId} order by line_id desc
+    </select>
+
+    <!--查询线路信息-->
+    <select id="getTrailerLineRelList" resultType="com.youming.youche.record.domain.trailer.TrailerLineRel">
+        select  * from trailer_line_rel where trailer_id = #{trailerId} and state = #{state}
+    </select>
+
+    <!--根据挂车id删除数据-->
+    <delete id="delLineRelList">
+        delete from trailer_line_rel where trailer_id = #{trailerId}
+    </delete>
+
+    <!--多条件查询-->
+    <select id="getTrailerLineRelForIdList" resultType="com.youming.youche.record.domain.trailer.TrailerLineRel">
+        SELECT * FROM trailer_line_rel WHERE trailer_id = #{trailerId} AND line_id IN (${updtLineId})
+    </select>
+</mapper>

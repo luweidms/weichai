@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.VehicleReturnInfoMapper">
+
+
+    <select id="queryRecentArriveDate" resultType="java.lang.String">
+        SELECT tmp.relDate AS relDate
+        FROM (
+        SELECT CAR_ARRIVE_DATE,
+        depend_time,
+        ARRIVE_TIME,
+        IFNULL(
+        CAR_ARRIVE_DATE,
+        DATE_ADD(
+        s.depend_time,
+        INTERVAL s.ARRIVE_TIME HOUR
+        )
+        ) AS relDate
+        FROM order_info o,
+        order_scheduler s
+        WHERE o.order_id = s.order_id
+        AND o.order_state != 15
+        AND (`VEHICLE_CLASS` = 1 OR o.to_tenant_id IS NULL OR o.to_tenant_id <![CDATA[<= ]]> 0 )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND `PLATE_NUMBER` = #{plateNumber}
+        </if>
+        <if test="orderId != null and orderId &gt; 0">
+            AND o.order_id != #{orderId}
+        </if>
+        UNION
+        SELECT CAR_ARRIVE_DATE,
+        depend_time,
+        ARRIVE_TIME,
+        IFNULL(
+        CAR_ARRIVE_DATE,
+        DATE_ADD(
+        s.depend_time,
+        INTERVAL s.ARRIVE_TIME HOUR
+        )
+        ) AS relDate
+        FROM order_info_h o,
+        order_scheduler_h s
+        WHERE o.order_id = s.order_id
+        AND o.order_state != 15
+        AND (`VEHICLE_CLASS` = 1 OR o.to_tenant_id IS NULL OR o.to_tenant_id <![CDATA[<= ]]> 0 )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND `PLATE_NUMBER` = #{plateNumber}
+        </if>
+        <if test="orderId != null and orderId &gt; 0">
+            AND o.order_id != #{orderId}
+        </if>
+        ) tmp
+        ORDER BY relDate DESC LIMIT 0,1
+    </select>
+</mapper>

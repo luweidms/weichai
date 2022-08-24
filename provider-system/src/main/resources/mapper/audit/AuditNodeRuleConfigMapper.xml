@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.audit.AuditNodeRuleConfigMapper">
+    <!--校验是否最新版本的规则-->
+    <select id="checkVersionRule" resultType="java.lang.Integer">
+        SELECT
+        count( 1 )
+        FROM
+        audit_node_rule_config c
+        left JOIN audit_rule_config r ON c.rule_id = r.id
+        <where>
+            <if test="nodeId != null">
+                c.node_id = #{nodeId}
+            </if>
+            <if test="version == null">
+                and c.version is null
+            </if>
+            <if test="version != null">
+                and c.version = #{ruleVersion}
+            </if>
+            <if test="tenantId != null">
+                AND c.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!---->
+    <select id="getAuditNodeRuleConfigByNodeVer" resultType="java.util.Map">
+        select * from audit_node_rule_config c, audit_rule_config r  where c.RULE_ID= r.id and c.NODE_ID=#{nodeId}
+    </select>
+
+    <select id="getAuditNodeRuleConfigByNodeVerFalse" resultType="java.util.Map">
+        select * from audit_node_rule_config c, audit_rule_config r
+        <where>
+            c.RULE_ID=  r.id
+            and c.NODE_ID= #{nodeId}
+            and c.TENANT_ID = #{tenantId}
+            <if test="version == null ">
+                and c.version is null
+            </if>
+            <if test="version != null">
+                and c.version = #{version}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.mycenter.BankAccountMapper">
+
+    <!--  查询个人用户账户列表  -->
+    <select id="selectUserAccList" resultType="com.youming.youche.system.dto.mycenter.BankAccountListDto">
+        SELECT
+            id,
+            userId,
+            tenantId,
+            certNo,
+            CASE
+                certType
+                WHEN 'P01' THEN
+                    '0'
+                WHEN 'C35' THEN
+                    '1'
+                END AS accType,
+            certName,
+            STATUS,
+            result,
+            merchNo,
+            mbrNo,
+            avaBal,
+        (select count(id) from account_bank_rel as b where a.id=b.acct_id ) as cardCount
+        FROM
+            cmb_bank_account_info as a
+        WHERE
+            accLevel = '0'
+          AND userId = #{userId}
+        <if test="certType != null and certType != ''">
+          AND certType = #{certType}
+        </if>
+    </select>
+
+    <!--  查询车队账户列表  -->
+    <select id="selectTenantAccList" resultType="com.youming.youche.system.dto.mycenter.BankAccountListDto">
+        SELECT
+            id,
+            userId,
+            tenantId,
+            certNo,
+            CASE
+                certType
+                WHEN 'P01' THEN
+                    '0'
+                WHEN 'C35' THEN
+                    '1'
+                END AS accType,
+            certName,
+            STATUS,
+            result,
+            merchNo,
+            mbrNo,
+            avaBal,
+        (select count(id) from account_bank_rel as b where a.id=b.acct_id ) as cardCount
+        FROM
+            cmb_bank_account_info as a
+        WHERE
+            accLevel = '1'
+          AND tenantId = #{tenantId}
+        <if test="certType != null and certType != ''">
+            AND certType = #{certType}
+        </if>
+    </select>
+
+    <!--  获取个人用户账户余额  -->
+    <select id="getUserAccBalance" resultType="com.youming.youche.system.dto.mycenter.AccountBalanceDto">
+        select
+            certType,sum(avaBal) as balance
+        from cmb_bank_account_info
+        where accLevel='0' and userId=#{userId}
+        GROUP BY certType
+    </select>
+
+    <!--  获取车队账户余额  -->
+    <select id="getTenantAccBalance" resultType="com.youming.youche.system.dto.mycenter.AccountBalanceDto">
+        select
+            certType,sum(avaBal) as balance
+        from cmb_bank_account_info
+        where accLevel='1' and tenantId=#{tenantId}
+        GROUP BY certType
+    </select>
+
+    <!--  获取车队账户Id列表  -->
+    <select id="getTenantAccIdList" resultType="java.lang.Long">
+        select id from cmb_bank_account_info where accLevel =1 and tenantId=#{tenantId}
+    </select>
+
+    <!--  获取个人用户账户Id列表  -->
+    <select id="getUserAccIdList" resultType="java.lang.Long">
+        select id from cmb_bank_account_info where accLevel =0 and userId=#{userId} and tenantId=#{tenantId}
+    </select>
+
+
+    <select id="getTableFinancialPlatformSurplusAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select tenantId as tenant_id, IFNULL(sum( avaBal ),0) AS price  from cmb_bank_account_info
+        WHERE
+        accLevel = '1'
+        group by tenantId
+    </select>
+
+    <select id="getTableFinacialPlatformUsedAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        cbai.tenantId AS tenant_id,
+        sum( catr.tranAmt * 100 ) AS count
+        FROM
+        cmb_bank_account_info cbai,
+        cmb_account_transaction_record catr
+        WHERE
+        cbai.id = catr.payAccountId
+        AND catr.tranStatus = 'Y'
+        AND catr.tranType IN ( 'BP', 'WD' )
+        GROUP BY
+        cbai.tenantId
+    </select>
+
+    <select id="getTableFinacialRechargeTodayAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        cbai.tenantId AS tenant_id,
+        sum( catr.tranAmt * 100 ) AS count
+        FROM
+        cmb_bank_account_info cbai,
+        cmb_account_transaction_record catr
+        WHERE
+        cbai.id = catr.payAccountId
+        AND catr.tranStatus = 'Y'
+        AND catr.tranType = 'AC'
+        GROUP BY
+        cbai.tenantId
+    </select>
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantVehicleCertRelMapper">
+    <!--查询回显费用-->
+    <select id="getTenantVehicleRelInfo" resultType="com.youming.youche.record.dto.TenantVehicleRelInfoDto">
+        SELECT
+                tenant_vehicle_cost_rel.price price,
+                tenant_vehicle_cost_rel.loan_interest loanInterest,
+                tenant_vehicle_cost_rel.interest_periods interestPeriods,
+                tenant_vehicle_cost_rel.pay_interest_periods payInterestPeriods,
+                tenant_vehicle_cost_rel.purchase_date purchaseDate,
+                tenant_vehicle_cost_rel.depreciated_month depreciatedMonth,
+                tenant_vehicle_cost_rel.collection_insurance collectionInsurance,
+                tenant_vehicle_cost_rel.exam_vehicle_fee examVehicleFee,
+                tenant_vehicle_cost_rel.maintain_fee maintainFee,
+                tenant_vehicle_cost_rel.repair_fee repairFee,
+                tenant_vehicle_cost_rel.management_cost managementCost,
+                tenant_vehicle_cost_rel.tyre_fee tyreFee,
+                tenant_vehicle_cost_rel.other_fee otherFee,
+                tenant_vehicle_cost_rel.residual residual,
+                tenant_vehicle_cost_rel.id tenantVehicleCostRelId,
+                tenant_vehicle_cert_rel.annual_veri_time annualVeriTime,
+                tenant_vehicle_cert_rel.seasonal_veri_time seasonalVeriTime,
+                tenant_vehicle_cert_rel.annual_veri_time_end annualVeriTimeEnd,
+                tenant_vehicle_cert_rel.seasonal_veri_time_end seasonalVeriTimeEnd,
+                tenant_vehicle_cert_rel.insurance_time insuranceTime,
+                tenant_vehicle_cert_rel.insurance_time_end insuranceTimeEnd,
+                tenant_vehicle_cert_rel.insurance_code insuranceCode,
+                tenant_vehicle_cert_rel.busi_insurance_Time busiInsuranceTime,
+                tenant_vehicle_cert_rel.busi_insurance_time_end busiInsuranceTimeEnd,
+                tenant_vehicle_cert_rel.busi_insurance_code busiInsuranceCode,
+                tenant_vehicle_cert_rel.other_insurance_time otherInsuranceTime,
+                tenant_vehicle_cert_rel.other_insurance_time_end otherInsuranceTimeEnd,
+                tenant_vehicle_cert_rel.other_insurance_Code otherInsuranceCode,
+                tenant_vehicle_cert_rel.maintain_dis maintainDis,
+                tenant_vehicle_cert_rel.maintain_warn_dis maintainWarnDis,
+                tenant_vehicle_cert_rel.prev_maintain_time prevMaintainTime,
+                tenant_vehicle_cert_rel.registration_time registrationTime,
+                tenant_vehicle_cert_rel.registration_numble registrationNumble,
+                tenant_vehicle_cert_rel.vehicle_validity_time_begin vehicleValidityTimeBegin,
+                tenant_vehicle_cert_rel.vehicle_validity_time vehicleValidityTime,
+                tenant_vehicle_cert_rel.operate_validity_time_Begin operateValidityTimeBegin,
+                tenant_vehicle_cert_rel.operate_validity_time operateValidityTime,
+                tenant_vehicle_cert_rel.id tenantVehicleCertRelId
+        FROM
+                tenant_vehicle_cost_rel,
+                tenant_vehicle_cert_rel
+        WHERE
+                tenant_vehicle_cost_rel.rel_id = tenant_vehicle_cert_rel.rel_id
+          AND tenant_vehicle_cost_rel.vehicle_code = #{vehicleCode}
+          AND tenant_vehicle_cert_rel.vehicle_code = #{vehicleCode}
+          AND tenant_vehicle_cost_rel.tenant_id = #{tenantId}
+          AND tenant_vehicle_cert_rel.tenant_id = #{tenantId}
+          AND tenant_vehicle_cost_rel.rel_id = #{relId}
+          limit 1
+    </select>
+
+    <select id="getTenantVehicleRelList" resultType="com.youming.youche.record.domain.tenant.TenantVehicleCertRel">
+        select * from tenant_vehicle_cert_rel where VEHICLE_CODE = #{vehicleCode} and TENANT_ID = #{tenantId}
+    </select>
+    <select id="findPlateNumber" resultType="com.youming.youche.record.domain.tenant.TenantVehicleCertRel">
+        select * from tenant_vehicle_cert_rel where plate_number =#{plateNumber}
+    </select>
+</mapper>

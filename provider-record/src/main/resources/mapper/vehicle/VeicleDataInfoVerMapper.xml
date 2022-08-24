@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleDataInfoVerMapper">
+    <!--修改verState状态-->
+    <update id="updVehicleDataInfoVerState">
+        update vehicle_data_info_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1
+    </update>
+
+    <update id="updVehicleObjectLineVerState">
+       update vehicle_object_line_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1
+    </update>
+
+    <update id="updVehicleLineRelVerState">
+       update vehicle_line_rel_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1
+    </update>
+
+    <update id="updTenantVehicleRelVerState">
+       update tenant_vehicle_rel_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1 and tenant_id=#{tenantId}
+    </update>
+
+    <update id="updTenantVehicleCostRelVerState">
+       update tenant_vehicle_cost_rel_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1 and tenant_id=#{tenantId}
+    </update>
+
+    <update id="updTenantVehicleCertRelVerState">
+       update tenant_vehicle_cert_rel_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1 and tenant_id=#{tenantId}
+    </update>
+    <!--查询车辆备用表-->
+    <select id="getVehicleDataInfoVer" resultType="com.youming.youche.record.domain.vehicle.VehicleDataInfoVer">
+       select * from vehicle_data_info_ver where vehicle_code = #{vehicleCode} and ver_state = 1 order by id desc limit 0,1
+    </select>
+
+</mapper>

@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderBillInfoMapper">
+
+    <select id="getOrderBillInfo" resultType="com.youming.youche.finance.domain.order.OrderBillInfo">
+        SELECT
+            bill_number AS billNumber,
+            bill_sts AS billSts,
+            check_amount AS checkAmount,
+            check_bill_date AS checkBillDate,
+            check_bill_name AS checkBillName,
+            create_time AS createTime,
+            create_receipt_date AS createReceiptDate,
+            create_receipt_name AS createReceiptName,
+            creator_id AS creatorId,
+            creator_name AS creatorName,
+            oper_date AS operDate,
+            oper_id AS operId,
+            real_income AS realIncome,
+            receipt_number AS receiptNumber,
+            tenant_id AS tenantId
+        FROM
+            order_bill_info
+        WHERE
+            bill_number = #{billNumber}
+    </select>
+
+    <sql id="query">
+        SELECT
+        b.bill_number AS billNumber,
+        b.CREATE_RECEIPT_DATE AS createReceiptDate,
+        sum(
+        IFNULL( orders.cost_Price, 0 )) AS costPrice,
+        sum(
+        IFNULL( orders.income_exception_fee, 0 )) AS incomeExceptionFee,
+        sum(
+        IFNULL( orders.confirm_amount, 0 )) AS confirmAmount,
+        sum(
+        IFNULL( orders.get_amount, 0 )) AS getAmount,
+        sum(
+        IFNULL( orders.CONFIRM_DIFF_AMOUNT, 0 )) AS confirmDiffAmount,
+        IFNULL( b.receipt_num, 0 ) AS receiptNumber,
+        b.create_time AS createDate,
+        IFNULL( b.CHECK_AMOUNT, 0 ) AS checkAmount,
+        b.bill_Sts AS billSts,
+        b.REAL_INCOME AS realIncome,
+        b.creator_name AS creatorName,
+        count(*) AS orderNum,
+        orders.company_name AS customName,
+        CASE
+        WHEN TRIM( orders.CHECK_NAME ) <![CDATA[ <> ]]> '' THEN
+        orders.CHECK_NAME ELSE orders.company_name
+        END AS checkName
+        FROM
+        (
+        SELECT
+        ob.*,
+        obi.receipt_num
+        FROM
+        order_bill_info ob
+        LEFT JOIN ( SELECT bill_number, count( 1 ) AS receipt_num FROM order_bill_invoice GROUP BY bill_number ) obi ON
+        ob.bill_number = obi.bill_number
+        ) b LEFT JOIN ((
+        SELECT
+        ofs.bill_number,
+        ofh.cost_Price,
+        ofh.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name
+        FROM
+        order_info_h o,
+        order_goods_h g,
+        order_fee_statement_h ofs,
+        order_fee_h ofh
+        WHERE
+        g.order_id = o.order_id
+        AND ofh.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+        AND ofs.bill_number is not null AND ofs.bill_number <![CDATA[ <> ]]> ''
+        <if test="orderBillInfoVO.beginTime != null and orderBillInfoVO.beginTime != ''">
+            AND OFS.BILL_NUMBER_DATE <![CDATA[ >= ]]> CONCAT(#{orderBillInfoVO.beginTime},' 00:00:00')
+        </if>
+        <if test="orderBillInfoVO.endTime != null and orderBillInfoVO.endTime != ''">
+            AND OFS.BILL_NUMBER_DATE <![CDATA[ <= ]]> CONCAT(#{orderBillInfoVO.endTime},' 23:59:59')
+        </if>
+        <if test="orderBillInfoVO.customName != null and orderBillInfoVO.customName != ''">
+            AND CASE WHEN TRIM(ofs.CHECK_NAME) <![CDATA[ <> ]]> '' THEN ofs.CHECK_NAME like
+            CONCAT('%',#{orderBillInfoVO.customName},'%') ELSE
+            g.company_name like CONCAT('%',#{orderBillInfoVO.customName},'%') END
+        </if>
+        <if test="orderBillInfoVO.billNumber != null and orderBillInfoVO.billNumber != ''">
+            AND ofs.bill_Number like CONCAT('%',#{orderBillInfoVO.billNumber},'%')
+        </if>
+        ) UNION ALL
+        (
+        SELECT
+        ofs.bill_number,
+        ofe.cost_Price,
+        ofe.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name
+        FROM
+        order_info o,
+        order_goods g,
+        order_fee_statement ofs,
+        order_fee ofe
+        WHERE
+        g.order_id = o.order_id
+        AND ofe.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+        AND ofs.bill_number is not null AND ofs.bill_number <![CDATA[ <> ]]> ''
+        <if test="orderBillInfoVO.beginTime != null and orderBillInfoVO.beginTime != ''">
+            AND OFS.BILL_NUMBER_DATE <![CDATA[ >= ]]> CONCAT(#{orderBillInfoVO.beginTime},' 00:00:00')
+        </if>
+        <if test="orderBillInfoVO.endTime != null and orderBillInfoVO.endTime != ''">
+            AND OFS.BILL_NUMBER_DATE <![CDATA[ <= ]]> CONCAT(#{orderBillInfoVO.endTime},' 23:59:59')
+        </if>
+        <if test="orderBillInfoVO.customName != null and orderBillInfoVO.customName != ''">
+            AND CASE WHEN TRIM(ofs.CHECK_NAME) <![CDATA[ <> ]]> '' THEN ofs.CHECK_NAME like
+            CONCAT('%',#{orderBillInfoVO.customName},'%') ELSE
+            g.company_name like CONCAT('%',#{orderBillInfoVO.customName},'%') END
+        </if>
+        <if test="orderBillInfoVO.billNumber != null and orderBillInfoVO.billNumber != ''">
+            AND ofs.bill_Number like CONCAT('%',#{orderBillInfoVO.billNumber},'%')
+        </if>
+        )) AS orders
+        ON
+        b.bill_number = orders.bill_number
+        WHERE b.bill_sts <![CDATA[ <> ]]> 4
+        <if test="orderBillInfoVO.beginTime != null and orderBillInfoVO.beginTime != ''">
+            AND b.create_time <![CDATA[ >= ]]> CONCAT(#{orderBillInfoVO.beginTime},' 00:00:00')
+        </if>
+        <if test="orderBillInfoVO.endTime != null and orderBillInfoVO.endTime != ''">
+            AND b.create_time <![CDATA[ <= ]]> CONCAT(#{orderBillInfoVO.endTime},' 23:59:59')
+        </if>
+        <if test="orderBillInfoVO.billSts != null and orderBillInfoVO.billSts != ''">
+            AND b.bill_Sts = #{orderBillInfoVO.billSts}
+        </if>
+        <if test="orderBillInfoVO.creatorName != null and orderBillInfoVO.creatorName != ''">
+            AND b.creator_Name like CONCAT('%',#{orderBillInfoVO.creatorName},'%')
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            and b.tenant_id = #{tenantId}
+        </if>
+        <if test="orderBillInfoVO.billNumber != null and orderBillInfoVO.billNumber != ''">
+            AND b.bill_number like CONCAT('%',#{orderBillInfoVO.billNumber},'%')
+        </if>
+        <if test="orderBillInfoVO.customName != null and orderBillInfoVO.customName != ''">
+            AND CASE WHEN TRIM(orders.CHECK_NAME) <![CDATA[ <> ]]> '' THEN orders.CHECK_NAME like
+            CONCAT('%',#{orderBillInfoVO.customName},'%') ELSE
+            orders.company_name like CONCAT('%',#{orderBillInfoVO.customName},'%') END
+        </if>
+        GROUP BY
+        b.bill_number
+        ORDER BY
+        b.create_time DESC
+    </sql>
+
+    <select id="doQuery" resultType="com.youming.youche.finance.dto.order.OrderBillInfoDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="doQueryExport" resultType="com.youming.youche.finance.dto.order.OrderBillInfoDto">
+        <include refid="query"/>
+    </select>
+
+    <update id="updateRecordByBillNumber">
+        UPDATE order_bill_info
+        SET check_amount = #{orderBillInfo.checkAmount},
+        bill_sts = #{orderBillInfo.billSts},
+        oper_id = #{orderBillInfo.operId},
+        oper_date = #{orderBillInfo.operDate},
+        check_bill_name = #{orderBillInfo.checkBillName},
+        check_bill_date = #{orderBillInfo.checkBillDate},
+        real_income =  #{orderBillInfo.realIncome},
+        RECEIPT_NUMBER = #{orderBillInfo.receiptNumber}
+        WHERE
+            bill_number =  #{orderBillInfo.billNumber}
+    </update>
+
+    <update id="updateRecordByBillNumbers">
+        UPDATE order_bill_info
+        SET bill_sts =
+        CASE
+                bill_sts
+                WHEN #{billStsCheckAll} THEN
+                bill_sts
+                WHEN #{billStsCheckPart} THEN
+                bill_sts ELSE #{billSts}
+            END,
+            oper_id = #{operId},
+            oper_date = now(),
+            create_receipt_date = now(),
+            create_receipt_name = #{createPeceiptName}
+        WHERE
+            bill_number IN (${billNumbers})
+    </update>
+
+    <select id="getOrderBillInfoByBillNumbers"
+            resultType="com.youming.youche.finance.domain.order.OrderBillInfo">
+        SELECT
+            bill_number AS billNumber,
+            bill_sts AS billSts,
+            check_amount AS checkAmount,
+            check_bill_date AS checkBillDate,
+            check_bill_name AS checkBillName,
+            create_time AS createTime,
+            create_receipt_date AS createReceiptDate,
+            create_receipt_name AS createReceiptName,
+            creator_id AS creatorId,
+            creator_name AS creatorName,
+            oper_date AS operDate,
+            oper_id AS operId,
+            real_income AS realIncome,
+            receipt_number AS receiptNumber,
+            tenant_id AS tenantId
+        FROM
+            order_bill_info
+        WHERE
+            bill_number IN (${billNumbers})
+    </select>
+
+    <insert id="insertOrderBillInfo">
+        INSERT INTO order_bill_info ( bill_number, check_amount, bill_sts, creator_id,
+        creator_name, create_time, oper_id, oper_date, tenant_id, real_income )
+        VALUES
+            (
+                #{orderBillInfo.billNumber},#{orderBillInfo.checkAmount},#{orderBillInfo.billSts},
+                #{orderBillInfo.creatorId},#{orderBillInfo.creatorName},#{orderBillInfo.createTime},
+                #{orderBillInfo.operId},#{orderBillInfo.operDate},#{orderBillInfo.tenantId},
+                #{orderBillInfo.realIncome}
+            )
+    </insert>
+
+    <select id="exportQueryOrderInfo" resultType="com.youming.youche.finance.dto.order.ExportQueryOrderInfoDto">
+        SELECT
+        t.orderId AS orderId,
+        t.dependTime AS dependTime,
+        t.billNumber AS billNumber,
+        t.costPrice AS costPrice,
+        t.incomeExceptionFee AS incomeExceptionFee,
+        t.confirmAmount AS confirmAmount,
+        t.getAmount AS getAmount,
+        t.confirmDiffAmount AS confirmDiffAmount,
+        t.orgName AS orgName,
+        t.customName AS customName,
+        t.customerName AS customerName,
+        t.customerId AS customerId,
+        t.createTime AS createTime,
+        t.sourceRegionName AS sourceRegionName,
+        t.desRegionName AS desRegionName
+        FROM
+        (
+        (
+        SELECT
+        o.order_id AS orderId,
+        os.depend_time AS dependTime,
+        o.bill_number AS billNumber,
+        ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 ) AS costPrice,
+        ifnull( CONVERT ( e.income_exception_fee / 100, DECIMAL ( 50, 2 )), 0 ) AS incomeExceptionFee,
+        ifnull( CONVERT ( o.confirm_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS confirmAmount,
+        ifnull( CONVERT ( o.get_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS getAmount,
+        ifnull( CONVERT ( o.confirm_diff_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS confirmDiffAmount,
+        o.orgname AS orgName,
+        g.custom_name AS customName,
+        c.customer_name AS customerName,
+        o.customer_id AS customerId,
+        g.create_time AS createTime,
+        ( SELECT `name` FROM city WHERE id = o.source_region ) AS sourceRegionName,
+        ( SELECT `name` FROM city WHERE id = o.des_region ) AS desRegionName
+        FROM
+        (
+        SELECT
+        oi.order_id,
+        oi.order_state,
+        oi.source_region,
+        oi.des_region,
+        ofs.bill_number,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.confirm_diff_amount,
+        oi.customer_id,
+        so.org_name AS orgname
+        FROM
+        order_fee_statement ofs,
+        order_info oi
+        LEFT JOIN sys_organize so ON so.id = oi.org_id
+        AND so.tenant_id = #{tenantId}
+        WHERE
+        oi.order_id = ofs.order_id
+        ) o,
+        order_fee e,
+        order_scheduler os,
+        order_goods g
+        LEFT JOIN cm_customer_info c ON g.custom_user_id = c.id
+        WHERE
+        g.order_id = o.order_id
+        AND e.order_id = o.order_id
+        AND os.order_id = o.order_id
+        AND o.order_state != 16
+        AND o.bill_number IS NOT NULL
+        AND o.bill_number  <![CDATA[ <> ]]> ''
+        AND o.bill_number = #{billNumber}
+        ) UNION ALL
+        (
+        SELECT
+        o.order_id AS orderId,
+        os.depend_time AS dependTime,
+        o.bill_number AS billNumber,
+        ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 ) AS costPrice,
+        ifnull( CONVERT ( e.income_exception_fee / 100, DECIMAL ( 50, 2 )), 0 ) AS incomeExceptionFee,
+        ifnull( CONVERT ( o.confirm_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS confirmAmount,
+        ifnull( CONVERT ( o.get_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS getAmount,
+        ifnull( CONVERT ( o.confirm_diff_amount / 100, DECIMAL ( 50, 2 )), 0 )AS confirmDiffAmount,
+        o.orgname AS orgName,
+        g.custom_name AS customName,
+        c.customer_name AS customerName,
+        o.customer_id AS customerId,
+        g.create_time AS createTime,
+        ( SELECT `name` FROM city WHERE id = o.source_region ) AS sourceRegionName,
+        ( SELECT `name` FROM city WHERE id = o.des_region ) AS desRegionName
+        FROM
+        (
+        SELECT
+        oi.order_id,
+        oi.`order_state`,
+        oi.source_region,
+        oi.des_region,
+        ofs.`bill_number`,
+        ofs.`confirm_amount`,
+        ofs.`get_amount`,
+        ofs.`confirm_diff_amount`,
+        oi.customer_id,
+        so.`org_name` AS orgname
+        FROM
+        `order_fee_statement_h` ofs,
+        order_info_h oi
+        LEFT JOIN `sys_organize` so ON so.`id` = oi.org_id
+        AND so.tenant_id = #{tenantId}
+        WHERE
+        oi.`order_id` = ofs.`order_id`
+        ) o,
+        order_fee_h e,
+        order_scheduler_h os,
+        order_goods_h g
+        LEFT JOIN `cm_customer_info` c ON g.custom_user_id = c.id
+        WHERE
+        g.order_id = o.order_id
+        AND e.order_id = o.order_id
+        AND os.order_id = o.order_id
+        AND o.order_state != 16
+        AND o.bill_number IS NOT NULL
+        AND o.bill_number  <![CDATA[ <> ]]>  ''
+        AND o.bill_number = #{billNumber}
+        )
+        ) AS t
+        WHERE
+        1 = 1
+        ORDER BY
+        t.createTime DESC
+    </select>
+
+    <select id="exportQueryBillInfo" resultType="com.youming.youche.finance.dto.order.ExportQueryBillInfoDto">
+        SELECT
+            so.`org_name` AS orgName,
+            date_format( t.depend_time, '%Y-%m' ) AS dependTime,
+            count(*) AS countTotal,
+            sum( t.costprice ) AS costPrice,
+            sum( t.confirmamount ) AS confirMamount,
+            sum( t.diff1 ) AS diff1,
+            sum( t.diff2 ) AS diff2,
+            sum( t.diff3 ) AS diff3,
+            sum( t.diff4 ) AS diff4,
+            sum( t.diff5 ) AS diff5
+        FROM
+            (
+            SELECT
+                o.order_id,
+                os.depend_time,
+                o.bill_number,
+                ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 ) AS costprice,
+                ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 )+ ifnull( CONVERT ( e.income_exception_fee / 100, DECIMAL ( 50, 2 )), 0 )+ ifnull( CONVERT ( o.confirm_diff_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS confirmamount,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 1
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff1,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 2
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff2,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 3
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff3,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 4
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff4,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 5
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff5,
+                g.create_time,
+                oi.`org_id`
+            FROM
+                order_fee_statement o,
+                order_info oi,
+                order_fee e,
+                order_scheduler os,
+                order_goods g
+                LEFT JOIN `cm_customer_info` c ON g.custom_user_id = c.id
+            WHERE
+                g.order_id = o.order_id
+                AND o.order_id = oi.order_id
+                AND e.order_id = o.order_id
+                AND os.order_id = o.order_id
+                AND oi.order_state != 16
+                AND o.`bill_number` = #{billNumber}
+                AND o.tenant_id = #{tenantId} UNION ALL
+            SELECT
+                o.order_id,
+                os.depend_time,
+                o.bill_number,
+                ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 ) AS costprice,
+                ifnull( CONVERT ( e.cost_price / 100, DECIMAL ( 50, 2 )), 0 )+ ifnull( CONVERT ( e.income_exception_fee / 100, DECIMAL ( 50, 2 )), 0 )+ ifnull( CONVERT ( o.confirm_diff_amount / 100, DECIMAL ( 50, 2 )), 0 ) AS confirmamount,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 1
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff1,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 2
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff2,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 3
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff3,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 4
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff4,
+                ifnull(
+                    CONVERT ((
+                        SELECT
+                            sum( diff_fee / 100 )
+                        FROM
+                            order_diff_info d
+                        WHERE
+                            order_id = o.`order_id`
+                            AND diff_type = 5
+                            ),
+                    DECIMAL ( 50, 2 )),
+                    0
+                ) AS diff5,
+                g.create_time,
+                oi.`org_id`
+            FROM
+                order_info_h oi,
+                order_fee_statement_h o,
+                order_fee_h e,
+                order_scheduler_h os,
+                order_goods_h g
+                LEFT JOIN `cm_customer_info` c ON g.custom_user_id = c.id
+            WHERE
+                g.order_id = o.order_id
+                AND o.order_id = oi.order_id
+                AND e.order_id = o.order_id
+                AND os.order_id = o.order_id
+                AND oi.order_state != 16
+                AND o.`bill_number` = #{billNumber}
+                AND o.tenant_id = #{tenantId}
+            ) AS t
+            LEFT JOIN `sys_organize` so ON so.`id` = t.org_id
+            AND so.tenant_id = #{tenantId}
+        GROUP BY
+            t.`org_id`,
+            date_format(
+                t.depend_time,
+            '%y-%m'
+            )
+    </select>
+
+    <select id="getBillNumberCheckName" resultType="java.lang.String">
+        SELECT
+        CASE
+
+            WHEN
+                TRIM( orders.CHECK_NAME ) != '' THEN
+                    orders.CHECK_NAME ELSE orders.company_name
+                    END AS checkName
+            FROM
+                ( SELECT ob.* FROM order_bill_info ob WHERE ob.bill_Number = #{billNumber} ) b
+                LEFT JOIN ((
+                    SELECT
+                        ofs.bill_number,
+                        g.company_name,
+                        ofs.check_name
+                    FROM
+                        order_info_h o,
+                        order_goods_h g,
+                        order_fee_statement_h ofs,
+                        order_fee_h ofh
+                    WHERE
+                        g.order_id = o.order_id
+                        AND ofh.order_id = o.order_id
+                        AND ofs.order_id = o.order_id
+                        AND o.tenant_id = #{tenantId}
+                        AND ofs.bill_Number = #{billNumber}
+                        ) UNION ALL
+                    (
+                    SELECT
+                        ofs.bill_number,
+                        g.company_name,
+                        ofs.check_name
+                    FROM
+                        order_info o,
+                        order_goods g,
+                        order_fee_statement ofs,
+                        order_fee ofe
+                    WHERE
+                        g.order_id = o.order_id
+                        AND ofe.order_id = o.order_id
+                        AND ofs.order_id = o.order_id
+                        AND o.tenant_id = #{tenantId}
+                        AND ofs.bill_Number = #{billNumber}
+                    )) AS orders ON b.bill_number = orders.bill_number
+                AND b.bill_number = #{billNumber}
+        GROUP BY
+            b.bill_number
+    </select>
+
+    <select id="getOrderIdCheckName" resultType="java.lang.String">
+        SELECT
+            tmp.checkName
+        FROM
+            (
+            SELECT
+                o.ORDER_ID AS orderId,
+            IF
+                ( fs.check_name IS NOT NULL, fs.check_name, g.company_name ) AS checkName
+            FROM
+                order_info o
+                LEFT JOIN order_goods g ON o.ORDER_ID = g.ORDER_ID
+                LEFT JOIN order_fee_statement fs ON o.ORDER_ID = fs.ORDER_ID
+            WHERE
+                o.TENANT_ID = #{tenantId} UNION
+            SELECT
+                o.ORDER_ID AS orderId,
+            IF
+                ( fs.check_name IS NOT NULL, fs.check_name, g.company_name ) AS checkName
+            FROM
+                order_info_h o
+                LEFT JOIN order_goods_h g ON o.ORDER_ID = g.ORDER_ID
+                LEFT JOIN order_fee_statement_h fs ON o.ORDER_ID = fs.ORDER_ID
+            WHERE
+                o.TENANT_ID = #{tenantId}
+            ) AS tmp
+        WHERE
+            tmp.orderId = #{orderId}
+    </select>
+
+</mapper>

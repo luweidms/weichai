@@ -1,0 +1,1581 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.munual.PayoutIntfMapper">
+
+    <select id="getPayOutIntfsList" resultType="com.youming.youche.finance.domain.munual.MunualPaymentInfo"
+            parameterType="com.youming.youche.finance.vo.munual.QueryPayoutIntfsVo">
+        SELECT
+        p.id flowId,
+        p.create_date createDate,
+        p.obj_id objId,
+        e.busi_code busiCode,
+        e.plate_number plateNumber,
+        u.linkman userName,
+        p.busi_id busiId,
+        p.order_id orderId,
+        e.busi_code busiCode,
+        e.is_need_bill isNeedBill,
+        p.acc_no acctNo,
+        p.pay_acc_no payAccNo,
+        p.txn_amt txnAmt,
+        IFNULL( p.bill_service_fee, 0 ) billServiceFee,
+        IFNULL( p.append_freight, 0 ) appendFreight,
+        p.pay_confirm payConfirm,
+        p.verification_date updateDate,
+        p.bank_type bankType,
+        p.is_automatic isAutoMatic,
+        p.receivables_bank_acc_name accName,
+        p.receivables_bank_acc_no accNo,
+        p.user_id userId,
+        p.tenant_id tenantId,
+        p.is_driver isDriver,
+        p.pay_obj_id payObjId,
+        p.account_type accountType,
+        p.pay_bank_acc_name payBankAccName,
+        p.remark remark,
+        p.is_turn_automatic isTurnAutomatic,
+        p.subjects_id subjectsId,
+        p.oil_affiliation oilAffliation,
+        p.vehicle_affiliation vehicleAffiliation,
+        s.subjects_name subjectsIdName,
+        p.user_type userType,
+        e.file_id fileId,
+        e.file_url fileUrl,
+        p.resp_code respCode,
+        e.depend_time dependTime,
+        e.collection_user_name collectionUserName,
+        e.order_remark orderRemark,
+        e.custom_name customName,
+        e.source_name sourceName,
+        e.bill_look_up billLookUp
+        FROM subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e
+        WHERE
+        p.pay_tenant_id = #{queryPayoutIntfsVo.payTenantId}
+        AND p.pay_obj_id = #{queryPayoutIntfsVo.payObjId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1 OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        <if test="queryPayoutIntfsVo.flowId != null">
+            AND p.id = #{queryPayoutIntfsVo.flowId}
+        </if>
+        <if test="queryPayoutIntfsVo.userName != null and queryPayoutIntfsVo.userName != ''">
+            AND u.linkman LIKE CONCAT("%", #{queryPayoutIntfsVo.userName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.busiCode != null and queryPayoutIntfsVo.busiCode != ''">
+            AND e.busi_code LIKE CONCAT("%", #{queryPayoutIntfsVo.busiCode}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.plateNumber != null and queryPayoutIntfsVo.plateNumber != ''">
+            AND e.plate_number LIKE CONCAT("%", #{queryPayoutIntfsVo.plateNumber}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.isNeedBill != null and queryPayoutIntfsVo.isNeedBill >= 0">
+            AND e.is_need_bill = #{queryPayoutIntfsVo.isNeedBill}
+        </if>
+        <if test="queryPayoutIntfsVo.sourceUserId != null and queryPayoutIntfsVo.sourceUserId > 0">
+            AND p.user_id = #{queryPayoutIntfsVo.sourceUserId}
+        </if>
+        <if test="queryPayoutIntfsVo.userType != null and queryPayoutIntfsVo.userType > 0">
+            AND p.user_type = #{queryPayoutIntfsVo.userType}
+        </if>
+        <if test="queryPayoutIntfsVo.phone != null and queryPayoutIntfsVo.phone >= 0">
+            AND p.user_id = #{queryPayoutIntfsVo.phone}
+        </if>
+        <if test="queryPayoutIntfsVo.startTime != null and queryPayoutIntfsVo.startTime != ''">
+            AND p.create_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.startTime}
+        </if>
+        <if test="queryPayoutIntfsVo.endTime != null and queryPayoutIntfsVo.endTime != ''">
+            AND p.create_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.endTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationStartTime != null and queryPayoutIntfsVo.verificationStartTime != ''">
+            AND p.verification_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.verificationStartTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationEndTime != null and queryPayoutIntfsVo.verificationEndTime != ''">
+            AND p.verification_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.verificationEndTime}
+        </if>
+        <if test="queryPayoutIntfsVo.accountName != null and queryPayoutIntfsVo.accountName != ''">
+            AND p.receivables_bank_acc_name LIKE CONCAT("%", #{queryPayoutIntfsVo.accountName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.verificationState != null and queryPayoutIntfsVo.verificationState >= 0 ">
+            <if test="queryPayoutIntfsVo.verificationState == 3">
+                AND p.is_automatic =1 and (p.resp_code != 6 OR p.resp_code IS NUll)
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 4">
+                AND p.resp_code = 6
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 2">
+                AND p.pay_confirm = #{queryPayoutIntfsVo.verificationState}
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 1 or queryPayoutIntfsVo.verificationState == 0">
+                and p.pay_confirm = #{queryPayoutIntfsVo.verificationState} and p.is_automatic = 0
+            </if>
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeStart != null and queryPayoutIntfsVo.dependTimeStart != ''">
+            AND e.depend_time <![CDATA[ >= ]]> #{queryPayoutIntfsVo.dependTimeStart}
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeEnd != null and queryPayoutIntfsVo.dependTimeEnd != ''">
+            AND e.depend_time <![CDATA[ <= ]]> #{queryPayoutIntfsVo.dependTimeEnd}
+        </if>
+        <if test="queryPayoutIntfsVo.customName != null and queryPayoutIntfsVo.customName != ''">
+            AND e.custom_name LIKE CONCAT("%", #{queryPayoutIntfsVo.customName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.sourceName != null and queryPayoutIntfsVo.sourceName != ''">
+            AND e.source_name LIKE CONCAT("%", #{queryPayoutIntfsVo.sourceName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.collectionUserName != null and queryPayoutIntfsVo.collectionUserName != ''">
+            AND e.collection_user_name LIKE CONCAT("%", #{queryPayoutIntfsVo.collectionUserName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.orderRemark != null and queryPayoutIntfsVo.orderRemark != ''">
+            AND e.order_remark LIKE CONCAT("%", #{queryPayoutIntfsVo.orderRemark}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.billLookUp != null and queryPayoutIntfsVo.billLookUp != ''">
+            AND e.bill_look_up LIKE CONCAT("%", #{queryPayoutIntfsVo.billLookUp}, "%")
+        </if>
+        ORDER BY p.create_date desc
+        <if test="queryPayoutIntfsVo.pageNum != null and queryPayoutIntfsVo.pageSize != null">
+            limit ${queryPayoutIntfsVo.pageNum * queryPayoutIntfsVo.pageSize}, #{queryPayoutIntfsVo.pageSize}
+        </if>
+    </select>
+
+    <select id="getPayOutIntfsCount" resultType="java.lang.Integer"
+            parameterType="com.youming.youche.finance.vo.munual.QueryPayoutIntfsVo">
+        SELECT
+        count(1)
+        FROM subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e
+        WHERE
+        p.pay_tenant_id = #{queryPayoutIntfsVo.payTenantId}
+        AND p.pay_obj_id = #{queryPayoutIntfsVo.payObjId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1 OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        <if test="queryPayoutIntfsVo.flowId != null">
+            AND p.id = #{queryPayoutIntfsVo.flowId}
+        </if>
+        <if test="queryPayoutIntfsVo.userName != null and queryPayoutIntfsVo.userName != ''">
+            AND u.linkman LIKE CONCAT("%", #{queryPayoutIntfsVo.userName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.busiCode != null and queryPayoutIntfsVo.busiCode != ''">
+            AND e.busi_code LIKE CONCAT("%", #{queryPayoutIntfsVo.busiCode}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.plateNumber != null and queryPayoutIntfsVo.plateNumber != ''">
+            AND e.plate_number LIKE CONCAT("%", #{queryPayoutIntfsVo.plateNumber}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.isNeedBill != null and queryPayoutIntfsVo.isNeedBill >= 0">
+            AND e.is_need_bill = #{queryPayoutIntfsVo.isNeedBill}
+        </if>
+        <if test="queryPayoutIntfsVo.sourceUserId != null and queryPayoutIntfsVo.sourceUserId > 0">
+            AND p.user_id = #{queryPayoutIntfsVo.sourceUserId}
+        </if>
+        <if test="queryPayoutIntfsVo.userType != null and queryPayoutIntfsVo.userType > 0">
+            AND p.user_type = #{queryPayoutIntfsVo.userType}
+        </if>
+        <if test="queryPayoutIntfsVo.phone != null and queryPayoutIntfsVo.phone >= 0">
+            AND p.user_id = #{queryPayoutIntfsVo.phone}
+        </if>
+        <if test="queryPayoutIntfsVo.startTime != null and queryPayoutIntfsVo.startTime != ''">
+            AND p.create_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.startTime}
+        </if>
+        <if test="queryPayoutIntfsVo.endTime != null and queryPayoutIntfsVo.endTime != ''">
+            AND p.create_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.endTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationStartTime != null and queryPayoutIntfsVo.verificationStartTime != ''">
+            AND p.verification_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.verificationStartTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationEndTime != null and queryPayoutIntfsVo.verificationEndTime != ''">
+            AND p.verification_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.verificationEndTime}
+        </if>
+        <if test="queryPayoutIntfsVo.accountName != null and queryPayoutIntfsVo.accountName != ''">
+            AND p.receivables_bank_acc_name LIKE CONCAT("%", #{queryPayoutIntfsVo.accountName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.verificationState != null and queryPayoutIntfsVo.verificationState >= 0 ">
+            <if test="queryPayoutIntfsVo.verificationState == 3">
+                AND p.is_automatic =1 and (p.resp_code != 6 OR p.resp_code IS NUll)
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 4">
+                AND p.resp_code = 6
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 2">
+                AND p.pay_confirm = #{queryPayoutIntfsVo.verificationState}
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 1 or queryPayoutIntfsVo.verificationState == 0">
+                and p.pay_confirm = #{queryPayoutIntfsVo.verificationState} and p.is_automatic = 0
+            </if>
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeStart != null and queryPayoutIntfsVo.dependTimeStart != ''">
+            AND e.depend_time <![CDATA[ >= ]]> #{queryPayoutIntfsVo.dependTimeStart}
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeEnd != null and queryPayoutIntfsVo.dependTimeEnd != ''">
+            AND e.depend_time <![CDATA[ <= ]]> #{queryPayoutIntfsVo.dependTimeEnd}
+        </if>
+        <if test="queryPayoutIntfsVo.customName != null and queryPayoutIntfsVo.customName != ''">
+            AND e.custom_name LIKE CONCAT("%", #{queryPayoutIntfsVo.customName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.sourceName != null and queryPayoutIntfsVo.sourceName != ''">
+            AND e.source_name LIKE CONCAT("%", #{queryPayoutIntfsVo.sourceName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.collectionUserName != null and queryPayoutIntfsVo.collectionUserName != ''">
+            AND e.collection_user_name LIKE CONCAT("%", #{queryPayoutIntfsVo.collectionUserName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.orderRemark != null and queryPayoutIntfsVo.orderRemark != ''">
+            AND e.order_remark LIKE CONCAT("%", #{queryPayoutIntfsVo.orderRemark}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.billLookUp != null and queryPayoutIntfsVo.billLookUp != ''">
+            AND e.bill_look_up LIKE CONCAT("%", #{queryPayoutIntfsVo.billLookUp}, "%")
+        </if>
+    </select>
+
+
+    <select id="getPayOutIntfsSum" resultType="com.youming.youche.finance.domain.munual.MunualPaymentSumInfo"
+            parameterType="com.youming.youche.finance.vo.munual.QueryPayoutIntfsVo">
+        SELECT
+        VERIFICATION_STATE,
+        SUM( p.TXN_AMT ) AS summoney,
+        IFNULL( SUM( p.BILL_SERVICE_FEE ), 0 ) sumBillServiceFee,
+        IFNULL( SUM( p.APPEND_FREIGHT ), 0 ) sumAppendFreight
+        FROM
+        PAYOUT_INTF p,
+        user_data_info u,
+        payout_intf_expansion e
+        WHERE
+        1=1
+        <if test="queryPayoutIntfsVo.payTenantId != null">
+            AND p.PAY_TENANT_ID = #{queryPayoutIntfsVo.payTenantId}
+        </if>
+        AND p.PAY_USER_TYPE = 6
+        <if test="queryPayoutIntfsVo.payObjId != null">
+            AND p.PAY_OBJ_ID = #{queryPayoutIntfsVo.payObjId}
+        </if>
+        AND p.PAY_TYPE = 2
+        AND p.TXN_TYPE = 200
+        AND ( p.RESP_CODE != 5 OR p.RESP_CODE IS NULL )
+        AND ( p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2 )
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        <if test="queryPayoutIntfsVo.flowId != null">
+            AND p.id = #{queryPayoutIntfsVo.flowId}
+        </if>
+        <if test="queryPayoutIntfsVo.userName != null and queryPayoutIntfsVo.userName != ''">
+            AND u.linkman LIKE CONCAT("%", #{queryPayoutIntfsVo.userName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.busiCode != null and queryPayoutIntfsVo.busiCode != ''">
+            AND e.busi_code LIKE CONCAT("%", #{queryPayoutIntfsVo.busiCode}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.plateNumber != null and queryPayoutIntfsVo.plateNumber != ''">
+            AND e.plate_number LIKE CONCAT("%", #{queryPayoutIntfsVo.plateNumber}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.isNeedBill != null and queryPayoutIntfsVo.isNeedBill >= 0">
+            AND e.is_need_bill = #{queryPayoutIntfsVo.isNeedBill}
+        </if>
+        <if test="queryPayoutIntfsVo.sourceUserId != null and queryPayoutIntfsVo.sourceUserId > 0">
+            AND p.user_id = #{queryPayoutIntfsVo.sourceUserId}
+        </if>
+        <if test="queryPayoutIntfsVo.userType != null and queryPayoutIntfsVo.userType > 0">
+            AND p.user_type = #{queryPayoutIntfsVo.userType}
+        </if>
+        <if test="queryPayoutIntfsVo.phone != null and queryPayoutIntfsVo.phone >= 0">
+            AND p.obj_id = #{queryPayoutIntfsVo.phone}
+        </if>
+        <if test="queryPayoutIntfsVo.startTime != null and queryPayoutIntfsVo.startTime != ''">
+            AND p.create_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.startTime}
+        </if>
+        <if test="queryPayoutIntfsVo.endTime != null and queryPayoutIntfsVo.endTime != ''">
+            AND p.create_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.endTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationStartTime != null and queryPayoutIntfsVo.verificationStartTime != ''">
+            AND p.verification_date <![CDATA[ > ]]> #{queryPayoutIntfsVo.verificationStartTime}
+        </if>
+        <if test="queryPayoutIntfsVo.verificationEndTime != null and queryPayoutIntfsVo.verificationEndTime != ''">
+            AND p.verification_date <![CDATA[ < ]]> #{queryPayoutIntfsVo.verificationEndTime}
+        </if>
+        <if test="queryPayoutIntfsVo.accountName != null and queryPayoutIntfsVo.accountName != ''">
+            AND p.receivables_bank_acc_name LIKE CONCAT("%", #{queryPayoutIntfsVo.accountName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.verificationState != null and queryPayoutIntfsVo.verificationState >= 0 ">
+            <if test="queryPayoutIntfsVo.verificationState == 3">
+                AND p.is_automatic =1 and (p.resp_code != 6 OR p.resp_code IS NUll)
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 4">
+                AND p.resp_code = 6
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 2">
+                AND p.pay_confirm = #{queryPayoutIntfsVo.verificationState}
+            </if>
+            <if test="queryPayoutIntfsVo.verificationState == 1 or queryPayoutIntfsVo.verificationState == 0">
+                and p.pay_confirm = #{queryPayoutIntfsVo.verificationState} and p.is_automatic = 0
+            </if>
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeStart != null and queryPayoutIntfsVo.dependTimeStart != ''">
+            AND e.depend_time <![CDATA[ >= ]]> #{queryPayoutIntfsVo.dependTimeStart}
+        </if>
+        <if test="queryPayoutIntfsVo.dependTimeEnd != null and queryPayoutIntfsVo.dependTimeEnd != ''">
+            AND e.depend_time <![CDATA[ <= ]]> #{queryPayoutIntfsVo.dependTimeEnd}
+        </if>
+        <if test="queryPayoutIntfsVo.customName != null and queryPayoutIntfsVo.customName != ''">
+            AND e.custom_name LIKE CONCAT("%", #{queryPayoutIntfsVo.customName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.sourceName != null and queryPayoutIntfsVo.sourceName != ''">
+            AND e.source_name LIKE CONCAT("%", #{queryPayoutIntfsVo.sourceName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.collectionUserName != null and queryPayoutIntfsVo.collectionUserName != ''">
+            AND e.collection_user_name LIKE CONCAT("%", #{queryPayoutIntfsVo.collectionUserName}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.orderRemark != null and queryPayoutIntfsVo.orderRemark != ''">
+            AND e.order_remark LIKE CONCAT("%", #{queryPayoutIntfsVo.orderRemark}, "%")
+        </if>
+        <if test="queryPayoutIntfsVo.billLookUp != null and queryPayoutIntfsVo.billLookUp != ''">
+            AND e.bill_look_up LIKE CONCAT("%", #{queryPayoutIntfsVo.billLookUp}, "%")
+        </if>
+        GROUP BY p.verification_state
+    </select>
+
+
+    <select id="doQueryDouOverdues" resultType="com.youming.youche.finance.dto.OverdueReceivableDto">
+        SELECT
+        orb.id as flowId,
+        orb.admin_user_id as userId,
+        orb.order_id as orderId,
+        orb.source_region as sourceRegion,
+        orb.des_region AS desRegion,
+        orb.business_number as businessNumber,
+        orb.txn_amt - ifnull(ofeh.income_insurance_fee,0) - ifnull(ofeh.income_oil_virtual_fee,0) -
+        ifnull(ofeh.income_oil_fee,0) as txnAmt,
+        orb.pay_confirm as payConfirm,
+        DATE_FORMAT(orb.depend_time,'%Y-%m-%d') as carDependDate,
+        DATE_FORMAT(osh.depend_time,'%Y-%m-%d %H:%i:%s') AS dependTime,
+        ifnull(orb.name,std.name) as name,
+        if(paid > 0,orb.paid - ifnull(ofeh.income_insurance_fee,0) - ifnull(ofeh.income_oil_virtual_fee,0) -
+        ifnull(ofeh.income_oil_fee,0),0) as paid,
+        orb.type as type,
+        DATE_FORMAT(ifnull(opdi.create_time,opdih.create_time),'%Y-%m-%d') as createTime,
+        DATE_FORMAT(orb.create_time,'%Y-%m-%d') as updateTime,
+        ifnull(opdi.balance_type,opdih.balance_type) as balanceType,
+        ifnull(opdi.collection_month,opdih.collection_month) AS collectionMonth,
+        ifnull(opdi.collection_time,opdih.collection_time) AS collectionTime,
+        ifnull(opdi.collection_day,opdih.collection_day) as collectionDay,
+        IFNULL(osh.source_name,"") AS sourceName,
+        DATE_FORMAT(orb.create_time,'%Y-%m-%d %H:%i:%s') AS createTimeOrb
+        FROM
+        overdue_receivable as orb
+        LEFT JOIN order_info_h oih
+        ON orb.order_id = oih.order_id
+        LEFT JOIN order_payment_days_info opdi
+        ON opdi.order_id = orb.order_id
+        LEFT JOIN order_payment_days_info_h opdih
+        ON orb.order_id = opdih.order_id
+        left join sys_tenant_def std
+        on std.id = orb.tenant_id
+        left join order_fee_ext_h ofeh
+        on ofeh.order_id = orb.order_id and orb.type = 1
+        LEFT JOIN order_scheduler_h osh ON oih.order_id = osh.order_id
+        WHERE
+        orb.tenant_id = #{tenantId}
+        AND
+        (opdi.payment_days_type = 2 or opdih.payment_days_type = 2)
+        <if test="vo.flowId != null">
+            AND orb.id = #{vo.flowId}
+        </if>
+        <if test="vo.payName != null and vo.payName != ''">
+            AND orb.name LIKE CONCAT('%',#{vo.payName},'%')
+        </if>
+        <if test="vo.orderId > 0">
+            AND orb.order_id LIKE CONCAT('%',#{vo.orderId},'%')
+        </if>
+        <if test="vo.sourceRegion > 0">
+            AND orb.source_region = #{vo.sourceRegion}
+        </if>
+        <if test="vo.desRegion > 0">
+            AND orb.des_region = #{vo.desRegion}
+        </if>
+        <if test="vo.startTime !=null and vo.startTime != ''">
+            AND DATE_FORMAT( orb.depend_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{vo.startTime}
+        </if>
+        <if test="vo.endTime != null and vo.endTime != ''">
+            AND DATE_FORMAT( orb.depend_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{vo.endTime}
+        </if>
+        <if test="vo.userId != null">
+            AND orb.admin_user_id = #{vo.userId}
+        </if>
+        <if test="vo.types != null">
+            AND orb.type in
+            <foreach collection="vo.types" item="type" separator="," open="(" close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="vo.payConFirms != null">
+            AND orb.pay_confirm in
+            <foreach collection="vo.payConFirms" item="payConFirm" separator="," open="(" close=")">
+                #{payConFirm}
+            </foreach>
+        </if>
+        ORDER BY orb.create_time DESC
+    </select>
+
+    <select id="doQueryDouOverdue" resultType="com.youming.youche.finance.dto.order.PayoutInfoDto">
+        SELECT
+        p.id AS flowId,
+        oti.transfer_order_id AS orderId,
+        e.source_region AS sourceRegion,
+        e.des_region AS desRegion,
+        p.txn_amt AS txnAmt,
+        p.busi_id AS busiId,
+        p.pay_confirm AS payConfirm,
+        p.is_automatic AS isAutomatic,
+        DATE_FORMAT(e.depend_time,'%Y-%m-%d %H:%i:%s') AS dependTime,
+        p.pay_tenant_id AS payTenantId,
+        p.pay_obj_id AS payObjId,
+        g.company_name AS `name`,
+        p.verification_state AS verificationState,
+        p.subjects_id AS subjectsId,
+        p.pay_user_type AS userType,
+        o.order_state AS orderState,
+        opdi.balance_type AS balanceType,
+        DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+        opdi.collection_time AS collectionTime,
+        DATE_FORMAT( o.end_date, '%Y-%m-%d' ) AS updateTime,
+        opdi.collection_month AS collectionMonth,
+        opdi.collection_day AS collectionDay,
+        DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDate,
+        p.create_date AS createDate
+        FROM
+        payout_intf p
+        LEFT JOIN payout_intf_expansion e ON p.id = e.flow_id
+        LEFT JOIN order_info_h o ON p.order_id = o.order_id
+        LEFT JOIN order_fee_h f ON o.order_id = f.order_id
+        LEFT JOIN order_scheduler_h s ON p.order_id = s.order_id
+        LEFT JOIN order_fee_statement_h fs ON o.order_id = fs.order_id
+        LEFT JOIN order_payment_days_info_h opdi ON o.order_id = opdi.order_id
+        LEFT JOIN order_transfer_info oti ON p.order_id = oti.order_id
+        LEFT JOIN order_goods_h g ON oti.transfer_order_id = g.order_id
+        WHERE
+        p.tenant_id = #{tenantId}
+        AND p.SUBJECTS_ID in (1530,1632,1651)
+        AND p.user_type = 6
+        AND p.user_id = #{userId}
+        AND p.txn_type = 200
+        AND ( p.is_automatic != 1 OR p.verification_state != 2 )
+        AND ( p.resp_code != 5 OR p.resp_code IS NULL )
+        AND ( p.busi_id != 21000113 AND p.busi_id != 21000024 OR p.verification_state != 2 )
+        AND o.ORDER_STATE >= 7
+        AND o.ORDER_STATE != 15
+        <if test="vo.payName != null and vo.payName != ''">
+            AND g.company_name LIKE CONCAT('%',#{vo.payName},'%')
+        </if>
+        <if test="vo.orderId > 0">
+            AND oti.transfer_order_id = #{vo.orderId}
+        </if>
+        <if test="vo.sourceRegion > 0">
+            AND e.source_region = #{vo.sourceRegion}
+        </if>
+        <if test="vo.desRegion > 0">
+            AND e.des_region = #{vo.desRegion}
+        </if>
+        <if test="vo.startTime !=null and vo.startTime != ''">
+            AND DATE_FORMAT( e.depend_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{vo.startTime}
+        </if>
+        <if test="vo.endTime != null and vo.endTime != ''">
+            AND DATE_FORMAT( e.depend_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{vo.endTime}
+        </if>
+        <if test="vo.sourceUserId > 0">
+            AND p.pay_obj_id = #{vo.sourceUserId}
+        </if>
+        <if test="vo.payUserType > 0">
+            AND p.pay_user_type = #{vo.payUserType}
+        </if>
+        <if test="vo.payConFirm != null and vo.payConFirm != ''">
+            AND p.pay_confirm = #{vo.payConFirm}
+        </if>
+        GROUP BY p.id
+        ORDER BY p.create_date DESC
+    </select>
+
+    <select id="getDueDateDetailsCD" resultType="com.youming.youche.finance.dto.DueDateDetailsCDDto">
+        SELECT
+        p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        p.RESP_CODE respCode,
+        p.PAY_BANK_ACC_NAME NAME,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        p.SUBJECTS_ID subjectsId,
+        p.pay_user_type userType,
+        e.busi_code busiCode
+        FROM
+        payout_intf p,
+        payout_intf_expansion e
+        WHERE
+        p.TXN_TYPE = 200
+        AND e.flow_id = p.id
+        AND ( p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2 )
+        AND ( p.RESP_CODE != 5 OR p.RESP_CODE IS NULL )
+        AND ( p.BUSI_ID != 21000023 AND p.BUSI_ID != 21000113 AND p.BUSI_ID != 21000024 OR p.VERIFICATION_STATE != 2 )
+        <if test="name != null and name != ''">
+            and p.PAY_BANK_ACC_NAME like CONCAT('%',#{name},'%')
+        </if>
+        <if test="busiCode != null and busiCode != ''">
+            and e.busi_code = #{busiCode}
+        </if>
+        <if test="isTenant != null and isTenant == true">
+            and p.TENANT_ID = #{tenantId}
+        </if>
+        and p.user_type = #{userType}
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+
+    <select id="getPayoutInfoBusiCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM payout_intf p
+        WHERE p.RESP_CODE = 0
+          AND p.TXN_TYPE = #{txnType}
+          AND p.CREATE_DATE <![CDATA[ <= ]]> #{createDate}
+    </select>
+
+    <select id="getPayoutInfoBusiList" resultType="com.youming.youche.finance.domain.munual.PayoutIntf">
+        SELECT *
+        FROM payout_intf p
+        WHERE p.RESP_CODE = 0
+          AND p.TXN_TYPE = #{txnType}
+          AND p.CREATE_DATE <![CDATA[ <= ]]> #{createDate}
+        ORDER BY p.RESP_CODE DESC, p.PRIORITY_LEVEL DESC, p.id ASC
+        limit #{currentPage}, #{pageSize}
+    </select>
+
+    <select id="getPayoutInfoCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM payout_intf p
+        WHERE (p.RESP_CODE = '' OR p.RESP_CODE IS NULL OR p.RESP_CODE = 2 OR p.RESP_CODE = 4)
+          AND p.IS_AUTOMATIC = 1
+          AND p.TXN_TYPE = #{txnType}
+          AND p.CREATE_DATE <![CDATA[ <= ]]> #{createDate}
+    </select>
+
+    <select id="getPayoutInfoList" resultType="com.youming.youche.finance.domain.munual.PayoutIntf">
+        SELECT *
+        FROM payout_intf p
+        WHERE (p.RESP_CODE = '' OR p.RESP_CODE IS NULL OR p.RESP_CODE = 2 OR p.RESP_CODE = 4)
+          AND p.IS_AUTOMATIC = 1
+          AND p.TXN_TYPE = #{txnType}
+          AND p.CREATE_DATE <![CDATA[ <= ]]> #{createDate}
+        ORDER BY p.RESP_CODE DESC, p.PRIORITY_LEVEL DESC, p.id ASC
+        limit #{currentPage}, #{pageSize}
+    </select>
+
+    <update id="updatePayManagerState">
+        update pay_manager
+        set state = 3
+        where pay_no = #{flowId}
+    </update>
+
+    <select id="doQueryConfirmMoney" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM payout_intf p
+        WHERE p.TXN_TYPE = 200
+          AND p.IS_AUTOMATIC = 0
+          AND p.PAY_CONFIRM = 1
+          AND p.RESP_CODE = 3
+          AND (p.VERIFICATION_STATE IS NULL OR p.VERIFICATION_STATE != 2)
+          AND COMPLETE_TIME <![CDATA[ <= ]]> #{completeTimeStart}
+    </select>
+
+    <select id="doQueryConfirmMoneyList" resultType="com.youming.youche.finance.domain.munual.PayoutIntf">
+        SELECT *
+        FROM payout_intf p
+        WHERE p.TXN_TYPE = 200
+          AND p.IS_AUTOMATIC = 0
+          AND p.PAY_CONFIRM = 1
+          AND p.RESP_CODE = 3
+          AND (p.VERIFICATION_STATE IS NULL OR p.VERIFICATION_STATE != 2)
+          AND COMPLETE_TIME <![CDATA[ <= ]]> #{completeTimeStart}
+        ORDER BY p.COMPLETE_TIME
+        limit #{currentPage}, #{pageSize}
+    </select>
+
+    <select id="getOnlineToOfflineCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM payout_intf p
+        WHERE (p.RESP_CODE = '' OR p.RESP_CODE IS NULL OR p.RESP_CODE = 2 OR p.RESP_CODE = 4 OR p.RESP_CODE = 3)
+          AND p.IS_TURN_AUTOMATIC = 2
+          AND p.TXN_TYPE = #{txnType}
+    </select>
+
+    <select id="getOnlineToOfflineList" resultType="com.youming.youche.finance.domain.munual.PayoutIntf">
+        SELECT *
+        FROM payout_intf p
+        WHERE (p.RESP_CODE = '' OR p.RESP_CODE IS NULL OR p.RESP_CODE = 2 OR p.RESP_CODE = 4 OR p.RESP_CODE = 3)
+          AND p.IS_TURN_AUTOMATIC = 2
+          AND p.TXN_TYPE = #{txnType}
+        limit #{currentPage}, #{pageSize}
+    </select>
+
+    <select id="getOverdueCD" resultType="com.youming.youche.finance.dto.order.PayoutInfoDto">
+        select p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.BILL_SERVICE_FEE billServiceFee,
+        p.APPEND_FREIGHT appendFreight,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        <!--        p.RECEIVABLES_BANK_ACC_NAME name,-->
+        u.linkman as name,
+        p.RESP_CODE respCode,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        p.user_id userId,
+        p.pay_obj_id payObjId,
+        e.IS_NEED_BILL isNeedBill,
+        e.busi_code busiCode,
+        p.ACCOUNT_TYPE accountType,
+        p.BANK_TYPE bankType,
+        p.ACC_NO accNo,
+        p.PAY_ACC_NO payAccNo,
+        p.SUBJECTS_ID subjectsId,
+        p.user_type userType,
+        p.pay_user_type payUserType,
+        p.PINGAN_COLLECT_ACCT_ID pinganCollectAcctId,
+        p.vehicle_Affiliation vehicleAffiliation,
+        p.IS_TURN_AUTOMATIC isTurnAutomatic
+        from
+        payout_intf p left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        where
+        p.PAY_OBJ_ID = #{payObjId}
+        and p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and IF(p.busi_id in (21000002, 22000028),
+        DATE_FORMAT(now(),'%Y-%m-%d') >
+        ifnull(
+        DATE_FORMAT(
+        (
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info_h
+        WHERE
+        order_id = p.order_id and payment_days_type = 1 union all
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info
+        WHERE
+        order_id = p.order_id and payment_days_type = 1
+        ), '%Y-%m-%d' ),now())
+        , 1 = 1)
+        <!--  应付逾期  只显示  到付款、预付、尾款到期, 服务商账单 -->
+        and p.busi_id in (22000028, 21000002, 21000003, 22000038)
+        <if test="userId != null and userId > 0">
+            and p.user_id= #{userId}
+        </if>
+        <if test="name != null and name != ''">
+            and u.linkman like CONCAT('%',#{name},'%')
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and p.busi_code like CONCAT('%',#{orderId},'%')
+        </if>
+        <if test="businessNumbers != null and businessNumbers != ''">
+            and p.BUSI_ID IN
+            <foreach collection="busiIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="isTenant == true">
+            and p.PAY_TENANT_ID = #{payTenantId}
+        </if>
+        and p.pay_user_type= #{payUserType}
+        <if test="state != null and state != ''">
+            <choose>
+                <when test='states.contains("4")'></when>
+                <otherwise>
+                    and (p.RESP_CODE !=6 or p.RESP_CODE is null)
+                </otherwise>
+            </choose>
+            and (
+            <if test='states.contains("0")'>
+                (p.PAY_CONFIRM =0 and p.IS_AUTOMATIC=0)
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =1
+            </if>
+            <if test='states.contains("2")'>
+                <if test='states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.IS_AUTOMATIC =1
+            </if>
+            <if test='states.contains("4")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") or states.contains("3") '>
+                    or
+                </if>
+                p.RESP_CODE =6
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+
+    <select id="getOverdueCDSum" resultType="java.lang.Long">
+        select
+        ifnull(sum(p.TXN_AMT),0)
+        from
+        payout_intf p left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        where
+        p.PAY_OBJ_ID = #{payObjId}
+        and p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and IF(p.busi_id in (21000002, 22000028),
+        DATE_FORMAT(now(),'%Y-%m-%d') >
+        ifnull(
+        DATE_FORMAT(
+        (
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info_h
+        WHERE
+        order_id = p.order_id and payment_days_type = 1 union all
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info
+        WHERE
+        order_id = p.order_id and payment_days_type = 1
+        ), '%Y-%m-%d' ),now())
+
+        , 1 = 1)
+        <!--  应付逾期  只显示  到付款、预付、尾款到期, 服务商账单 -->
+        and p.busi_id in (22000028, 21000002, 21000003, 22000038)
+        <!-- 查询未核销总金额 -->
+        and p.verification_state = 1
+        <if test="userId != null and userId > 0">
+            and p.user_id= #{userId}
+        </if>
+        <if test="name != null and name != ''">
+            and u.linkman like CONCAT('%',#{name},'%')
+        </if>
+        <if test="orderId != null and orderId > 0">
+            and p.ORDER_ID= #{orderId}
+        </if>
+        <if test="businessNumbers != null and businessNumbers != ''">
+            and p.BUSI_ID IN
+            <foreach collection="busiIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="isTenant == true">
+            and p.PAY_TENANT_ID = #{payTenantId}
+        </if>
+        and p.pay_user_type= #{payUserType}
+        <if test="state != null and state != ''">
+            <choose>
+                <when test='states.contains("4")'></when>
+                <otherwise>
+                    and (p.RESP_CODE !=6 or p.RESP_CODE is null)
+                </otherwise>
+            </choose>
+            and (
+            <if test='states.contains("0")'>
+                (p.PAY_CONFIRM =0 and p.IS_AUTOMATIC=0)
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =1
+            </if>
+            <if test='states.contains("2")'>
+                <if test='states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.IS_AUTOMATIC =1
+            </if>
+            <if test='states.contains("4")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") or states.contains("3") '>
+                    or
+                </if>
+                p.RESP_CODE =6
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+
+    <select id="getOverdueSum" resultType="java.lang.Long">
+        select
+        ifnull(sum(p.TXN_AMT),0)
+        from
+        payout_intf p left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        where
+        p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and IF(p.busi_id in (21000002, 22000028),
+        DATE_FORMAT(now(),'%Y-%m-%d') >
+        ifnull(
+        DATE_FORMAT(
+        (
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info_h
+        WHERE
+        order_id = p.order_id and payment_days_type = 1 union all
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info
+        WHERE
+        order_id = p.order_id and payment_days_type = 1
+        ), '%Y-%m-%d' ),now())
+        , 1 = 1)
+        <!--  应付逾期  只显示  到付款、预付、尾款到期, 服务商账单 -->
+        and p.busi_id in (22000028, 21000002, 21000003, 22000038)
+        <!-- 查询未核销总金额 -->
+        and p.verification_state = 1
+        <if test="userId != null and userId > 0">
+            and p.user_id= #{userId}
+        </if>
+        <if test="isTenant == true">
+            and p.PAY_TENANT_ID = #{payTenantId}
+        </if>
+        and p.pay_user_type= #{payUserType}
+        and (p.is_automatic != 1 or p.resp_code != 6) and (p.verification_state != 2)
+    </select>
+
+    <select id="getTableFinancialPayablePaidAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT IFNULL(SUM(p.TXN_AMT), 0) + IFNULL(SUM(p.BILL_SERVICE_FEE), 0) +
+               IFNULL(SUM(p.APPEND_FREIGHT), 0) AS count,
+               p.PAY_TENANT_ID                     tenant_id
+        FROM PAYOUT_INTF p,
+             payout_intf_expansion e,
+             sys_tenant_def d
+        WHERE p.PAY_TENANT_ID = d.tenant_code
+          and p.PAY_OBJ_ID = d.admin_user
+          AND p.id = e.FLOW_ID
+          AND p.PAY_TYPE = 2
+          AND p.TXN_TYPE = 200
+          AND (p.RESP_CODE != 5 OR p.RESP_CODE IS NULL)
+          AND (p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2)
+          and p.verification_state in (2, 5)
+        GROUP BY p.pay_tenant_id
+    </select>
+
+    <select id="getTableFinancialPayableSurplusAmount"
+            resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT IFNULL(SUM(p.TXN_AMT), 0) + IFNULL(SUM(p.BILL_SERVICE_FEE), 0) +
+               IFNULL(SUM(p.APPEND_FREIGHT), 0) AS count,
+               p.PAY_TENANT_ID                     tenant_id
+        FROM PAYOUT_INTF p,
+             payout_intf_expansion e,
+             sys_tenant_def d
+        WHERE p.PAY_TENANT_ID = d.tenant_code
+          and p.PAY_OBJ_ID = d.admin_user
+          AND p.id = e.FLOW_ID
+          AND p.PAY_TYPE = 2
+          AND p.TXN_TYPE = 200
+          AND (p.RESP_CODE != 5 OR p.RESP_CODE IS NULL)
+          AND (p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2)
+          and p.verification_state = 1
+        GROUP BY p.pay_tenant_id
+    </select>
+
+    <select id="getTableFinancialOverdueReceivablesAmount"
+            resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT *
+        FROM (
+                 SELECT ifnull(stdef.id, s.tenant_id) tenant_id,
+                        s.user_info_id                user_info_id,
+                        (
+                            SELECT ifnull(sum(orb.txn_amt - ifnull(ofeh.income_insurance_fee, 0) -
+                                              ifnull(ofeh.income_oil_virtual_fee, 0) - ifnull(ofeh.income_oil_fee, 0)),
+                                          0)
+                            FROM overdue_receivable AS orb
+                                     LEFT JOIN order_info_h oih ON orb.order_id = oih.order_id
+                                     LEFT JOIN order_payment_days_info opdi ON opdi.order_id = orb.order_id
+                                     LEFT JOIN order_payment_days_info_h opdih ON orb.order_id = opdih.order_id
+                                     LEFT JOIN sys_tenant_def std ON std.id = orb.tenant_id
+                                     LEFT JOIN order_fee_ext_h ofeh ON ofeh.order_id = orb.order_id
+                                AND orb.type = 1
+                                     LEFT JOIN order_scheduler_h osh ON oih.order_id = osh.order_id
+                            WHERE orb.tenant_id = ifnull(stdef.id, s.tenant_id)
+                              AND (opdi.payment_days_type = 2 OR opdih.payment_days_type = 2)
+                              and (((orb.type = 1 and ifnull(opdi.balance_type, opdih.balance_type) = 1 and
+                                     ifnull(opdi.create_time, opdih.create_time) is not null)
+                                or (orb.type = 1 and ifnull(opdi.balance_type, opdih.balance_type) = 2 and
+                                    orb.create_time is not null)
+                                or (orb.type = 1 and ifnull(opdi.balance_type, opdih.balance_type) = 3 and
+                                    orb.depend_time is not null))
+                                or (orb.type != 1 and orb.create_time is not null))
+                        ) AS                          count
+                 FROM sys_user s
+                          LEFT JOIN sys_tenant_def stdef ON stdef.admin_user = s.user_info_id
+             ) AS top
+        WHERE top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getTableFinancialOverduePayableAmount"
+            resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT *
+        FROM (
+                 SELECT ifnull(std.id, su.tenant_id) tenant_id,
+                        su.user_info_id              user_info_id,
+                        (
+                            SELECT ifnull(sum(p.TXN_AMT), 0)
+                            FROM payout_intf p
+                                     LEFT JOIN order_op_record oor ON p.ORDER_ID = oor.order_id
+                                AND oor.op_type = 8
+                                     LEFT JOIN payout_intf_expansion e ON p.id = e.FLOW_ID
+                                     LEFT JOIN user_data_info u ON p.user_id = u.id
+                            WHERE p.PAY_OBJ_ID = su.user_info_id
+                              AND p.TXN_TYPE = 200
+                              AND (p.RESP_CODE != 5 OR p.RESP_CODE IS NULL)
+                              AND (p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2)
+                              AND IF
+                                (
+                                        p.busi_id IN (21000002, 22000028),
+                                        DATE_FORMAT(now(), '%Y-%m-%d') > ifnull(
+                                                DATE_FORMAT(
+                                                        (
+                                                            SELECT CASE
+
+                                                                       WHEN
+                                                                                   balance_type = 1
+                                                                               OR balance_type = 2 THEN
+                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                       WHEN balance_type = 3 THEN
+                                                                           date_format(
+                                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                   REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1))
+                                                                               )
+                                                                       END AS formatTime
+                                                            FROM order_payment_days_info_h
+                                                            WHERE order_id = p.order_id
+                                                              AND payment_days_type = 1
+                                                            UNION ALL
+                                                            SELECT CASE
+
+                                                                       WHEN
+                                                                                   balance_type = 1
+                                                                               OR balance_type = 2 THEN
+                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                       WHEN balance_type = 3 THEN
+                                                                           date_format(
+                                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                   REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1))
+                                                                               )
+                                                                       END AS formatTime
+                                                            FROM order_payment_days_info
+                                                            WHERE order_id = p.order_id
+                                                              AND payment_days_type = 1
+                                                        ),
+                                                        '%Y-%m-%d'
+                                                    ),
+                                                now()
+                                            ),
+                                        1 = 1
+                                )
+                              AND p.busi_id IN (22000028, 21000002, 21000003, 22000038)
+                              AND p.PAY_TENANT_ID = ifnull(std.id, su.tenant_id)
+                              AND p.pay_user_type = 6
+                        ) AS                         count
+                 FROM sys_user su
+                          LEFT JOIN sys_tenant_def std ON std.admin_user = su.user_info_id
+             ) AS top
+        WHERE top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getTableFinancialPendingPaymentAmount"
+            resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT p.PAY_TENANT_ID           as tenant_id,
+               ifnull(sum(p.TXN_AMT), 0) AS count
+        FROM subjects_info s,
+             user_data_info u,
+             payout_intf p,
+             payout_intf_expansion e,
+             sys_tenant_def d
+        WHERE pay_user_type = 6
+          AND p.txn_type = 200
+          AND (p.resp_code != 5 OR p.resp_code IS NULL)
+          AND (p.is_automatic != 1 OR p.verification_state != 2)
+          AND p.subjects_id = s.id
+          AND p.user_id = u.id
+          AND p.id = e.flow_id
+          AND p.PAY_TENANT_ID = d.tenant_code
+          AND p.PAY_OBJ_ID = d.admin_user
+          AND p.pay_confirm = 0
+          AND p.is_automatic = 0
+        GROUP BY p.PAY_TENANT_ID
+    </select>
+
+    <select id="getTableBossPaymentReviewAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT p.PAY_TENANT_ID as tenant_id,
+               COUNT(1)        as count
+        FROM payout_intf p,
+             sys_tenant_def d
+        WHERE p.PAY_TENANT_ID = d.TENANT_CODE
+          and p.PAY_OBJ_ID = d.ADMIN_USER
+          and PAY_USER_TYPE = 6
+          AND TXN_TYPE = 200
+          AND PAY_CONFIRM = 0
+          AND IS_AUTOMATIC = 0
+          AND (IS_AUTOMATIC != 1 OR VERIFICATION_STATE != 2)
+          AND (RESP_CODE != 5 OR RESP_CODE IS NULL)
+        GROUP by p.PAY_TENANT_ID
+    </select>
+
+
+    <select id="getPayableDayReport" resultType="com.youming.youche.finance.dto.PayableDayReportFinanceDto">
+        SELECT total.tenant_id,
+               total.user_id,
+               total.busi_id,
+               DATE_FORMAT(total.create_date, '%Y-%m-%d') create_date,
+               sum(TXN_AMT)               AS              txnAmount,
+               sum(paid_normal_amount)    AS              paid_normal_amount,
+               sum(paid_overdue_amount)   AS              paid_overdue_amount,
+               sum(nopaid_normal_amount)  AS              nopaid_normal_amount,
+               sum(nopaid_overdue_amount) AS              nopaid_overdue_amount
+        FROM (
+                 SELECT p.PAY_TENANT_ID           tenant_id,
+                        p.user_id,
+                        CASE
+                            WHEN p.SUBJECTS_ID != 4020 THEN busi_id
+                            ELSE 900000000 END AS busi_id,
+                        p.create_date,
+                        p.txn_amt,
+                        CASE
+                            WHEN p.PAY_CONFIRM = 2 AND p.busi_id in (21000002, 22000028) AND
+                                 DATE_FORMAT(now(), '%Y-%m-%d') <![CDATA[ <= ]]>
+                                        ifnull(
+                                         DATE_FORMAT(
+                                                 (
+                                                     SELECT case
+                                                                when balance_type = 1 or balance_type = 2
+                                                                    then
+                                                                    ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                WHEN balance_type = 3
+                                                                    then
+                                                                    date_format(
+                                                                            ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                            REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                end as formatTime
+                                                     FROM order_payment_days_info_h
+                                                     WHERE order_id = p.order_id
+                                                       and payment_days_type = 1
+                                                     union all
+                                                     SELECT case
+                                                                when balance_type = 1 or balance_type = 2
+                                                                    then
+                                                                    ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                WHEN balance_type = 3 then
+                                                                    date_format(
+                                                                            ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                            REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                end as formatTime
+                                                     FROM order_payment_days_info
+                                                     WHERE order_id = p.order_id
+                                                       and payment_days_type = 1), '%Y-%m-%d'), now())
+                                THEN p.txn_amt
+                            ELSE 0 END         AS paid_normal_amount,
+                        CASE
+                            WHEN p.PAY_CONFIRM = 2 AND (p.busi_id not in (21000002, 22000028) or
+                                                        (p.busi_id in (21000002, 22000028) and
+                                                         DATE_FORMAT(now(), '%Y-%m-%d') <![CDATA[ > ]]>
+        ifnull(DATE_FORMAT(
+                                                                        (
+                                                                            SELECT case
+                                                                                       when balance_type = 1 or balance_type = 2
+                                                                                           then
+                                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                                       WHEN balance_type = 3
+                                                                                           then
+                                                                                           date_format(
+                                                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                                   REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                                       end as formatTime
+                                                                            FROM order_payment_days_info_h
+                                                                            WHERE order_id = p.order_id
+                                                                              and payment_days_type = 1
+                                                                            union all
+                                                                            SELECT case
+                                                                                       when balance_type = 1 or balance_type = 2
+                                                                                           then
+                                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                                       WHEN balance_type = 3 then
+                                                                                           date_format(
+                                                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                                   REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                                       end as formatTime
+                                                                            FROM order_payment_days_info
+                                                                            WHERE order_id = p.order_id
+                                                                              and payment_days_type = 1), '%Y-%m-%d'),
+                                                                now())
+                                                            ))
+                                THEN p.txn_amt
+                            ELSE 0 END         AS paid_overdue_amount,
+                        CASE
+                            WHEN p.PAY_CONFIRM != 2 and p.busi_id in (21000002, 22000028) AND
+                                 DATE_FORMAT(now(), '%Y-%m-%d') <![CDATA[ <= ]]>
+        ifnull(DATE_FORMAT(
+                                                (
+                                                    SELECT case
+                                                               when balance_type = 1 or balance_type = 2
+                                                                   then
+                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                               WHEN balance_type = 3
+                                                                   then
+                                                                   date_format(
+                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                           REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                               end as formatTime
+                                                    FROM order_payment_days_info_h
+                                                    WHERE order_id = p.order_id
+                                                      and payment_days_type = 1
+                                                    union all
+                                                    SELECT case
+                                                               when balance_type = 1 or balance_type = 2
+                                                                   then
+                                                                   ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                               WHEN balance_type = 3 then
+                                                                   date_format(
+                                                                           ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                           REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                               end as formatTime
+                                                    FROM order_payment_days_info
+                                                    WHERE order_id = p.order_id
+                                                      and payment_days_type = 1), '%Y-%m-%d'), now())
+                                THEN p.txn_amt
+                            ELSE 0 END         AS nopaid_normal_amount,
+                        CASE
+                            WHEN p.PAY_CONFIRM != 2 and (p.busi_id not in (21000002, 22000028) or
+                                                         (p.busi_id in (21000002, 22000028) AND
+                                                          DATE_FORMAT(now(), '%Y-%m-%d') <![CDATA[ > ]]>
+        ifnull(DATE_FORMAT(
+                                                                         (
+                                                                             SELECT case
+                                                                                        when balance_type = 1 or balance_type = 2
+                                                                                            then
+                                                                                            ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                                        WHEN balance_type = 3
+                                                                                            then
+                                                                                            date_format(
+                                                                                                    ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                                    REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                                        end as formatTime
+                                                                             FROM order_payment_days_info_h
+                                                                             WHERE order_id = p.order_id
+                                                                               and payment_days_type = 1
+                                                                             union all
+                                                                             SELECT case
+                                                                                        when balance_type = 1 or balance_type = 2
+                                                                                            then
+                                                                                            ADDDATE(oor.create_time, INTERVAL ifnull(collection_time, 0) DAY)
+                                                                                        WHEN balance_type = 3 then
+                                                                                            date_format(
+                                                                                                    ADDDATE(oor.create_time, INTERVAL ifnull(collection_month, 0) MONTH),
+                                                                                                    REPLACE('%Y-%m-%d %h:%i:%s', '%d', ifnull(collection_day, 1)))
+                                                                                        end as formatTime
+                                                                             FROM order_payment_days_info
+                                                                             WHERE order_id = p.order_id
+                                                                               and payment_days_type = 1), '%Y-%m-%d'),
+                                                                 now())
+                                                             ))
+                                THEN p.txn_amt
+                            ELSE 0 END         AS nopaid_overdue_amount
+                 FROM payout_intf p
+                          left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8,
+                      subjects_info s,
+                      user_data_info u,
+                      payout_intf_expansion e
+                 WHERE pay_user_type = 6
+                   AND p.txn_type = 200
+                   AND (p.resp_code != 5 OR p.resp_code IS NULL)
+                   AND (p.is_automatic != 1 OR p.verification_state != 2)
+                   AND p.subjects_id = s.id
+                   AND p.user_id = u.id
+                   AND p.id = e.flow_id
+                   AND p.pay_obj_id is not null
+             ) AS total
+        GROUP BY total.tenant_id,
+                 total.user_id,
+                 total.busi_id,
+                 DATE_FORMAT(total.create_date, '%Y-%m-%d')
+    </select>
+
+    <select id="getPayableMonthReport" resultType="com.youming.youche.finance.dto.PayableMonthReportFinanceDto">
+        SELECT total.tenant_id,
+        total.user_id,
+        DATE_FORMAT(total.create_date, '%Y-%m') create_date,
+        sum(paid_amount) AS paid_amount,
+        sum(nopaid_amount) AS nopaid_amount
+        FROM (
+        SELECT p.PAY_TENANT_ID tenant_id,
+        p.user_id,
+        p.create_date,
+        CASE
+        <!--                            WHEN (p.PAY_CONFIRM = 2 AND p.update_time  <![CDATA[ <= ]]>  p.create_date) or-->
+        <!--                                 (p.PAY_CONFIRM = 2 AND p.update_time <![CDATA[ > ]]> p.create_date) THEN p.txn_amt-->
+        WHEN p.PAY_CONFIRM = 2 THEN p.txn_amt
+        ELSE 0 END AS paid_amount,
+        CASE
+        <!--                            WHEN (p.PAY_CONFIRM != 2 AND now() <![CDATA[ <= ]]>  p.create_date) or-->
+        <!--                                 (p.PAY_CONFIRM != 2 AND now()  <![CDATA[ > ]]>  p.create_date) THEN p.txn_amt-->
+        WHEN p.PAY_CONFIRM != 2 THEN p.txn_amt
+        ELSE 0 END AS nopaid_amount
+        FROM subjects_info s,
+        user_data_info u,
+        payout_intf p,
+        payout_intf_expansion e
+        WHERE pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1 OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        AND p.pay_obj_id is not null
+        ) AS total
+        GROUP BY total.tenant_id,
+        total.user_id,
+        DATE_FORMAT(total.create_date, '%Y-%m')
+    </select>
+    <select id="selectOr" resultType="com.youming.youche.finance.dto.DueDateDetailsCDDto">
+        select p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        p.RESP_CODE respCode,
+        p.PAY_BANK_ACC_NAME name,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        p.SUBJECTS_ID subjectsId,
+        p.pay_user_type userType
+        from payout_intf p,payout_intf_expansion e
+        where p.user_id=#{userId} and p.TXN_TYPE=200 and e.flow_id=p.id
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.BUSI_ID!=21000023 and p.BUSI_ID!=21000113 and p.BUSI_ID!=21000024 or p.VERIFICATION_STATE!=2)
+        <if test="userId != null and userId>0">
+            and p.user_id=#{userId}
+        </if>
+        <if test="name != null and name !=''">
+            and p.PAY_BANK_ACC_NAME like #{name}
+        </if>
+        <if test="orderId != null and orderId>0">
+            and p.ORDER_ID=#{orderId}
+        </if>
+        <if test="businessNumbers != null and businessNumbers !=''">
+            and p.BUSI_ID IN (#{busiId})
+        </if>
+        <if test="isTenant != null and isTenant == true ">
+            and p.TENANT_ID=#{tenantId}
+        </if>
+        <choose>
+            <when test="isTenant != null and isTenant == true">
+                and p.user_type=6
+            </when>
+            <otherwise>
+                and p.user_type=7
+            </otherwise>
+        </choose>
+        <if test="state != null and state !=''">
+            and (
+            <if test='states.contains("0")'>
+                p.PAY_CONFIRM =0
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("2") or states.contains("0")'>
+                <if test='states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM !=3
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0")'>
+                    p.PAY_CONFIRM =or
+                </if>
+                p.RESP_CODE =3
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+    <select id="selectOrS" resultType="com.youming.youche.finance.dto.DueDateDetailsCDDto">
+        select
+        p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        s.NAME name,
+        p.RESP_CODE respCode,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        e.FILE_ID fileId,
+        p.RESP_CODE respCode,
+        e.FILE_URL fileUrl
+        from payout_intf p,sys_tenant_def s,payout_intf_expansion e where p.PAY_TENANT_ID=s.id and p.TXN_TYPE=200 AND
+        (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and p.user_id=#{userId} and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and p.id=e.flow_id
+        <if test="sourceTenantId != null and sourceTenantId>0">
+            and p.PAY_TENANT_ID=#{sourceTenantId}
+        </if>
+        <if test="name != null and name !=''">
+            and s.NAME like #{name}
+        </if>
+        <if test="orderId != null and orderId>0">
+            and p.ORDER_ID=#{orderId}
+        </if>
+        <if test="businessNumbers != null and businessNumbers !=''">
+            and p.BUSI_ID IN
+            <foreach collection="busiId" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        and p.PAY_USER_TYPE = #{userType}
+        <if test="state != null and state !=''">
+            and (
+            <if test='states.contains("0")'>
+                p.PAY_CONFIRM = 0
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("2") or states.contains("0")'>
+                <if test='states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.RESP_CODE !=3
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.RESP_CODE =3
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+
+    <select id="selectOrSsum" resultType="java.lang.Long">
+        select
+        sum(p.txn_amt)
+        from payout_intf p,sys_tenant_def s,payout_intf_expansion e where p.PAY_TENANT_ID=s.id and p.TXN_TYPE=200 AND
+        (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and p.user_id=#{userId} and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and p.id=e.flow_id
+        <!--        and p.pay_confirm != 2 and (p.resp_code != '6' or p.pay_confirm != 1)-->
+        <if test="sourceTenantId != null and sourceTenantId>0">
+            and p.PAY_TENANT_ID=#{sourceTenantId}
+        </if>
+        <if test="name != null and name !=''">
+            and s.NAME like #{name}
+        </if>
+        <if test="orderId != null and orderId>0">
+            and p.ORDER_ID=#{orderId}
+        </if>
+        <if test="businessNumbers != null and businessNumbers !=''">
+            and p.BUSI_ID IN
+            <foreach collection="busiId" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        and p.user_type=#{userType}
+        <if test="state != null and state !=''">
+            and (
+            <if test='states.contains("0")'>
+                p.PAY_CONFIRM =0
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("2") or states.contains("0")'>
+                <if test='states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM !=3
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0")'>
+                    p.PAY_CONFIRM =or
+                </if>
+                p.RESP_CODE =3
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+
+    <select id="getOverdueCDs" resultType="com.youming.youche.finance.dto.order.PayoutInfoDto">
+        select p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.BILL_SERVICE_FEE billServiceFee,
+        p.APPEND_FREIGHT appendFreight,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        p.RECEIVABLES_BANK_ACC_NAME name,
+        p.RESP_CODE respCode,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        p.user_id userId,
+        p.pay_obj_id payObjId,
+        e.IS_NEED_BILL isNeedBill,
+        p.ACCOUNT_TYPE accountType,
+        p.BANK_TYPE bankType,
+        p.ACC_NO accNo,
+        p.PAY_ACC_NO payAccNo,
+        p.SUBJECTS_ID subjectsId,
+        p.user_type userType,
+        p.RESP_CODE respCode,
+        p.pay_user_type payUserType,
+        p.PINGAN_COLLECT_ACCT_ID pinganCollectAcctId,
+        p.vehicle_Affiliation vehicleAffiliation,
+        p.IS_TURN_AUTOMATIC isTurnAutomatic
+        from payout_intf p,payout_intf_expansion e
+        where p.PAY_OBJ_ID=#{payObjId} and p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2) and p.id=e.FLOW_ID
+        <if test="userId != null and userId > 0">
+            and p.user_id= #{userId}
+        </if>
+        <if test="name != null and name != ''">
+            and p.RECEIVABLES_BANK_ACC_NAME like CONCAT('%',#{name},'%')
+        </if>
+        <if test="orderId != null and orderId > 0">
+            and p.ORDER_ID= #{orderId}
+        </if>
+        <if test="businessNumbers != null and businessNumbers != ''">
+            and p.BUSI_ID IN
+            <foreach collection="busiIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="isTenant == true">
+            and p.PAY_TENANT_ID= #{payTenantId}
+        </if>
+        and p.pay_user_type= #{payUserType}
+        <if test="state != null and state != ''">
+            <choose>
+                <when test='states.contains("4")'></when>
+                <otherwise>
+                    and (p.RESP_CODE !=6 or p.RESP_CODE is null)
+                </otherwise>
+            </choose>
+            and (
+            <if test='states.contains("0")'>
+                (p.PAY_CONFIRM =0 and p.IS_AUTOMATIC=0)
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =1
+            </if>
+            <if test='states.contains("2")'>
+                <if test='states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") '>
+                    or
+                </if>
+                p.IS_AUTOMATIC =1
+            </if>
+            <if test='states.contains("4")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0") or states.contains("3") '>
+                    or
+                </if>
+                p.RESP_CODE =6
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+</mapper>

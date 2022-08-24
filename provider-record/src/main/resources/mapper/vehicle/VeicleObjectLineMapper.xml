@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleObjectLineMapper">
+    <!--查询心愿路线-->
+    <select id="getVehicleObjectLine" resultType="com.youming.youche.record.domain.vehicle.VehicleObjectLine">
+        SELECT
+                vehicle_object_line.source_Province sourceProvince,
+                vehicle_object_line.source_Region sourceRegion,
+                vehicle_object_line.source_County sourceCounty,
+                vehicle_object_line.des_Province desProvince,
+                vehicle_object_line.des_Region desRegion,
+                vehicle_object_line.des_County desCounty,
+                vehicle_object_line.carriage_Price carriagePrice,
+                vehicle_object_line.id id
+        FROM
+                vehicle_object_line
+        WHERE
+                vehicle_object_line.vehicle_code = #{vhicleCode}
+        ORDER BY
+                vehicle_object_line.id ASC
+    </select>
+</mapper>

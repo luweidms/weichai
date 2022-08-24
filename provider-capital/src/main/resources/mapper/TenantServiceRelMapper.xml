@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.capital.provider.mapper.TenantServiceRelMapper">
+
+    <select id="doQueryQuotaAmtListByTenantId" resultType="com.youming.youche.capital.domain.TenantServiceRel">
+        select 1 type ,s.service_name serviceName,rel.quota_amt quotaAmt,rel.quota_amt quotaAmtL,rel.use_quota_amt useQuotaAmt,s.service_user_id serviceUserId
+        from
+             tenant_agent_service_rel rel,
+             (SELECT a.ID,b.SERVICE_NAME,b.SERVICE_USER_ID FROM agent_service_info a,service_info b
+             WHERE a.SERVICE_USER_ID=b.SERVICE_USER_ID AND a.agent_Service_Type = #{tenantServiceVo.agentServiceType}) s
+        WHERE s.ID = rel.AGENT_ID
+            and rel.tenant_id = #{tenantServiceVo.tenantId}
+            <if test='tenantServiceVo.quotaAmtType=="1"'>
+                and rel.quota_amt &gt;= 0
+            </if>
+            <if test='tenantServiceVo.quotaAmtType=="0"'>
+                AND ISNULL(rel.quota_amt)
+            </if>
+            <if test="tenantServiceVo.serviceName!=null and tenantServiceVo.serviceName!=''">
+                and s.service_name like concat('%',#{tenantServiceVo.serviceName},'%')
+            </if>
+        union
+        (
+            select
+            2 type,s.service_name serviceName , rel.quota_amt quotaAmt ,rel.quota_amt quotaAmtL,rel.use_quota_amt useQuotaAmt ,s.service_user_id serviceUserId
+            from service_info s,tenant_service_rel rel
+            where s.service_user_id = rel.service_user_id
+                  and rel.tenant_id = #{tenantServiceVo.tenantId}
+                  and s.service_type = 1
+                  AND rel.state=1
+                  AND s.is_auth = 2
+                  AND (rel.invitation_state is null or rel.invitation_state !=3)
+        <if test='tenantServiceVo.quotaAmtType=="1"'>
+                and rel.quota_amt &gt;= 0
+            </if>
+        <if test='tenantServiceVo.quotaAmtType=="0"'>
+                AND ISNULL(rel.quota_amt)
+            </if>
+            <if test="tenantServiceVo.serviceName!=null and tenantServiceVo.serviceName!=''">
+                and s.service_name like concat('%',#{tenantServiceVo.serviceName},'%')
+            </if>
+            )
+    </select>
+    <select id="doQueryQuotaAmtListByTenantIdByPage" resultType="com.youming.youche.capital.domain.TenantServiceRel">
+        select 1 type ,s.service_name serviceName,rel.quota_amt quotaAmt,rel.quota_amt quotaAmtL,rel.use_quota_amt useQuotaAmt,s.service_user_id serviceUserId
+        from
+        tenant_agent_service_rel rel,
+        (SELECT a.ID,b.SERVICE_NAME,b.SERVICE_USER_ID FROM agent_service_info a,service_info b
+        WHERE a.SERVICE_USER_ID=b.SERVICE_USER_ID AND a.agent_Service_Type = #{tenantServiceVo.agentServiceType}) s
+        WHERE s.ID = rel.AGENT_ID
+        and rel.tenant_id = #{tenantServiceVo.tenantId}
+        <if test='tenantServiceVo.quotaAmtType=="1"'>
+            and rel.quota_amt &gt;= 0
+        </if>
+        <if test='tenantServiceVo.quotaAmtType=="0"'>
+            AND ISNULL(rel.quota_amt)
+        </if>
+        <if test="tenantServiceVo.serviceName!=null and tenantServiceVo.serviceName!=''">
+            and s.service_name like concat('%',#{tenantServiceVo.serviceName},'%')
+        </if>
+        union
+        (
+        select
+        2 type,s.service_name serviceName , rel.quota_amt quotaAmt,rel.quota_amt quotaAmtL,rel.use_quota_amt useQuotaAmt ,s.service_user_id serviceUserId
+        from service_info s,tenant_service_rel rel
+        where s.service_user_id = rel.service_user_id
+        and rel.tenant_id = #{tenantServiceVo.tenantId}
+        and s.service_type = 1
+        AND rel.state=1
+        AND s.is_auth = 2
+        AND (rel.invitation_state is null or rel.invitation_state !=3)
+        <if test='tenantServiceVo.quotaAmtType=="1"'>
+            and rel.quota_amt &gt;= 0
+        </if>
+        <if test='tenantServiceVo.quotaAmtType=="0"'>
+            AND ISNULL(rel.quota_amt)
+        </if>
+        <if test="tenantServiceVo.serviceName!=null and tenantServiceVo.serviceName!=''">
+            and s.service_name like concat('%',#{tenantServiceVo.serviceName},'%')
+        </if>
+        )
+    </select>
+
+    <select id="getTableFinancialOilUsedAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select top.tenant_id, (sum(top.useQuotaAmtOne) + sum(top.useQuotaAmtTwo)) as count
+        from (
+        select total.tenant_id,
+        case when total.quotaAmt != 0 then ifnull(total.useQuotaAmt,0) else 0 end as useQuotaAmtOne,
+        case when total.quotaAmt = 0 or total.quotaAmt is null then ifnull(total.useQuotaAmt,0) else 0 end as useQuotaAmtTwo
+        from (
+        SELECT
+        1 type,
+        s.service_name serviceName,
+        rel.quota_amt quotaAmt,
+        rel.use_quota_amt useQuotaAmt,
+        s.service_user_id serviceUserId,
+        rel.tenant_id
+        FROM
+        tenant_agent_service_rel rel,
+        (
+        SELECT
+        a.ID,
+        b.SERVICE_NAME,
+        b.SERVICE_USER_ID
+        FROM
+        agent_service_info a,
+        service_info b
+        WHERE
+        a.SERVICE_USER_ID = b.SERVICE_USER_ID
+        AND a.agent_Service_Type = 1
+        ) s
+        WHERE
+        s.ID = rel.AGENT_ID
+        UNION
+        (
+        SELECT
+        2 type,
+        s.service_name serviceName,
+        rel.quota_amt quotaAmt,
+        rel.use_quota_amt useQuotaAmt,
+        s.service_user_id serviceUserId,
+        rel.tenant_id
+        FROM
+        service_info s,
+        tenant_service_rel rel
+        WHERE
+        s.service_user_id = rel.service_user_id
+        AND s.service_type = 1
+        AND rel.state = 1
+        AND s.is_auth = 2
+        )
+        ) as total ) as top group by top.tenant_id
+    </select>
+
+    <select id="getTableFinacialOilSurpleAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select top.tenant_id, case when sum(top.quotaAmt) = 0 then 0 else sum(top.quotaAmt) - sum(top.useQuotaAmt) end as count
+        from (
+        select tenant_id,
+        case when total.quotaAmt != 0 then ifnull(total.quotaAmt,0) else 0 end as quotaAmt,
+        case when total.quotaAmt != 0 then ifnull(total.useQuotaAmt,0) else 0 end as useQuotaAmt
+        from (
+        SELECT
+        1 type,
+        s.service_name serviceName,
+        rel.quota_amt quotaAmt,
+        rel.use_quota_amt useQuotaAmt,
+        s.service_user_id serviceUserId,
+        rel.tenant_id
+        FROM
+        tenant_agent_service_rel rel,
+        (
+        SELECT
+        a.ID,
+        b.SERVICE_NAME,
+        b.SERVICE_USER_ID
+        FROM
+        agent_service_info a,
+        service_info b
+        WHERE
+        a.SERVICE_USER_ID = b.SERVICE_USER_ID
+        AND a.agent_Service_Type = 1
+        ) s
+        WHERE
+        s.ID = rel.AGENT_ID UNION
+        (
+        SELECT
+        2 type,
+        s.service_name serviceName,
+        rel.quota_amt quotaAmt,
+        rel.use_quota_amt useQuotaAmt,
+        s.service_user_id serviceUserId,
+        rel.tenant_id
+        FROM
+        service_info s,
+        tenant_service_rel rel
+        WHERE
+        s.service_user_id = rel.service_user_id
+        AND s.service_type = 1
+        AND rel.state = 1
+        AND s.is_auth = 2
+        )) as total ) as top group by tenant_id
+    </select>
+</mapper>

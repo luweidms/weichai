@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace=" com.youming.youche.record.provider.mapper.sys.SysSmsBusinessMapper">
+
+    <select id="MAXBid" resultType="java.lang.String">
+            SELECT  max(s.B_ID)
+            FROM sys_sms_business s
+            WHERE s.TENANT_ID=#{tenantId}
+            AND s.bill_id = #{phone}
+            and DATE_FORMAT(s.BUSINESS_DATE,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d')
+    </select>
+
+</mapper>

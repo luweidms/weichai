@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.account.AccountBankRelMapper">
+
+    <select id="isUserTypeBindCardAll" resultType="java.lang.String">
+        SELECT ACCT_NO
+        FROM account_bank_rel abr
+                 left join
+             cmb_bank_account_info cbai
+             on abr.acct_id = cbai.id
+        WHERE user_id = #{userId}
+          AND acct_no IS NOT NULL
+          AND cbai.accLevel = 0
+    </select>
+
+    <select id="queryAccountBankRel" resultType="com.youming.youche.record.domain.account.AccountBankRel">
+        SELECT rel.id as id,
+        rel.ACCT_ID as acctId,
+        rel.USER_ID as userId,
+        rel.BANK_ID as bankId,
+        rel.BANK_NAME as bankName,
+        rel.ACCT_NAME as acctName,
+        rel.ACCT_NO as acctNo,
+        rel.BRANCH_NAME as branchName,
+        rel.BRANCH_ID as branchId,
+        rel.STS_DATE as stsDate,
+        rel.STS as sts,
+        rel.BILLID as billid,
+        rel.PROVINCEID as provinceid,
+        rel.PROVINCE_NAME as provinceName,
+        rel.CITYID as cityid,
+        rel.CITY_NAME as cityName,
+        rel.DISTRICTID as districtid,
+        rel.DISTRICT_NAME as districtName,
+        rel.IDENTIFICATION as identification,
+        rel.TENANT_ID as tenantId,
+        rel.CREATE_DATE as createDate,
+        rel.UPDATE_DATE as updateDate,
+        rel.UPDATE_OP_ID as updateOpId,
+        rel.OP_ID as opId,
+        rel.BANK_TYPE as bankType,
+        rel.WEQR_CODE_ID as weqrCodeId,
+        rel.WEQR_CODE_URL as weqrCodeUrl,
+        rel.WECHAT_ACCOUNT as wechatAccount,
+        rel.PINGAN_COLLECT_ACCT_ID as pinganCollectAcctId,
+        rel.PINGAN_PAY_ACCT_ID as pinganPayAcctId,
+        rel.PINGAN_MOUT_ID as pinganMoutId,
+        typeRel.IS_DEFAULT as isDefaultAcct,
+        rel.PINGAN_NOUT_ID as pinganNoutId,
+        rel.BIND_USER_TYPE as bindUserType,
+        rel.BUSINESS_LICENSE_NO as businessLicenseNo,
+        rel.IS_COLLECT_AMOUNT as isCollectAmount
+        FROM account_bank_user_type_rel typeRel
+        LEFT JOIN account_bank_rel rel ON rel.id = typeRel.BANK_REL_ID
+        WHERE typeRel.USER_ID = #{userId}
+        <if test="bankType!=null and bankType>=0 ">
+            AND typeRel.BANK_TYPE =#{bankType}
+        </if>
+        <if test="userType!=null and userType>=0 ">
+            AND typeRel.USER_TYPE =#{userType}
+        </if>
+    </select>
+    <select id="getTenantCardListByPlatNumber"
+            resultType="com.youming.youche.record.domain.account.AccountBankRel">
+        SELECT abr.*
+        FROM account_bank_rel abr
+        WHERE abr.USER_ID = (
+            SELECT std.ADMIN_USER
+            FROM sys_tenant_def std
+            WHERE std.STATE = 1
+              AND std.id = (
+                SELECT tvr.TENANT_ID
+                FROM tenant_vehicle_rel tvr
+                WHERE tvr.VEHICLE_CLASS = 1
+                  AND tvr.PLATE_NUMBER = #{platNumber}
+            )
+        )
+          AND abr.ACCT_NO IS NOT NULL
+          AND TRIM(abr.ACCT_NO) != ''
+    </select>
+
+</mapper>

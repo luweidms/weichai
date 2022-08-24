@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.youka.VoucherInfoMapper">
+
+<select id="doQueryRechargeConsumeRecord" resultType="com.youming.youche.market.dto.youca.VoucherInfoDto">
+    SELECT * from (select o.* from recharge_consume_record o,service_info s where o.service_user_id = s.service_user_id
+                                                                              AND o.service_user_id =#{serviceUserId}
+                                                                              AND o.tenant_id = #{ tenantId }
+                                                                              AND o.record_Source =1
+                                                                              AND o.record_Type =2
+                                                                              AND o.card_num IN (#{strList} )
+                   order by o.consume_date desc limit 100000000000  ) t group by t.card_num
+</select>
+
+    <select id="getRechargeConsumeRecords" resultType="com.youming.youche.market.dto.youca.RechargeConsumeRecordOut">
+        SELECT
+            rir.*
+        FROM
+            recharge_consume_record rir
+          LEFT JOIN recharge_consume_rebate rcr ON rcr.CONSUME_FLOW_ID = rir.id
+        WHERE
+        1 = 1
+        <if test="serviceUserId!=null and serviceUserId!='' ">
+            AND rir.SERVICE_USER_ID =#{serviceUserId}
+        </if>
+        <if test="tenantId!=null and tenantId!=voucherId!='' ">
+            AND rir.TENANT_ID =#{tenantId}
+        </if>
+        <if test="startTime!=null">
+            AND rir.CONSUME_DATE >=#{startTime}
+        </if>
+        <if test="endTime!=null ">
+            AND rir.CONSUME_DATE &lt;=#{endTime}
+        </if>
+        <if test="cardType!=null and cardType!='' ">
+            AND rir.CARD_TYPE =#{cardType}
+        </if>
+        <if test="recordType!=null and recordType!='' ">
+            AND rir.RECORD_TYPE =#{recordType}
+        </if>
+        <if test="fromType!=null and fromType!='' ">
+            AND rir.SOURCE_TYPE =#{fromType}
+        </if>
+        <if test="voucherId!=null and voucherId!='' ">
+            AND rir.VOUCHER_ID =#{voucherId}
+        </if>
+        <if test="tenantName!=null and tenantName!='' ">
+            AND rir.TENANT_NAME like concat('%',#{tenantName},'%')
+        </if>
+        <if test="serviceName!=null and serviceName!='' ">
+            AND rir.SERVICE_NAME like concat('%',#{serviceName},'%')
+        </if>
+        <if test="cardNum!=null and cardNum!='' ">
+            AND rir.CARD_NUM like concat('%',#{cardNum},'%')
+        </if>
+        <if test="plateNumber!=null and plateNumber!='' ">
+            AND rir.PLATE_NUMBER like concat('%',#{plateNumber},'%')
+        </if>
+        <if test="address!=null and address!='' ">
+            AND rir.CONSUEM_STATION like concat('%',#{address},'%')
+        </if>
+        <if test="dealRemark!=null and dealRemark!='' ">
+            AND rir.deal_Remark like concat('%',#{dealRemark},'%')
+        </if>
+        <if test="orderId!=null and orderId!='' ">
+            AND rir.order_id =#{orderId}
+        </if>
+        <if test="rebate!=null">
+            <choose>
+                <when test="rebate==0">
+                    AND (rir.FLEET_REBATE_AMOUNT &lt;=0 or rir.FLEET_REBATE_AMOUNT is null)
+                </when>
+                <when test="rebate==1">
+                    AND rir.FLEET_REBATE_AMOUNT >0
+                </when>
+            </choose>
+        </if>
+
+    </select>
+    <select id="sumRechargeConsume" resultType="com.youming.youche.market.domain.youka.RechargeConsumeRecord">
+        SELECT
+            sum(
+                    ifnull( rir.OIL_RISE, 0 )) AS oilRise,
+            sum(
+                    IF
+                        (
+                            rir.RECORD_TYPE = 1,
+                            ifnull( rir.AMOUNT, 0 ),
+                            ifnull( rir.AMOUNT, 0 ))) AS amount,
+            sum(
+                    ifnull( rir.SERVICE_REBATE_AMOUNT, 0 )) AS serviceRebateAmount,
+            sum(
+                    ifnull( rir.FLEET_REBATE_AMOUNT, 0 )) AS fleetRebateAmount,
+            sum(
+                    ifnull( rir.PLATFORM_REBATE_AMOUNT, 0 )) AS platformRebateAmount
+        FROM
+            recharge_consume_record rir
+                LEFT JOIN recharge_consume_rebate rcr ON rcr.CONSUME_FLOW_ID = rir.id
+        WHERE
+            1 = 1
+        <if test="serviceUserId!=null and serviceUserId!='' ">
+            AND rir.SERVICE_USER_ID =#{serviceUserId}
+        </if>
+        <if test="tenantId!=null and tenantId!=voucherId!='' ">
+            AND rir.TENANT_ID =#{tenantId}
+        </if>
+        <if test="startTime!=null and startTime!='' ">
+            AND rir.CONSUME_DATE >=#{startTime}
+        </if>
+        <if test="endTime!=null and endTime!='' ">
+            AND rir.CONSUME_DATE &lt;=#{endTime}
+        </if>
+        <if test="cardType!=null and cardType!='' ">
+            AND rir.CARD_TYPE =#{cardType}
+        </if>
+        <if test="recordType!=null and recordType!='' ">
+            AND rir.RECORD_TYPE =#{recordType}
+        </if>
+        <if test="fromType!=null and fromType!='' ">
+            AND rir.SOURCE_TYPE =#{fromType}
+        </if>
+        <if test="voucherId!=null and voucherId!='' ">
+            AND rir.VOUCHER_ID =#{voucherId}
+        </if>
+        <if test="tenantName!=null and tenantName!='' ">
+            AND rir.TENANT_NAME like concat('%',#{tenantName},'%')
+        </if>
+        <if test="serviceName!=null and serviceName!='' ">
+            AND rir.SERVICE_NAME like concat('%',#{serviceName},'%')
+        </if>
+        <if test="cardNum!=null and cardNum!='' ">
+            AND rir.CARD_NUM like concat('%',#{cardNum},'%')
+        </if>
+        <if test="plateNumber!=null and plateNumber!='' ">
+            AND rir.PLATE_NUMBER like concat('%',#{plateNumber},'%')
+        </if>
+        <if test="address!=null and address!='' ">
+            AND rir.CONSUEM_STATION like concat('%',#{address},'%')
+        </if>
+        <if test="dealRemark!=null and dealRemark!='' ">
+            AND rir.deal_Remark like concat('%',#{dealRemark},'%')
+        </if>
+        <if test="orderId!=null and orderId!='' ">
+            AND rir.order_id =#{orderId}
+        </if>
+        <if test="rebate!=null">
+            <choose>
+                <when test="rebate==0">
+                    AND (rir.FLEET_REBATE_AMOUNT &lt;=0 or rir.FLEET_REBATE_AMOUNT is null)
+                </when>
+                <when test="rebate==1">
+                    AND rir.FLEET_REBATE_AMOUNT >0
+                </when>
+            </choose>
+        </if>
+    </select>
+</mapper>

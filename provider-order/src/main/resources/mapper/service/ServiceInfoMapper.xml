@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.service.ServiceInfoMapper">
+    
+    <resultMap id="getAgentServiceDto" type="com.youming.youche.order.dto.AgentServiceDto">
+        <association property="tenantAgentServiceRel" javaType="com.youming.youche.order.domain.order.TenantAgentServiceRel">
+            <id column="tid" property="id" />
+            <result column="tcreate_time" property="createTime" />
+            <result column="tagent_id" property="agentId" />
+            <result column="tend_time" property="endTime" />
+            <result column="tquota_amt" property="quotaAmt" />
+            <result column="tstart_time" property="startTime" />
+            <result column="tstate" property="state" />
+            <result column="ttenant_id" property="tenantId" />
+            <result column="tuse_quota_amt" property="useQuotaAmt" />
+            <result column="tupdate_time" property="updateTime" />
+        </association>
+        <association property="agentServiceInfo" javaType="com.youming.youche.order.domain.AgentServiceInfo">
+            <id column="aid" property="id" />
+            <result column="aagent_service_type" property="agentServiceType" />
+            <result column="acal_rebate_time" property="calRebateTime" />
+            <result column="aconsumption_imt_time" property="consumptionImtTime" />
+            <result column="agcb_account" property="gcbAccount" />
+            <result column="agcb_password" property="gcbPassword" />
+            <result column="alg_oil_station_id" property="lgOilStationId" />
+            <result column="ano_bill_state" property="noBillState" />
+            <result column="arebate_bill" property="rebateBill" />
+            <result column="arebate_month" property="rebateMonth" />
+            <result column="aservice_user_id" property="serviceUserId" />
+            <result column="astate" property="state" />
+            <result column="acreate_time" property="createTime" />
+            <result column="aupdate_time" property="updateTime" />
+        </association>
+        <association property="serviceInfo" javaType="com.youming.youche.order.domain.service.ServiceInfo">
+            <id column="sid" property="id" />
+            <result column="sservice_user_id" property="serviceUserId" />
+            <result column="scompany_address" property="companyAddress" />
+            <result column="sservice_name" property="serviceName" />
+            <result column="sservice_type" property="serviceType" />
+            <result column="sstate" property="state" />
+            <result column="sop_id" property="opId" />
+            <result column="supdate_time" property="updateTime" />
+            <result column="screate_time" property="createTime" />
+            <result column="sis_bill_ability" property="isBillAbility" />
+            <result column="sauth_man_id" property="authManId" />
+            <result column="sauth_man_name" property="authManName" />
+            <result column="sauth_date" property="authDate" />
+            <result column="sauth_flag" property="authFlag" />
+            <result column="sauth_reason" property="authReason" />
+            <result column="sis_auth" property="isAuth" />
+            <result column="stenant_id" property="tenantId" />
+            <result column="slogo_id" property="logoId" />
+            <result column="slogo_url" property="logoUrl" />
+            <result column="sagent_collection" property="agentCollection" />
+            <result column="screate_date" property="createDate" />
+            <result column="sop_date" property="opDate" />
+        </association>
+    </resultMap>
+
+    <select id="getAgentService" resultMap="getAgentServiceDto">
+        SELECT
+        t.id as	tid,
+        t.create_time as	tcreate_time,
+        t.agent_id as	tagent_id,
+        t.end_time  as	tend_time,
+        t.quota_amt as	tquota_amt,
+        t.start_time as	tstart_time,
+        t.state as	tstate,
+        t.tenant_id as	ttenant_id,
+        t.use_quota_amt as	tuse_quota_amt,
+        t.update_time as	tupdate_time,
+        a.id as	aid,
+        a.agent_service_type as	aagent_service_type,
+        a.cal_rebate_time as	acal_rebate_time,
+        a.consumption_imt_time as	aconsumption_imt_time,
+        a.gcb_account as	agcb_account,
+        a.gcb_password as	agcb_password,
+        a.lg_oil_station_id as alg_oil_station_id,
+        a.no_bill_state as ano_bill_state,
+        a.rebate_bill as arebate_bill,
+        a.rebate_month as arebate_month,
+        a.service_user_id as aservice_user_id,
+        a.state as astate,
+        a.create_time as acreate_time,
+        a.update_time as aupdate_time,
+        s.id as sid,
+        s.service_user_id as sservice_user_id,
+        s.company_address as scompany_address,
+        s.service_name as sservice_name,
+        s.service_type as sservice_type,
+        s.state as sstate,
+        s.op_id as sop_id,
+        s.update_time as supdate_time,
+        s.create_time as screate_time,
+        s.is_bill_ability as sis_bill_ability,
+        s.auth_man_id as sauth_man_id,
+        s.auth_man_name as sauth_man_name,
+        s.auth_date as sauth_date,
+        s.auth_flag as sauth_flag,
+        s.auth_reason as sauth_reason,
+        s.is_auth as sis_auth,
+        s.tenant_id as stenant_id,
+        s.logo_id as slogo_id,
+        s.logo_url as slogo_url,
+        s.agent_collection as sagent_collection,
+        s.create_date as	screate_date,
+        s.op_date	as sop_date
+        from tenant_agent_service_rel t , agent_service_info a,service_info s
+        where t.agent_id = a.id and a.service_user_id=s.service_user_id
+        and a.state = 1
+        and t.start_time <![CDATA[ <= ]]> now()
+        and t.end_time <![CDATA[ > ]]> now()
+        and a.agent_Service_Type = #{agentServiceType}
+        and t.tenant_id = #{tenantId}
+        limit 1
+    </select>
+
+    <select id="getAgentServiceByServiceId" resultMap="getAgentServiceDto">
+        SELECT
+        t.id as	tid,
+        t.create_time as	tcreate_time,
+        t.agent_id as	tagent_id,
+        t.end_time  as	tend_time,
+        t.quota_amt as	tquota_amt,
+        t.start_time as	tstart_time,
+        t.state as	tstate,
+        t.tenant_id as	ttenant_id,
+        t.use_quota_amt as	tuse_quota_amt,
+        t.update_time as	tupdate_time,
+        a.id as	aid,
+        a.agent_service_type as	aagent_service_type,
+        a.cal_rebate_time as	acal_rebate_time,
+        a.consumption_imt_time as	aconsumption_imt_time,
+        a.gcb_account as	agcb_account,
+        a.gcb_password as	agcb_password,
+        a.lg_oil_station_id as alg_oil_station_id,
+        a.no_bill_state as ano_bill_state,
+        a.rebate_bill as arebate_bill,
+        a.rebate_month as arebate_month,
+        a.service_user_id as aservice_user_id,
+        a.state as astate,
+        a.create_time as acreate_time,
+        a.update_time as aupdate_time,
+        s.id as sid,
+        s.service_user_id as sservice_user_id,
+        s.company_address as scompany_address,
+        s.service_name as sservice_name,
+        s.service_type as sservice_type,
+        s.state as sstate,
+        s.op_id as sop_id,
+        s.update_time as supdate_time,
+        s.create_time as screate_time,
+        s.is_bill_ability as sis_bill_ability,
+        s.auth_man_id as sauth_man_id,
+        s.auth_man_name as sauth_man_name,
+        s.auth_date as sauth_date,
+        s.auth_flag as sauth_flag,
+        s.auth_reason as sauth_reason,
+        s.is_auth as sis_auth,
+        s.tenant_id as stenant_id,
+        s.logo_id as slogo_id,
+        s.logo_url as slogo_url,
+        s.agent_collection as sagent_collection,
+        s.create_date as	screate_date,
+        s.op_date	as sop_date
+        from tenant_agent_service_rel t , agent_service_info a,service_info s
+        where t.agent_id = a.id and a.service_user_id=s.service_user_id
+        and a.service_user_id = #{serviceId}
+        and a.agent_service_type = #{agentServiceType}
+        limit 1
+    </select>
+</mapper>

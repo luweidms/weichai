@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.UserReceiverInfoMapper">
+
+    <select id="queryAll" resultType="com.youming.youche.record.dto.tenant.TenantReceiverRelDto">
+        select * from (
+        select
+        tr.id id,
+        tr.remark as remark,
+        tr.tenant_id as tenantid,
+        tr.create_time as createdate,
+        tr.update_time as updatedate,
+        r.id as receiverid,
+        r.receiver_name as receivername,
+        (CASE WHEN a.acct_no is not null THEN 1 ELSE 2 end )as bindcard,
+        u.linkman as linkman,
+        u.mobile_phone as mobilephone,
+        u.id as userId
+        from
+        tenant_receiver_rel tr
+        INNER join user_receiver_info r on tr.receiver_id = r.id
+        INNER join user_data_info u on r.user_id = u.id
+        left join (
+        select
+        user_id,
+        replace (( group_concat( trim(acct_no ))), ',', '' ) as acct_no
+        from
+        account_bank_rel
+        group by
+        user_id
+        ) as a on u.id = a.user_id
+        <where>
+            tr.TENANT_ID =#{tenantId}
+
+            <if test="tenantReceiverRelVo.remark!=null and tenantReceiverRelVo.remark!=''">
+                and tr.remark like concat('%',#{tenantReceiverRelVo.remark},'%')
+            </if>
+            <if test="tenantReceiverRelVo.receiverName!=null and tenantReceiverRelVo.receiverName!=''">
+                and r.receiver_name like concat('%',#{tenantReceiverRelVo.receiverName},'%')
+            </if>
+            <if test="tenantReceiverRelVo.linkman!=null and tenantReceiverRelVo.linkman!=''">
+                and u.linkman like concat('%',#{tenantReceiverRelVo.linkman},'%')
+            </if>
+            <if test="tenantReceiverRelVo.mobilePhone!=null and tenantReceiverRelVo.mobilePhone!=''">
+                and u.mobile_phone like concat('%',#{tenantReceiverRelVo.mobilePhone},'%')
+            </if>
+
+        </where>
+        ) as s
+        <where>
+            <if test="tenantReceiverRelVo.bindcard!=null and tenantReceiverRelVo.bindcard!=''">
+                and s.bindcard =#{tenantReceiverRelVo.bindCard}
+            </if>
+        </where>
+        ORDER BY s.createdate desc
+    </select>
+
+    <select id="ContractById" resultType="com.youming.youche.record.domain.tenant.TenantReceiverRel">
+        select
+        tr.id id,
+        tr.remark as remark,
+        tr.tenant_id as tenantid,
+        tr.update_time as createdate,
+        tr.create_time as updatedate,
+        r.id as receiverid,
+        r.receiver_name as receivername,
+        (CASE WHEN a.acct_no is not null THEN 1 ELSE 2 end )as bindcard,
+        u.linkman as linkman,
+        u.mobile_phone as mobilephone
+        from
+        tenant_receiver_rel tr
+        inner join user_receiver_info r on tr.receiver_id = r.id
+        inner join user_data_info u on r.user_id = u.id
+        left join (
+        select
+        utr.user_id,
+        replace (( group_concat( trim( abr.acct_no ))), ',', '' ) as acct_no
+        from
+        account_bank_user_type_rel utr
+        left join account_bank_rel abr on abr.id = utr.bank_rel_id
+        where
+        utr.user_type = 7
+        group by
+        utr.user_id
+        ) as a on u.id = a.user_id
+        <where>
+            <if test="id!=0">
+                tr.id =#{id}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteTeantReceiverById">
+        delete
+        from tenant_receiver_rel
+        where id = #{relid}
+    </delete>
+
+    <insert id="createTenantReceiverRel" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tenant_receiver_rel
+            (
+             TENANT_ID,
+             RECEIVER_ID,
+             REMARK,
+             create_time,
+             update_time
+             )
+        VALUES (
+                #{tenantId},
+                #{receiverId},
+                #{remark},
+                #{createTime},
+                #{updateTime}
+
+                )
+    </insert>
+
+    <update id="updateBytenant">
+        UPDATE tenant_receiver_rel
+        SET REMARK=#{tenantReceiverRel.remark},
+            update_time=#{tenantReceiverRel.updateTime}
+        WHERE id=#{tenantReceiverRel.id}
+    </update>
+
+    <select id="getTenantReceiverRel" resultType="com.youming.youche.record.domain.tenant.TenantReceiverRel">
+        select * from tenant_receiver_rel where RECEIVER_ID =#{receiverId} and TENANT_ID=#{tenantId}
+    </select>
+
+    <select id="getTenantReceiverRelByUserId" resultType="com.youming.youche.record.domain.tenant.TenantReceiverRel">
+        select * from tenant_receiver_rel where RECEIVER_ID =#{receiverId}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
+</mapper>

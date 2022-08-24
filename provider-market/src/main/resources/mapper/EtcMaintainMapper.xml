@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.etc.EtcMaintainMapper">
+
+    <resultMap id="etcMan" type="com.youming.youche.market.dto.etc.EtcMaintainDto">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="etc_id" property="etcId" jdbcType="VARCHAR"/>
+        <result column="etc_card_type" property="etcCardType" jdbcType="INTEGER"/>
+        <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="payment_type" property="paymentType" jdbcType="INTEGER"/>
+        <result column="product_name" property="productName" jdbcType="VARCHAR"/>
+        <result column="account_period_remark" property="accountPeriodRemark" jdbcType="VARCHAR"/>
+        <result column="bind_vehicle" property="bindVehicle" jdbcType="VARCHAR"/>
+        <result column="state" property="state" jdbcType="INTEGER"/>
+        <result column="service_name_id" property="service_name_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--  查询列表  -->
+    <select id="selectAll" resultMap="etcMan" resultType="com.youming.youche.market.dto.etc.EtcMaintainDto">
+        SELECT
+        id,
+        etc_id,
+        etc_card_type,
+        service_name,
+        user_id,
+        payment_type,
+        product_name,
+        account_period_remark,
+        bind_vehicle,
+        state,
+        vehicle_code,
+        service_name_id
+        FROM
+        etc_maintain
+        where TENANT_ID=#{etcMaintainQueryVo.tenantId}
+        <if test="etcMaintainQueryVo.etcId != null and etcMaintainQueryVo.etcId != ''">
+            and ETC_ID like concat('%',#{etcMaintainQueryVo.etcId},'%')
+        </if>
+        <if test="etcMaintainQueryVo.serviceName != null and etcMaintainQueryVo.serviceName != ''">
+            and SERVICE_NAME like concat('%',#{etcMaintainQueryVo.serviceName},'%')
+        </if>
+        <if test="etcMaintainQueryVo.bindVehicle != null and etcMaintainQueryVo.bindVehicle != ''">
+            and BIND_VEHICLE like concat('%',#{etcMaintainQueryVo.bindVehicle},'%')
+        </if>
+        <if test="etcMaintainQueryVo.productName != null and etcMaintainQueryVo.productName != ''">
+            and PRODUCT_NAME like concat('%',#{etcMaintainQueryVo.productName},'%')
+        </if>
+        <if test="etcMaintainQueryVo.state != null">
+            and STATE = #{etcMaintainQueryVo.state}
+        </if>
+        <if test="etcMaintainQueryVo.paymentType != null">
+            and PAYMENT_TYPE = #{etcMaintainQueryVo.paymentType}
+        </if>
+        <if test="etcMaintainQueryVo.etcCardType!= null and etcMaintainQueryVo.etcCardType  &gt; 0  ">
+            and etc_card_type = #{etcMaintainQueryVo.etcCardType}
+        </if>
+        order by id DESC
+    </select>
+
+    <!--  根据车牌号查询车辆信息  -->
+
+    <select id="seletcVehicleByPlateNumber" resultType="com.youming.youche.market.dto.etc.EtcBindVehicleDto">
+
+        <!--
+                 SELECT
+            vehicle.id as vehicleCode,
+            vehicle.plate_Number as plateNumber,
+            vehicle.driver_user_id as driverUserId,
+            r.linkman as linkman,
+            r.mobile_phone as mobilePhone
+        FROM
+          vehicle_data_info  vehicle
+		  LEFT JOIN tenant_vehicle_rel rel ON rel.vehicle_code = vehicle.id
+		  LEFT JOIN user_data_info as r ON r.id = vehicle.driver_user_id
+        WHERE
+            vehicle.id = rel.vehicle_code
+          AND vehicle.plate_number = rel.plate_number
+          AND rel.tenant_id = #{tenantId}
+          AND vehicle.plate_number LIKE concat('%',#{plateNumber},'%')
+          AND
+            IF
+            (
+            rel.vehicle_class = 1,
+            vehicle.auth_state = 2
+          AND ( rel.auth_state = 2 OR rel.auth_state IS NULL ),
+            1 = 1
+            )
+         -->
+			 SELECT
+            vehicle.id as vehicleCode,
+            vehicle.plate_Number as plateNumber,
+            vehicle.driver_user_id as driverUserId,
+            r.linkman as linkman,
+            r.mobile_phone as mobilePhone
+        FROM
+          vehicle_data_info  vehicle
+		 	 LEFT JOIN tenant_vehicle_rel rel ON rel.vehicle_code = vehicle.id
+			LEFT JOIN user_data_info  r ON r.id = vehicle.driver_user_id
+        WHERE vehicle.tenant_id =  #{tenantId}
+          AND vehicle.plate_number   LIKE concat('%',#{plateNumber},'%')
+              AND
+            IF
+            (
+            rel.vehicle_class = 1,
+            vehicle.auth_state = 2
+          AND ( rel.auth_state = 2 OR rel.auth_state IS NULL ),
+            1 = 1
+            )
+    </select>
+
+    <!--  检查ETC绑定车辆  -->
+    <select id="checkEtcBindVehicle" resultType="int">
+        SELECT
+            count( id )
+        FROM
+            etc_maintain
+        WHERE
+            tenant_id = #{tenantId}
+          AND bind_Vehicle = #{bindVehicle}
+    </select>
+</mapper>

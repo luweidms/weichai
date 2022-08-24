@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.receivable.DailyAccountsReceivableMapper">
+
+    <select id="executeQuery" resultType="com.youming.youche.finance.dto.receivable.DailyAccountsReceivableExecuteDto">
+        SELECT
+            o.order_id AS orderId,
+            o.order_state AS orderState,
+            fs.bill_number AS billNumber,
+            IFNULL( g.custom_user_id, 0 ) AS customUserId,
+            (
+            IF
+                (
+                    o.order_type = 3,
+                    (
+                    IFNULL( ofe.income_cash_fee, 0 ) + IFNULL( ofe.income_arrive_payment_fee, 0 )+ IFNULL( ofe.income_final_fee, 0 )- IFNULL( ofe.income_insurance_fee, 0 )),
+                IFNULL( f.cost_price, 0 ))
+            ) AS costPrice,
+            fs.get_amount AS getAmount,
+            opdi.balance_type AS balanceType,
+            DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+            opdi.collection_time AS collectionTime,
+            null AS updateTime,
+            opdi.collection_month AS collectionMonth,
+            opdi.collection_day AS collectionDay,
+            DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDate,
+            o.tenant_id AS tenantId
+        FROM
+            order_info o
+            LEFT JOIN order_fee f ON o.order_id = f.order_id
+            LEFT JOIN order_goods g ON o.order_id = g.order_id
+            LEFT JOIN order_scheduler s ON o.order_id = s.order_id
+            LEFT JOIN order_fee_statement fs ON o.order_id = fs.order_id
+            LEFT JOIN order_payment_days_info opdi ON o.order_id = opdi.order_id
+            LEFT JOIN order_fee_ext ofe ON o.order_id = ofe.order_id
+        WHERE
+            opdi.balance_type IS NOT NULL
+            AND opdi.payment_days_type = 2
+            AND o.ORDER_STATE >= 7
+            AND (
+                o.ORDER_STATE != 15
+                OR (
+                    o.ORDER_STATE = 15
+                    AND (
+                        fs.BILL_NUMBER IS NOT NULL
+                    OR ( income_exception_fee IS NOT NULL OR income_exception_fee != 0 )))) UNION
+        SELECT
+            o.order_id AS orderId,
+            o.order_state AS orderState,
+            fs.bill_number AS billNumber,
+            IFNULL( g.custom_user_id, 0 ) AS customUserId,
+            (
+            IF
+                (
+                    o.order_type = 3,
+                    (
+                    IFNULL( ofe.income_cash_fee, 0 ) + IFNULL( ofe.income_arrive_payment_fee, 0 )+ IFNULL( ofe.income_final_fee, 0 )- IFNULL( ofe.income_insurance_fee, 0 )),
+                IFNULL( f.cost_price, 0 ))
+            ) AS costPrice,
+            fs.get_amount AS getAmount,
+            opdi.balance_type AS balanceType,
+            DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+            opdi.collection_time AS collectionTime,
+            DATE_FORMAT( o.end_date, '%Y-%m-%d' ) AS updateTime,
+            opdi.collection_month AS collectionMonth,
+            opdi.collection_day AS collectionDay,
+            DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDate,
+            o.tenant_id AS tenantId
+        FROM
+            order_info_h o
+            LEFT JOIN order_fee_h f ON o.order_id = f.order_id
+            LEFT JOIN order_goods_h g ON o.order_id = g.order_id
+            LEFT JOIN order_scheduler_h s ON o.order_id = s.order_id
+            LEFT JOIN order_fee_statement_h fs ON o.order_id = fs.order_id
+            LEFT JOIN order_payment_days_info_h opdi ON o.order_id = opdi.order_id
+            LEFT JOIN order_fee_ext_h ofe ON o.order_id = ofe.order_id
+        WHERE
+            opdi.balance_type IS NOT NULL
+            AND opdi.payment_days_type = 2
+            AND o.ORDER_STATE >= 7
+            AND (
+                o.ORDER_STATE != 15
+                OR (
+                    o.ORDER_STATE = 15
+                    AND (
+                    fs.BILL_NUMBER IS NOT NULL
+            OR ( income_exception_fee IS NOT NULL OR income_exception_fee != 0 ))))
+    </select>
+
+    <sql id="query">
+        SELECT
+        IFNULL (( SELECT company_name FROM cm_customer_info cmi WHERE cmi.id = customer_id ),'三方') AS customerFullName,
+        receivable_date AS receivableDate,
+        SUM( amount_receivable ) AS amountReceivable,
+        SUM( received_normal ) AS receivedNormal,
+        SUM( received_overdue ) AS receivedOverdue,
+        SUM( uncollected_normal ) AS uncollectedNormal,
+        SUM( uncollected_overdue ) AS uncollectedOverdue
+        FROM
+        daily_accounts_receivable
+        WHERE
+        DATE_FORMAT( create_time, '%Y-%m-%d' ) = DATE_FORMAT( NOW(), '%Y-%m-%d' )
+        AND tenant_id = #{tenantId}
+        <if test="ids != null and ids != ''">
+            AND customer_id IN ( ${ids} )
+        </if>
+        AND DATE_FORMAT( receivable_date, '%Y-%m' ) = #{month}
+        GROUP BY
+        customer_id,
+        receivable_date
+        ORDER BY
+        receivable_date DESC
+    </sql>
+
+    <select id="queryInfo" resultType="com.youming.youche.table.domain.receivable.DailyAccountsReceivable">
+        <include refid="query"/>
+    </select>
+
+    <select id="queryInfoExport" resultType="com.youming.youche.table.domain.receivable.DailyAccountsReceivable">
+        <include refid="query"/>
+    </select>
+
+    <sql id="sqlDetails">
+        o.order_id AS orderId,
+        s.depend_time AS dependDate,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        NULL AS customerId,
+        o.source_region AS startPoint,
+        o.des_region AS endPoint,
+        s.source_name AS sourceName,
+        o.order_type AS lineProp,
+        o.org_id AS orgId,
+        concat( ifnull( g.weight, 0 ), '吨/', ifnull( g.square, 0 ), '方' ) AS goodsInfo,
+        s.plate_number AS plateNumber,
+        concat((
+            SELECT
+                ssd.code_name
+            FROM
+                sys_static_data ssd
+            WHERE
+                ssd.code_type = 'vehicle_status'
+                AND ssd.id = s.car_status
+                ),
+            '/',
+            ( SELECT ssd.CODE_NAME FROM sys_static_data ssd WHERE ssd.CODE_TYPE = 'VEHICLE_LENGTH' AND ssd.id = s.CAR_LENGH )
+        ) AS carType,
+        s.trailer_plate AS trailerPlate,
+        o.order_type AS orderType,
+        o.order_state AS orderState,
+        ( SELECT COUNT( 1 ) FROM order_bill_invoice i WHERE i.BILL_NUMBER = fs.bill_number ) AS receiptNumber,
+        fs.finance_sts AS financeSts,
+        fs.get_amount AS getAmount,
+        fs.bill_number AS billNumber,
+        o.create_time,
+        opdi.balance_type AS balanceType,
+        DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+        opdi.collection_time AS collectionTime,
+        null AS updateTime,
+        opdi.collection_month AS collectionMonth,
+        opdi.collection_day AS collectionDay,
+        DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDate
+    </sql>
+
+    <sql id="sqlDetailsH">
+        o.order_id AS orderId,
+        s.depend_time AS dependDate,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        NULL AS customerId,
+        o.source_region AS startPoint,
+        o.des_region AS endPoint,
+        s.source_name AS sourceName,
+        o.order_type AS lineProp,
+        o.org_id AS orgId,
+        concat( ifnull( g.weight, 0 ), '吨/', ifnull( g.square, 0 ), '方' ) AS goodsInfo,
+        s.plate_number AS plateNumber,
+        concat((
+            SELECT
+                ssd.code_name
+            FROM
+                sys_static_data ssd
+            WHERE
+                ssd.code_type = 'vehicle_status'
+                AND ssd.id = s.car_status
+                ),
+            '/',
+            ( SELECT ssd.CODE_NAME FROM sys_static_data ssd WHERE ssd.CODE_TYPE = 'VEHICLE_LENGTH' AND ssd.id = s.CAR_LENGH )
+        ) AS carType,
+        s.trailer_plate AS trailerPlate,
+        o.order_type AS orderType,
+        o.order_state AS orderState,
+        ( SELECT COUNT( 1 ) FROM order_bill_invoice i WHERE i.BILL_NUMBER = fs.bill_number ) AS receiptNumber,
+        fs.finance_sts AS financeSts,
+        fs.get_amount AS getAmount,
+        fs.bill_number AS billNumber,
+        o.create_time,
+        opdi.balance_type AS balanceType,
+        DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+        opdi.collection_time AS collectionTime,
+        DATE_FORMAT( o.end_date, '%Y-%m-%d' ) AS updateTime,
+        opdi.collection_month AS collectionMonth,
+        opdi.collection_day AS collectionDay,
+        DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDate
+    </sql>
+
+    <sql id="detailsWhere">
+        o.tenant_id = #{vo.tenantId} AND o.order_state <![CDATA[ >= ]]> 7 AND opdi.balance_type IS NOT NULL AND opdi.payment_days_type = 2
+        <if test="vo.orderId != null and vo.orderId != ''">
+            AND o.order_id LIKE concat( '%',#{vo.orderId}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND o.order_type IN (${type})
+        </if>
+        <if test="vo.beginDependTime != null and vo.beginDependTime != ''">
+            AND s.depend_time <![CDATA[ >= ]]> #{vo.beginDependTime}
+        </if>
+        <if test="vo.endDependTime != null and vo.endDependTime != ''">
+            AND s.depend_time <![CDATA[ <= ]]> #{vo.endDependTime}
+        </if>
+        <if test="vo.orderState != null and vo.orderState > 0">
+            AND o.order_state = #{vo.orderState}
+        </if>
+        <if test="vo.receiptNumber != null and vo.receiptNumber != ''">
+            AND fs.bill_number IN (
+            SELECT
+            i.bill_number
+            FROM
+            order_bill_invoice i
+            WHERE
+            receipt_number LIKE concat ( '%',#{vo.receiptNumber}, '%' ))
+        </if>
+        <if test="vo.orgId != null and vo.orgId != ''">
+            AND o.org_id IN ( ${vo.orgId} )
+        </if>
+        <if test="vo.sourceName != null and vo.sourceName != ''">
+            AND s.source_name LIKE concat( '%',#{vo.sourceName}, '%' )
+        </if>
+        <if test="vo.financeSts != null and vo.financeSts > 0">
+            AND fs.finance_sts = #{vo.financeSts}
+        </if>
+        <if test="vo.financeSts != null and vo.financeSts == 0">
+            AND fs.finance_sts IN (0,3)
+        </if>
+        <if test="vo.customerIds != null and vo.customerIds != ''">
+            AND o.order_id IN ( SELECT order_id FROM order_receipt WHERE recive_number IN (${vo.customerIds}) )
+        </if>
+        <if test="vo.isCreateBill != null and vo.isCreateBill == 1">
+            AND fs.bill_number IS NOT NULL
+        </if>
+        <if test="vo.isCreateBill != null and vo.isCreateBill == 2">
+            AND fs.bill_number IS NULL
+        </if>
+        <if test="vo.billNumber != null and vo.billNumber != ''">
+            AND fs.bill_number LIKE concat( '%',#{vo.billNumber}, '%' )
+        </if>
+        <if test="vo.customNumber != null and vo.customNumber != ''">
+            AND (${vo.customNumber})
+        </if>
+        <if test="vo.plateNumber != null and vo.plateNumber != ''">
+            AND s.plate_number LIKE concat( '%',#{vo.plateNumber}, '%' )
+        </if>
+        <if test="vo.name != null and vo.name != ''">
+            AND g.company_name = #{vo.name}
+        </if>
+    </sql>
+
+    <sql id="details">
+        SELECT * FROM
+        (SELECT
+        <include refid="sqlDetails"/>
+        FROM
+        order_info o
+        LEFT JOIN order_goods g ON o.order_id = g.order_id
+        LEFT JOIN order_scheduler s ON o.order_id = s.order_id
+        LEFT JOIN order_fee f ON o.order_id = f.order_id
+        LEFT JOIN order_fee_statement fs ON o.order_id = fs.order_id
+        LEFT JOIN order_payment_days_info opdi ON o.order_id = opdi.order_id
+        WHERE
+        <include refid="detailsWhere"/>
+        UNION
+        SELECT
+        <include refid="sqlDetailsH"/>
+        FROM
+        order_info_h o
+        LEFT JOIN order_goods_h g ON o.order_id = g.order_id
+        LEFT JOIN order_scheduler_h s ON o.order_id = s.order_id
+        LEFT JOIN order_fee_h f ON o.order_id = f.order_id
+        LEFT JOIN order_fee_statement_h fs ON o.order_id = fs.order_id
+        LEFT JOIN order_payment_days_info_h opdi ON o.order_id = opdi.order_id
+        WHERE
+        <include refid="detailsWhere"/>
+        ) a
+        ORDER BY a.create_time DESC
+    </sql>
+
+    <select id="receivableDetails" resultType="com.youming.youche.table.dto.receivable.ReceivableDetailsDto">
+        <include refid="details"/>
+    </select>
+
+</mapper>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.ClaimExpenseInfoMapper">
+
+    <select id="doQuery" resultType="com.youming.youche.finance.dto.ClaimExpenseCategoryDto">
+        SELECT e.*
+        from  claim_expense_info e
+        where 1=1
+        <if test="waitDeal">
+            <choose>
+                <when test="lids!=null and lids.size() &gt; 0">
+                    and e.id in
+                    <foreach collection="lids" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                    and e.STS in(1,2)
+                </when>
+                <otherwise>
+                    and e.id = ''
+                </otherwise>
+            </choose>
+        </if>
+        <if test="stairCategory!=null ">
+            AND e.STAIR_CATEGORY = #{stairCategory}
+        </if>
+        <if test="type!=null">
+            and e.expense_type = #{type}
+        </if>
+        <if test="secondLevelCategory!=null and secondLevelCategory>0">
+            AND e.SECOND_LEVEL_CATEGORY = #{secondLevelCategory}
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND e.user_info_name like concat('%',#{userName},'%')
+        </if>
+
+        <if test="userId!=null and userId!=''">
+            AND e.USER_ID = #{userId}
+        </if>
+        <choose>
+            <when test="userId!=null">
+              and e.user_id = #{userId}
+            </when>
+            <otherwise>
+                and e.tenant_id = #{tenantId}
+            </otherwise>
+        </choose>
+
+        <if test="userPhone!=null and userPhone!=''">
+            AND e.user_info_phone like  concat('%',#{userPhone},'%')
+        </if>
+        <if test="plateNumber!=null and plateNumber!=''">
+            AND e.PLATE_NUMBER like  concat('%',#{plateNumber},'%')
+        </if>
+        <if test="specialExpenseNum!=null and specialExpenseNum!=''">
+            AND e.SPECIAL_EXPENSE_NUM like  concat('%',#{specialExpenseNum},'%')
+        </if>
+        <if test="startTime!=null">
+            AND e.APP_DATE >= #{startTime}
+        </if>
+        <if test="endTime!=null ">
+            AND e.APP_DATE <![CDATA[ <= ]]> #{endTime}
+        </if>
+        <if test="orderId!=null and orderId!=''">
+            AND e.ORDER_ID = #{orderId}
+        </if>
+        <if test="flowId!=null and flowId!=''">
+            AND e.FLOW_ID = #{flowId}
+        </if>
+
+<!--        <if test="expenseType== 2 or expenseType==1 or expenseType!=''">-->
+<!--            AND e.EXPENSE_TYPE = #{expenseType}-->
+<!--        </if>-->
+<!--        <if test="expenseType==2 and stairCategoryList!=null">-->
+<!--            and e.STAIR_CATEGORY in (-->
+<!--            <foreach collection="stairCategoryList" item="stair" separator=",">-->
+<!--                #{stair}-->
+<!--            </foreach>-->
+<!--            )-->
+<!--        </if>-->
+
+<!--        <if test="expenseType==1 and stairCategoryList!=null">-->
+<!--            and e.STAIR_CATEGORY = #{stairCategoryList}-->
+<!--            <if test="secondLevelCategoryList!=null">-->
+<!--                and e.SECOND_LEVEL_CATEGORY in(-->
+<!--                <foreach collection="secondLevelCategoryList" item="sec" separator=",">-->
+<!--                    #{sec}-->
+<!--                </foreach>-->
+<!--                )-->
+<!--            </if>-->
+<!--        </if>-->
+
+        <if test="expenseStsList!=null">
+            and  e.STS in(
+            <foreach collection="expenseStsList" item="sts" separator=",">
+                #{sts}
+            </foreach>
+            )
+        </if>
+        <if test="expenseSts!=null">
+            AND e.STS = #{expenseSts}
+        </if>
+
+<!--        <if test="subOrgList!=null and subOrgList.size()>0">-->
+<!--            AND e.ORG_ID in (-->
+<!--            <foreach collection="subOrgList" item="btnId" separator=",">-->
+<!--                #{btnId}-->
+<!--            </foreach>-->
+<!--            )-->
+<!--        </if>-->
+        <if test="!aBoolean">
+            <if test="subOrgList!=null and subOrgList.size()>0">
+                AND e.ORG_ID in (
+                <foreach collection="subOrgList" item="btnId" separator=",">
+                    #{btnId}
+                </foreach>
+                )
+            </if>
+        </if>
+        ORDER BY APP_DATE DESC
+    </select>
+
+    <select id="getTableManageCostCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( 1 )
+        FROM
+        claim_expense_info e
+        WHERE
+        1 = 1
+        AND e.id IN (
+        SELECT
+        busi_id
+        FROM
+        Audit_Node_Inst i,
+        audit_user u
+        WHERE
+        u.target_Obj_Id = s.user_info_id
+        AND u.node_id = i.node_id
+        AND i.AUDIT_CODE IN ( 21000100, 21000101 )
+        AND i.TENANT_ID = ifnull(std.id, s.tenant_code)
+        AND i.AUDIT_RESULT = 0
+        )
+        AND e.STS IN ( 1, 2 )
+        AND e.tenant_id = ifnull(std.id, s.tenant_code)
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getTableManageCostMeCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( 1 )
+        FROM
+        claim_expense_info e
+        WHERE
+        1 = 1
+        AND e.tenant_id = ifnull(std.id, s.tenant_code)
+        and e.user_info_id = s.user_info_id
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+</mapper>

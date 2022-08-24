@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderInfoExtMapper">
+
+    <sql id="queryPay">
+        select p.ID flowId,
+        p.PAY_BANK_ACC_NAME payBankAccName,
+        p.PAY_BANK_ACC_NO payBankAccNo,
+        p.OBJ_ID objId,
+        p.TXN_AMT txnAmt,
+        IFNULL(p.bill_service_fee,0) billServiceFee,
+        IFNULL(p.APPEND_FREIGHT,0) appendFreight,
+        p.CREATE_DATE createDate,
+        p.PAY_TIME payTime,
+        p.RESP_CODE respCode,
+        p.COMPLETE_TIME completeTime,
+        p.RESP_MSG respMsg,
+        p.ACC_NAME accName,
+        p.ACC_NO accNo,
+        p.RECEIVABLES_BANK_ACC_NAME receivablesBankAccName,
+        p.BUSI_ID busiId,
+        p.RECEIVABLES_BANK_ACC_NO receivablesBankAccNo,
+        u.LINKMAN userName,
+        p.user_type userType,
+        u.id userId,
+        e.PLATE_NUMBER plateNumber,
+        e.BUSI_CODE busiCode,
+        e.IS_NEED_BILL isNeedBill,
+        p.SUBJECTS_ID subjectsId,
+        p.VEHICLE_AFFILIATION vehicleAffiliation,
+        p.OIL_AFFILIATION oilAffliation,
+        e.DEPEND_TIME dependTime,
+        e.COLLECTION_USER_NAME collectionUserName,
+        e.ORDER_REMARK orderRemark,
+        e.CUSTOM_NAME customName,
+        e.SOURCE_NAME sourceName,
+        e.org_id orgId,
+        e.vehicle_org_id vehicleOrgId
+        from user_data_info u,payout_intf p,payout_intf_expansion e
+        where  u.id=p.user_id AND p.ID=e.FLOW_ID and p.pay_user_type=#{payUserType}
+        and (p.IS_AUTOMATIC=1 or p.RESP_CODE=6)  and (p.RESP_CODE!=5 or p.RESP_CODE is null)
+        and p.PAY_TENANT_ID=#{queryPayOutVo.tenantId} AND p.PAY_OBJ_ID=#{payObjId} and p.txn_type=200
+        <if test="queryPayOutVo.serviceUserId != null ">
+          AND u.id=#{queryPayOutVo.serviceUserId}
+        </if>
+        <if test="hasAllDataPermission">
+            AND CASE
+            WHEN e.org_id>0 THEN e.org_id in
+            <foreach collection="orgList" item="orgId" separator="," open="(" close=")">
+                #{orgId}
+            </foreach>
+            <if test="queryPayOutVo.tenantId==956">
+                <if test="orgList.size() &gt; 0">
+                    and e.vehicle_org_id in
+                    <foreach collection="orgList" item="orgId" separator="," open="(" close=")">
+                        #{orgId}
+                    </foreach>
+                </if>
+            </if>
+            ELSE e.org_id is null or e.vehicle_org_id is null
+            END
+<!--            <choose>-->
+<!--                <when test="orgList.size() &gt; 0">-->
+<!--                    and e.org_id in-->
+<!--                    <foreach collection="orgList" item="orgId" separator="," open="(" close=")">-->
+<!--                        #{orgId}-->
+<!--                    </foreach>-->
+<!--                </when>-->
+<!--                <when test="queryPayOutVo.tenantId==956">-->
+<!--                    <if test="orgList.size() &gt; 0">-->
+<!--                        and e.vehicle_org_id in-->
+<!--                        <foreach collection="orgList" item="orgId" separator="," open="(" close=")">-->
+<!--                            #{orgId}-->
+<!--                        </foreach>-->
+<!--                    </if>-->
+<!--                </when>-->
+<!--                <otherwise>-->
+<!--                    and e.org_id is null or e.vehicle_org_id is null-->
+<!--                </otherwise>-->
+<!--            </choose>-->
+        </if>
+        <if test="queryPayOutVo.userName!=null and queryPayOutVo.userName!=''">
+            and IF(e.IS_NEED_BILL=2,p.RECEIVABLES_BANK_ACC_NAME like CONCAT('%',#{queryPayOutVo.userName},'%'),u.LINKMAN like CONCAT('%',#{queryPayOutVo.userName},'%'))
+<!--            <if test="e.IS_NEED_BILL=2">  and p.RECEIVABLES_BANK_ACC_NAME like CONCAT('%',#{queryPayOutVo.userName},'%')</if>-->
+<!--            <if test="e.IS_NEED_BILL!=2">  and u.LINKMAN like CONCAT('%',#{queryPayOutVo.userName},'%')</if>-->
+        </if>
+        <if test="queryPayOutVo.busiCode!=null and queryPayOutVo.busiCode!=''">  and e.BUSI_CODE like CONCAT('%',#{queryPayOutVo.busiCode},'%')</if>
+        <if test="queryPayOutVo.plateNumber!=null and queryPayOutVo.plateNumber!=''">  and e.PLATE_NUMBER like CONCAT('%',#{queryPayOutVo.plateNumber},'%') </if>
+        <if test="queryPayOutVo.isNeedBill!=null and queryPayOutVo.isNeedBill!=''">
+            <choose>
+                <when test=" queryPayOutVo.isNeedBill >= 0 and queryPayOutVo.isNeedBill==6 ">
+                    and (e.IS_NEED_BILL = #{queryPayOutVo.isNeedBill} or p.SUBJECTS_ID=1653)
+                </when>
+                <otherwise>
+                    and e.IS_NEED_BILL = #{queryPayOutVo.isNeedBill}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="queryPayOutVo.batchSeq!=null and queryPayOutVo.batchSeq!=''"> and p.BATCH_SEQ=#{queryPayOutVo.batchSeq}</if>
+        <if test="queryPayOutVo.payBankAccName!=null and queryPayOutVo.payBankAccName!=''"> and p.PAY_BANK_ACC_NAME like CONCAT('%',#{queryPayOutVo.payBankAccName},'%')</if>
+        <if test="queryPayOutVo.payBankAccNo!=null and queryPayOutVo.payBankAccNo!=''"> and p.PAY_BANK_ACC_NO like CONCAT('%',#{queryPayOutVo.payBankAccNo},'%')</if>
+        <if test="queryPayOutVo.receivablesBankAccName!=null and queryPayOutVo.receivablesBankAccName!=''"> and p.RECEIVABLES_BANK_ACC_NAME like CONCAT('%',#{queryPayOutVo.receivablesBankAccName},'%')</if>
+        <if test="queryPayOutVo.receivablesBankAccNo!=null and queryPayOutVo.receivablesBankAccNo!=''"> and p.RECEIVABLES_BANK_ACC_NO like CONCAT('%',#{queryPayOutVo.receivablesBankAccNo},'%')</if>
+        <if test="queryPayOutVo.paysts!=null and queryPayOutVo.paysts!='' and queryPayOutVo.paysts!=-1 "> and p.RESP_CODE = #{queryPayOutVo.paysts}</if>
+        <if test="queryPayOutVo.beginDate!=null and queryPayOutVo.beginDate!=''"> and p.CREATE_DATE &gt;= #{queryPayOutVo.beginDate} </if>
+        <if test="queryPayOutVo.endDate!=null and queryPayOutVo.endDate!=''"> and p.CREATE_DATE &lt;= #{queryPayOutVo.endDate} </if>
+        <if test="queryPayOutVo.beginPayTime!=null and queryPayOutVo.beginPayTime!=''"> and p.PAY_TIME &gt;= #{queryPayOutVo.beginPayTime} </if>
+        <if test="queryPayOutVo.endPayTime!=null and queryPayOutVo.endPayTime!=''"> and p.PAY_TIME &lt;= #{queryPayOutVo.endPayTime} </if>
+        <if test="queryPayOutVo.objId!=null and queryPayOutVo.objId!='' and queryPayOutVo.objId>0 "> and p.OBJ_ID = #{queryPayOutVo.objId} </if>
+        <if test="queryPayOutVo.queryMsg!=null and queryPayOutVo.queryMsg!=''"> and p.RESP_MSG like CONCAT('%',#{queryPayOutVo.queryMsg},'%')</if>
+        <if test="queryPayOutVo.finishTime!=null and queryPayOutVo.finishTime!=''"> and SUBSTR(p.complete_Time,1,8) &gt;=#{queryPayOutVo.finishTime}</if>
+        <if test="queryPayOutVo.endTime!=null and queryPayOutVo.endTime!=''"> and SUBSTR(p.complete_Time,1,8) &lt;=#{queryPayOutVo.endTime}</if>
+        <if test="queryPayOutVo.flowId!=null and queryPayOutVo.flowId!='' and queryPayOutVo.flowId>-1 "> and p.ID = #{queryPayOutVo.flowId}</if>
+        <if test="queryPayOutVo.dependTimeStart!=null and queryPayOutVo.dependTimeStart!=''"> and e.DEPEND_TIME &gt;= #{queryPayOutVo.dependTimeStart}</if>
+        <if test="queryPayOutVo.dependTimeEnd!=null and queryPayOutVo.dependTimeEnd!=''"> and e.DEPEND_TIME &lt;= #{queryPayOutVo.dependTimeEnd}</if>
+        <if test="queryPayOutVo.customName!=null and queryPayOutVo.customName!=''"> and e.CUSTOM_NAME like CONCAT('%',#{queryPayOutVo.customName},'%')</if>
+        <if test="queryPayOutVo.sourceName!=null and queryPayOutVo.sourceName!=''"> and e.SOURCE_NAME like CONCAT('%',#{queryPayOutVo.sourceName},'%')</if>
+        <if test="queryPayOutVo.collectionUserName!=null and queryPayOutVo.collectionUserName!=''"> and e.COLLECTION_USER_NAME like CONCAT('%',#{queryPayOutVo.collectionUserName},'%')</if>
+        <if test="queryPayOutVo.orderRemark!=null and queryPayOutVo.orderRemark!=''"> and e.ORDER_REMARK like CONCAT('%',#{queryPayOutVo.orderRemark},'%')</if>
+        <if test="queryPayOutVo.orgId!=null and queryPayOutVo.orgId!='' and queryPayOutVo.orgId>0 "> and (e.org_id = #{queryPayOutVo.orgId} or e.vehicle_org_id= #{queryPayOutVo.orgId}) </if>
+        ORDER BY p.id DESC
+    </sql>
+
+
+    <select id="queryPayOut" resultType="com.youming.youche.finance.dto.PayoutInfoOutDto">
+        <include refid="queryPay"/>
+    </select>
+
+    <select id="queryPayOutListExport" resultType="com.youming.youche.finance.dto.PayoutInfoOutDto">
+        <include refid="queryPay"/>
+    </select>
+
+
+
+    <sql id="query">
+        select i.LINKMAN linkman,i.MOBILE_PHONE  mobilePhone,o.ID id,o.CREATE_DATE createDate,o.VEHICLE_STATUS vehicleStatus,
+        o.OIL_CARD_NUM oilCardNum,o.ASSIGN_TOTAL assignTotal,o.NO_VERIFICATION_AMOUNT noVerificationAmount,o.COMPANY_NAME companyName,
+        o.STATE state,o.VERIFICATION_DATE verificationDate,o.ORDER_ID orderId,o.CAR_DRIVER_ID carDriverId,o.TENANT_ID tenantId,o.CAR_USER_TYPE carUserType
+        from oil_turn_entity o,user_data_info i
+        where o.TENANT_ID=#{oilCardRechargeVo.tenantId} and i.ID=o.CAR_DRIVER_ID
+        <if test="oilCardRechargeVo.startTime!=null and oilCardRechargeVo.startTime!='' "> and o.CREATE_DATE &gt;= #{oilCardRechargeVo.startTime} </if>
+        <if test="oilCardRechargeVo.endTime!=null and oilCardRechargeVo.endTime!=''"> and o.CREATE_DATE &lt;= #{oilCardRechargeVo.endTime} </if>
+        <if test="oilCardRechargeVo.verifyBeginTime!=null and oilCardRechargeVo.verifyBeginTime!=''"> and o.VERIFICATION_DATE &gt;= #{oilCardRechargeVo.verifyBeginTime} </if>
+        <if test="oilCardRechargeVo.verifyEndTime!=null and oilCardRechargeVo.verifyEndTime!=''"> and o.VERIFICATION_DATE &lt;= #{oilCardRechargeVo.verifyEndTime} </if>
+        <if test="oilCardRechargeVo.name!=null and oilCardRechargeVo.name!=''"> and i.LINKMAN = #{oilCardRechargeVo.name} </if>
+        <if test="oilCardRechargeVo.phone!=null and oilCardRechargeVo.phone!=''"> and i.MOBILE_PHONE = #{oilCardRechargeVo.phone} </if>
+        <if test="oilCardRechargeVo.companyName!=null and oilCardRechargeVo.companyName!=''"> and o.COMPANY_NAME = #{oilCardRechargeVo.companyName} </if>
+        <if test="oilCardRechargeVo.oilCardNum!=null and oilCardRechargeVo.oilCardNum!=''"> and o.OIL_CARD_NUM = #{oilCardRechargeVo.oilCardNum} </if>
+        <if test="oilCardRechargeVo.verificationState>0 "> and o.STATE = #{oilCardRechargeVo.verificationState} </if>
+        ORDER BY o.CREATE_DATE desc , o.VERIFICATION_DATE
+    </sql>
+
+    <select id="oilCardRecharge" resultType="com.youming.youche.finance.dto.OilCardRechargeDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="oilCardRechargeExport" resultType="com.youming.youche.finance.dto.OilCardRechargeDto">
+        <include refid="query"/>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.audit.AuditNodeConfigVerMapper">
+
+    <!--查询-->
+    <select id="getAuditNodeConfigVerList" resultType="com.youming.youche.system.domain.audit.AuditNodeConfigVer">
+        select * from audit_node_config_ver
+        <where>
+            <if test="nodeId != null">
+                node_id = #{nodeId}
+            </if>
+            <if test="tenantId">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="version == null">
+                and version is null
+            </if>
+            <if test="version != null">
+                and version = #{version}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAuditNodeConfigVer" resultType="com.youming.youche.system.domain.audit.AuditNodeConfigVer">
+        SELECT
+        *
+        FROM
+        Audit_Node_Config_Ver
+        <where>
+            1 =1
+            <if test="isParent == true">
+                and parent_node_id = #{nodeId}
+            </if>
+            <if test="isParent == false">
+                and id = #{nodeId}
+            </if>
+            AND tenant_Id = #{tenantId}
+            <if test="version == null">
+                AND version IS Null
+            </if>
+            <if test="version != null">
+                AND version = #{version}
+            </if>
+        </where>
+
+    </select>
+    <select id="getAuditNodeConfigVerIsTrue" resultType="com.youming.youche.system.domain.audit.AuditNodeConfigVer">
+        select * from audit_node_config_ver a
+        <where>
+            <if test="version == null">
+                a.version is null
+            </if>
+            <if test="version != null">
+                and a.version = #{version}
+            </if>
+            <if test="tenantId != null">
+                and a.tenant_Id = #{tenantId}
+            </if>
+            <if test="nodeId != null">
+                and a.parent_node_id = #{nodeId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAuditNodeConfigVerIsFalse" resultType="com.youming.youche.system.domain.audit.AuditNodeConfigVer">
+        select * from audit_node_config_ver a
+        <where>
+            <if test="version == null">
+                a.version is null
+            </if>
+            <if test="version != null">
+                and a.version = #{version}
+            </if>
+            <if test="tenantId != null">
+                and a.tenant_Id = #{tenantId}
+            </if>
+            <if test="nodeId != null">
+                and a.node_id = #{nodeId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

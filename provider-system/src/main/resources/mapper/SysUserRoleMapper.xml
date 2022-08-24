@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysUserRoleMapper">
+
+    <delete id="delByRoleIdAndUserIdAndUserIdAndTenantId">
+        DELETE FROM sys_user_role WHERE
+        user_id in
+        <foreach item="item" index="index" collection="userIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND role_id = #{roleId}
+        AND tenant_id = #{tenantId}
+
+    </delete>
+
+    <select id="selectAllByRoleIdAndTenantId"
+            resultType="com.youming.youche.system.dto.OrganizeStaffDto">
+
+            SELECT
+		so.id AS userId,
+        so.login_acct AS loginacct,
+        so.user_info_id AS userInfoId,
+        sur.create_time AS createTime,
+        tsr.staff_name AS linkman,
+        tsr.staff_position AS staffPosition
+        FROM
+        sys_user_role sur
+        INNER JOIN sys_user so ON sur.user_id = so.id
+        INNER JOIN tenant_staff_rel tsr ON so.user_info_id = tsr.user_info_id
+        WHERE
+        tsr.state = 1
+        AND sur.tenant_id = #{tenantId}
+        AND tsr.tenant_id = #{tenantId}
+        AND sur.role_id = #{roleId}
+        <if test="linkman != null and linkman != ''">
+            and tsr.staff_name like concat('%',#{linkman},'%')
+        </if>
+        <if test="loginacct != null and loginacct != ''">
+            and so.login_acct like concat('%',#{loginacct},'%')
+        </if>
+        <if test="staffPosition != null and staffPosition != ''">
+            and tsr.staff_position like concat('%',#{staffPosition},'%')
+        </if>
+    </select>
+</mapper>

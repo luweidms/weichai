@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.PinganLockInfoMapper">
+
+    <select id="getAccountLockSum" resultType="java.lang.Long">
+        SELECT
+            IFNULL(SUM(lock_balance), 0)
+        FROM
+            pingan_lock_info p,
+            account_bank_rel a
+        WHERE
+            p.PINGAN_ACC_ID = a.PINGAN_PAY_ACCT_ID
+          AND a.user_id = #{userId}
+    </select>
+
+    <select id="queryLockBalanceDetails" resultType="com.youming.youche.order.dto.order.AccountBankRelDto">
+     SELECT
+     a.acct_name as acctName,
+     a.acct_no as acctNo,
+     a.pingan_pay_acct_id as pinganPayAcctId,
+     p.lock_balance as lockBalance
+     FROM
+     pingan_lock_info p,
+     account_bank_rel a
+      WHERE
+      p.pingan_acc_id = a.pingan_pay_acct_id
+        AND a.user_id=#{userId}
+        AND a.acct_no is not null
+        AND a.acct_no!=''
+    </select>
+</mapper>

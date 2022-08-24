@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.receivable.PayableMonthReportMapper">
+
+    <select id="getPayableMonthReportPage" resultType="com.youming.youche.table.dto.receivable.PayableMonthReportDto">
+        SELECT
+        p.user_id,
+        u.linkman userName,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 0 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as firstPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 0 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as firstNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 1 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as twoPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 1 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as twoNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 2 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as threePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 2 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as threeNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 3 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as forePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 3 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as foreNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 4 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as fivePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 4 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as fiveNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 5 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as sixPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 5 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as sixNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as servenPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as servenNoPaidAmount,
+
+        sum(case when p.create_date <![CDATA[ < ]]> DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as eightPaidAmount,
+        sum(case when p.create_date <![CDATA[ < ]]> DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as eightNoPaidAmount
+        FROM
+        payable_month_report p, user_data_info u
+        where p.user_id = u.id
+        and p.tenant_id = #{tenantId}
+        AND p.create_time = ( SELECT max( create_time ) FROM payable_month_report )
+        group by p.user_id
+
+    </select>
+
+    <select id="getPayableMonthReportList" resultType="com.youming.youche.table.dto.receivable.PayableMonthReportDto">
+        SELECT
+        p.user_id,
+        u.linkman userName,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 0 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as firstPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 0 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as firstNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 1 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as twoPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 1 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as twoNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 2 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as threePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 2 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as threeNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 3 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as forePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 3 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as foreNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 4 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as fivePaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 4 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as fiveNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 5 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as sixPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 5 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as sixNoPaidAmount,
+
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as servenPaidAmount,
+        sum(case when p.create_date = DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as servenNoPaidAmount,
+
+        sum(case when p.create_date <![CDATA[ < ]]> DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.paid_amount else 0 end) as eightPaidAmount,
+        sum(case when p.create_date <![CDATA[ < ]]> DATE_FORMAT( DATE_SUB(curdate(),INTERVAL 6 MONTH), '%Y-%m' )  then p.nopaid_amount else 0 end) as eightNoPaidAmount
+        FROM
+        payable_month_report p, user_data_info u
+        where p.user_id = u.id
+        and p.tenant_id = #{tenantId}
+        AND p.create_time = ( SELECT max( create_time ) FROM payable_month_report )
+        group by p.user_id
+
+    </select>
+</mapper>

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.license.LicenseMapper">
+    <select id="queryAllFindByType" resultType="com.youming.youche.record.vo.LicenseVo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        info.plate_number AS plateNumber,
+        info.tenant_id as tenantId,
+        info.licence_type AS licenceType,
+        info.vehicle_length AS vehicleLength,
+        info.vehicle_status AS vehicleStatus,
+        shen.annualreview_type AS annualreviewType,
+        DATE_FORMAT(shen.annualreview_data,'%Y-%m-%d')  AS annualreviewData,
+        DATE_FORMAT(shen.effective_date,'%Y-%m-%d')   AS effectiveDate,
+        shen.annualreview_cost AS annualreviewCost,
+        DATE_FORMAT(shen.create_time,'%Y-%m-%d')   AS createDate,
+        NULL AS name
+        FROM
+        vehicle_data_info info
+        LEFT JOIN vehicle_annual_review shen ON info.plate_number = shen.vehicle_code
+        LEFT JOIN sys_user us ON info.user_id = us.user_info_id
+        LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+        where  rels.vehicle_class=1
+        UNION ALL
+        SELECT
+        info.plate_number AS plateNumber,
+        info.tenant_id as tenantId,
+        info.licence_type AS licenceType,
+        info.vehicle_length AS vehicleLength,
+        info.vehicle_status AS vehicleStatus,
+        3 AS annualreviewType,
+        DATE_FORMAT(rel.insurance_time,'%Y-%m-%d')  AS annualreviewData,
+        DATE_FORMAT( rel.insurance_time_end,'%Y-%m-%d') AS effectiveDate,
+        NULL AS annualreviewCost,
+        DATE_FORMAT( rel.create_time,'%Y-%m-%d') AS createDate,
+        NULL AS name
+        FROM
+        vehicle_data_info info
+        LEFT JOIN tenant_vehicle_cert_rel rel ON rel.plate_number = info.plate_number
+        LEFT JOIN sys_user us ON info.user_id = us.user_info_id
+        LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+        where  rels.vehicle_class=1 and rel.tenant_id =#{tenantId}
+        UNION ALL
+        SELECT
+        info.plate_number AS plateNumber,
+        info.tenant_id as tenantId,
+        info.licence_type AS licenceType,
+        info.vehicle_length AS vehicleLength,
+        info.vehicle_status AS vehicleStatus,
+        4 AS annualreviewType,
+        DATE_FORMAT(rel.busi_insurance_time,'%Y-%m-%d')  AS annualreviewData,
+        DATE_FORMAT(rel.busi_insurance_time_end,'%Y-%m-%d') AS effectiveDate,
+        NULL AS annualreviewCost,
+        DATE_FORMAT(rel.create_time,'%Y-%m-%d')AS createDate,
+        NULL AS name
+        FROM
+        vehicle_data_info info
+        LEFT JOIN tenant_vehicle_cert_rel rel ON rel.plate_number = info.plate_number
+        LEFT JOIN sys_user us ON info.user_id = us.user_info_id
+        LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+        where  rels.vehicle_class=1 and rel.tenant_id =#{tenantId}
+        UNION ALL
+        SELECT
+        info.plate_number AS plateNumber,
+        info.tenant_id as tenantId,
+        info.licence_type AS licenceType,
+        info.vehicle_length AS vehicleLength,
+        info.vehicle_status AS vehicleStatus,
+        5 AS annualreviewType,
+        DATE_FORMAT(rel.other_insurance_time,'%Y-%m-%d')  AS annualreviewData,
+        DATE_FORMAT(rel.other_insurance_time_end,'%Y-%m-%d') AS effectiveDate,
+        NULL AS annualreviewCost,
+        DATE_FORMAT(rel.create_time,'%Y-%m-%d')AS createDate,
+        NULL AS name
+        FROM
+        vehicle_data_info info
+        LEFT JOIN tenant_vehicle_cert_rel rel ON rel.plate_number = info.plate_number
+        LEFT JOIN sys_user us ON info.user_id = us.user_info_id
+        LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+        where  rels.vehicle_class=1 and rel.tenant_id =#{tenantId}
+        ) AS a
+        <where>
+            AND tenantId	= #{tenantId}
+            <if test="licenseDto.licenceType!=null">
+                and licenceType =#{licenseDto.licenceType}
+            </if>
+            <if test="licenseDto.annualreviewType!=null">
+                and annualreviewType =#{licenseDto.annualreviewType}
+            </if>
+        </where>
+        ORDER BY
+        plateNumber
+    </select>
+
+    <select id="queryAllFindByAll" resultType="com.youming.youche.record.dto.license.ZzxqDto">
+        SELECT
+            info.plate_number,
+            DATE_FORMAT(info.create_date ,'%Y-%m')create_date,
+            info.licence_type,
+            info.brand_model,
+            info.vehicle_model,
+            cord.violation_time,
+            cord.renfa_time,
+            acc.report_date,
+            acc.claim_date,
+            acc.accident_status,
+            cert.annual_veri_time,
+            cert.annual_veri_time_end,
+            cert.insurance_time,
+            cert.insurance_time_end,
+            cert.busi_insurance_time,
+            cert.busi_insurance_time_end,
+            cert.other_insurance_time,
+            cert.other_insurance_time_end
+        FROM
+            vehicle_data_info info
+                LEFT JOIN violation_record cord ON cord.plate_number = info.plate_number
+                LEFT JOIN vehicle_accident acc ON acc.vehicle_code = info.plate_number
+                LEFT JOIN tenant_vehicle_cert_rel cert ON cert.vehicle_code = info.plate_number
+                LEFT JOIN tenant_vehicle_rel rels  on  info.id = rels.vehicle_code
+                RIGHT JOIN tenant_vehicle_rel rela ON rela.plate_number = info.plate_number
+        WHERE
+            info.tenant_id =#{tenantId}  AND
+            info.create_date BETWEEN DATE_SUB( now(), INTERVAL 6 MONTH )
+                AND now() and  rels.vehicle_class=1
+        ORDER BY info.create_date DESC
+    </select>
+
+    <select id="queryAll" resultType="com.youming.youche.record.vo.LicenseVo">
+        SELECT
+        info.plate_number as plateNumber,
+        info.licence_type as licenceType,
+        info.vehicle_length as vehicleLength,
+        shen.annualreview_data as annualreviewData,
+        shen.effective_date as effectiveDate,
+        shen.annualreview_cost as annualreviewCost,
+        shen.create_time as createDate,
+        us.`name` as name
+        FROM
+        vehicle_data_info info
+        LEFT JOIN vehicle_annual_review shen ON info.plate_number = shen.vehicle_code
+        LEFT JOIN sys_user us  on info.user_id = us.user_info_id
+        <where>
+            AND info.tenant_id	= #{tenantId}
+            <if test="licenseDto.licenceType!=null">
+                and info.licence_type =#{licenseDto.licenceType}
+            </if>
+        </where>
+    </select>
+
+    <!--  根据证照类型查询证照到期列表  -->
+    <select id="selectListByType" resultType="com.youming.youche.record.vo.LicenseVo">
+        SELECT * FROM (
+        SELECT
+        *,
+        case
+        when (TIMESTAMPDIFF(DAY,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate) <![CDATA[<=]]>0) then '已到期'
+        when(TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=0 and (DATE_FORMAT(effectiveDate, '%m' ) - DATE_FORMAT(now(), '%m' ))=0) then '本月到期'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=0)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=1 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '一个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=1)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=2 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '两个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=2)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=3 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))=0) then '三个月'
+        when (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)=3 and  (DATE_FORMAT(effectiveDate, '%d' ) - DATE_FORMAT(now(), '%d' ))>0)
+        or (TIMESTAMPDIFF(MONTH,DATE_FORMAT(NOW(), '%Y-%m-%d'),effectiveDate)>3) then '三个月以后'
+        end as leftDate
+        FROM
+        (
+        select * from (
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.annualreview_data, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.effective_date, '%Y-%m-%d' ) AS effectiveDate,
+        c.annualreview_type AS annualreviewType,
+        c.annualreview_cost AS annualreviewCost,
+        c.service_provider AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN vehicle_annual_review AS c ON a.id = c.vehicle_id
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1
+        and c.annualreview_data IS NOT NULL
+        AND c.effective_date IS NOT NULL
+        having 1 order by c.effective_date DESC) as f GROUP BY plateNumber,annualreviewType UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        3 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.busi_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.busi_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        4 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.other_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.other_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        5 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1
+        ) AS t
+        WHERE t.annualreviewData IS NOT NULL
+        AND t.effectiveDate IS NOT NULL
+        ORDER BY
+        plateNumber,annualreviewType,effectiveDate) as g
+        <where>
+            g.leftDate !='三个月以后'
+            <if test="licenseDto.licenceType!=null">
+                and g.licenceType =#{licenseDto.licenceType}
+            </if>
+            <if test="licenseDto.annualreviewType!=null">
+                and g.annualreviewType =#{licenseDto.annualreviewType}
+            </if>
+        </where>
+
+    </select>
+
+    <!--  查询车辆最新证照到期信息  -->
+    <!-- 1.证照：获取时间最新的一条数据，结束时间在当前时间之前就是已处理；之后是未处理  -->
+    <!-- 2.事故、违章：状态为已核赔或已完成为已处理，否则为未处理；另：只要有一项是未处理，则未处理为1  -->
+    <!-- 3.处理与未处理数按车辆数汇总   -->
+    <select id="selectLicenseDetails" resultType="com.youming.youche.record.dto.license.LicenseDetailsDto">
+        select
+        licenceType,
+        brandModel,
+        businessType,
+        sum(processed) as processed,
+        sum(notProcessed) as notProcessed
+        from (
+        select
+        t.plateNumber,
+        t.licenceType,
+        t.brandModel,
+        t.businessType,
+        case
+        when (businessType <![CDATA[<>]]> 6 and businessType <![CDATA[<>]]> 7) and sum(t.processed)>=1 then 1
+        when (businessType = 6 or businessType = 7) and sum(t.processed)>=1 and sum(t.notProcessed)=0 then 1
+        else 0
+        end as processed,
+        case
+        when (businessType <![CDATA[<>]]> 6 and businessType <![CDATA[<>]]> 7) and sum(t.processed)>=1 then 0
+        when (businessType <![CDATA[<>]]> 6 and businessType <![CDATA[<>]]> 7) and sum(t.processed)=0 and sum(t.notProcessed)>=1 then 1
+        when (businessType = 6 or businessType = 7) and sum(t.notProcessed)>=1 then 1
+        else 0
+        end as notProcessed
+        from (
+        select * from (
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.annualreview_data, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.effective_date, '%Y-%m-%d' ) AS effectiveDate,
+        c.annualreview_type AS businessType,
+        case when DATEDIFF(c.effective_date,now())>=0 then 1 else 0 end as processed,
+        case when DATEDIFF(c.effective_date,now())<![CDATA[<]]>0 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN vehicle_annual_review AS c ON a.id = c.vehicle_id
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.annualreview_data is not null and c.effective_date is not null UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        3 AS businessType,
+        case when DATEDIFF(c.insurance_time_end,now())>=0 then 1 else 0 end as processed,
+        case when DATEDIFF(c.insurance_time_end,now())<![CDATA[<]]>0 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.insurance_time is not null and c.insurance_time_end is not null UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.busi_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.busi_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        4 AS businessType,
+        case when DATEDIFF(c.busi_insurance_time_end,now())>=0 then 1 else 0 end as processed,
+        case when DATEDIFF(c.busi_insurance_time_end,now())<![CDATA[<]]>0 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.busi_insurance_time is not null and c.busi_insurance_time_end is not null UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.other_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.other_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        5 AS businessType,
+        case when DATEDIFF(c.other_insurance_time_end,now())>=0 then 1 else 0 end as processed,
+        case when DATEDIFF(c.other_insurance_time_end,now())<![CDATA[<]]>0 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.other_insurance_time is not null and c.other_insurance_time_end is not null UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.violation_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.renfa_time, '%Y-%m-%d' ) AS effectiveDate,
+        6 AS businessType,
+        case when c.record_state =2 then 1 else 0 end as processed,
+        case when c.record_state <![CDATA[<>]]>2 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN violation_record AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.violation_time is not null UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.brand_model AS brandModel,
+        DATE_FORMAT( c.report_date, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.claim_date, '%Y-%m-%d' ) AS effectiveDate,
+        7 AS businessType,
+        case when c.accident_status =3 then 1 else 0 end as processed,
+        case when c.accident_status <![CDATA[<>]]>3 then 1 else 0 end as notProcessed
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN vehicle_accident AS c ON a.id = c.vehicle_id
+        WHERE
+        b.tenant_id = #{tenantId}
+        AND b.vehicle_class = 1 and c.report_date is not null) as a
+        order by plateNumber,businessType
+        ) as t GROUP BY plateNumber,licenceType,brandModel,businessType
+        order by plateNumber,licenceType,brandModel,businessType) as f
+        group by licenceType,brandModel,businessType
+    </select>
+</mapper>

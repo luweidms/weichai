@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderSchedulerHMapper">
+
+    <select id="getPreOrderSchedulerHByPlateNumber" resultType="com.youming.youche.order.domain.order.OrderSchedulerH">
+
+
+        SELECT *
+        from Order_Scheduler_H a
+        LEFT JOIN Order_Info_H b ON a.order_id = b.order_id
+        where
+        <if test="dependTime != null and dependTime != ''">
+             a.depend_time != str_to_date(#{dependTime},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND a.plate_number = #{plateNumber}
+        </if>
+        <if test="tenandId != null and tenandId &gt; 0">
+            AND a.tenant_id = #{tenandId}
+        </if>
+        <if test="orderId != null and orderId &gt; 0">
+            AND a.order_id = #{orderId}
+        </if>
+        AND b.order_state = 4
+        ORDER BY a.depend_time DESC
+
+    </select>
+
+    <select id="getPreOrderSchedulerHByTrailerPlate"
+            resultType="com.youming.youche.order.domain.order.OrderSchedulerH">
+        SELECT
+            s.order_id AS orderId,
+            s.depend_time AS dependTime
+        FROM
+            order_scheduler_h s,
+            order_info_h o
+        WHERE
+            s.order_id = o.order_id
+            AND s.tariler_plate = #{trailerPlate}
+            AND s.tenant_id = #{tenantId}
+            AND o.order_state = 14
+        ORDER BY
+            s.depend_time DESC
+    </select>
+
+    <select id="getPreOrderSchedulerHByPlateNumber14"
+            resultType="com.youming.youche.order.domain.order.OrderSchedulerH">
+        SELECT
+        s.order_id AS orderId,
+        s.depend_time AS dependTime
+        FROM
+        order_scheduler_h s,
+        order_info_h o
+        WHERE
+        s.order_id = o.order_id
+        <if test="dependTime != null and dependTime != ''">
+            AND s.depend_time <![CDATA[ <= ]]> #{dependTime}
+        </if>
+        AND s.plate_number = #{plateNumber}
+        AND s.tenant_id = #{tenandId}
+        <if test="orderId != null and orderId > 0">
+            AND s.order_id != #{orderId}
+        </if>
+        AND o.order_state = 14
+        ORDER BY s.depend_time DESC
+    </select>
+    <select id="getNextOrderSchedulerHByPlateNumber"
+            resultType="com.youming.youche.order.domain.order.OrderSchedulerH">
+        SELECT
+        s
+        FROM
+        order_scheduler_h s,
+        order_info_h o
+        WHERE
+        s.order_id = o.order_id
+        <if test="dependTime != null">
+            AND s.depend_time >= #{dependTime}
+        </if>
+        AND s.plate_number = #{plateNumber}
+        AND s.tenant_id = #{tenantId}
+        <if test="orderId != null and orderId > 0">
+            AND s.order_id != #{orderId}
+        </if>
+        AND o.order_state = 14
+        ORDER BY
+        s.depend_time
+    </select>
+
+</mapper>

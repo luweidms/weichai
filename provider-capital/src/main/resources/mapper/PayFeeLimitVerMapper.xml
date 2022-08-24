@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.capital.provider.mapper.PayFeeLimitVerMapper">
+    <insert id="insertPay">
+        INSERT INTO pay_fee_limit_ver
+        ( his_id, batch_no,  flag, op_date, op_id, op_name,  sub_type, sub_type_name, tenant_id, type, value )
+        VALUES  ( #{hisId}, #{batchNo},  #{flag}, #{opDate}, #{opId}, #{opName},  #{subType}, #{subTypeName}, #{tenantId}, #{type}, #{value} )
+    </insert>
+
+    <select id="queryCheckFailMsg" resultType="com.youming.youche.capital.vo.PayFeeLimitVerVo">
+        SELECT his_id,batch_no,create_date,flag,op_date,op_id,op_name,remark,sub_type,sub_type_name,tenant_id,type,value
+        FROM pay_fee_limit_ver where FLAG = 2 ORDER BY CREATE_DATE DESC LIMIT 1
+    </select>
+    <select id="selectByFee" resultType="com.youming.youche.capital.domain.PayFeeLimitVer">
+        SELECT his_id,batch_no,create_date,flag,op_date,op_id,op_name,remark,sub_type,sub_type_name,tenant_id,type,value
+        FROM pay_fee_limit_ver
+        <where>
+            <if test="tenantId!=null and tenantId!=''">
+                and tenant_id = #{tenantId}
+            </if>
+                and flag = 0
+            <if test="type!=null and type!=''">
+                and type = #{type}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateByFee" parameterType="com.youming.youche.capital.domain.PayFeeLimitVer">
+        update pay_fee_limit_ver
+        <set>
+            flag = 8
+            <where>
+                type = #{type} and sub_type = #{subType} and tenant_id = #{tenantId} and flag = 0
+            </where>
+        </set>
+    </update>
+
+    <update id="updateByIdAndFlag" parameterType="com.youming.youche.capital.domain.PayFeeLimitVer">
+        update pay_fee_limit_ver
+        <set>
+            flag = #{flag},
+            remark = #{remark}
+            <where>
+                flag = 0 and tenant_id = #{tenantId}
+            </where>
+        </set>
+    </update>
+
+    <update id="updateReRemark" parameterType="com.youming.youche.capital.domain.PayFeeLimitVer">
+        update pay_fee_limit_ver
+        <set>
+            remark = ''
+            <where>
+                flag = 2 and tenant_id = #{tenantId}
+            </where>
+        </set>
+    </update>
+</mapper>

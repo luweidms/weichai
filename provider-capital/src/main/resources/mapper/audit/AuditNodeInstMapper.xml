@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.capital.provider.mapper.audit.AuditNodeInstMapper">
+
+    <!--获取版本号-->
+    <select id="getAuditRuleVersionNo" resultType="java.lang.Integer">
+        select c.version
+        from audit_node_rule_config c, audit_rule_config r  where c.rule_id=r.id
+                                                              and c.node_id=#{id}
+    </select>
+
+    <select id="checkVersionRule" resultType="java.lang.Integer">
+        select count(1)
+        from audit_node_rule_config c inner join audit_rule_config r ON c.rule_id = r.id
+        where c.node_Id=#{nodeId} and c.tenant_id = #{tenantId}
+        <if test="version=null">
+            and c.version is null
+        </if>
+        <if test="version!=null and version!=''">
+            and c.version = #{version}
+        </if>
+    </select>
+
+
+    <select id="getAuditNodeConfig" resultType="com.youming.youche.capital.domain.audit.AuditNodeConfig">
+        select
+        c.ID as id,
+        c.RULE_ID as ruleId,
+        c.AUDIT_ID as auditId,
+        c.NODE_ID as nodeId,
+        c.RULE_VALUE as ruleValue,
+        DATE_FORMAT(c.create_time ,'%Y-%m-%d %H:%i:%s') as createTime,
+        c.OP_ID as opId,
+        c.TENANT_ID as tenantId,
+        c.VERSION as version
+        from
+        audit_node_rule_config c, audit_rule_config r where c.rule_Id=r.Id
+        <if test="version=null">
+            and c.version is null
+        </if>
+        <if test="version!=null and version!=''">
+            and c.version = #{version}
+        </if>
+        and c.node_Id=#{nodeId}
+    </select>
+
+    <select id="getAuditRuleConfig" resultType="com.youming.youche.capital.domain.audit.AuditNodeRuleConfig">
+        select
+        r.ID as Id,
+        r.AUDIT_ID as auditId,
+        r.RULE_NAME as ruleName,
+        r.RULE_TIPS as ruleTips,
+        r.RULE_TYPE as ruleType,
+        r.TARGET_OBJ as targetObj,
+        DATE_FORMAT(r.create_time ,'%Y-%m-%d %H:%i:%s') as createTime,
+        r.OP_ID as opId,
+        r.RULE_KEY as ruleKey,
+        r.RULE_CODE as ruleCode,
+        r.VERSION as nodeId
+        from
+        audit_node_rule_config c, audit_rule_config r where c.rule_Id=r.Id
+        <if test="version=null">
+            and c.version is null
+        </if>
+        <if test="version!=null and version!=''">
+            and c.version = #{version}
+        </if>
+        and c.node_Id=#{nodeId}
+    </select>
+
+    <select id="getAuditNodeRuleConfigVer" resultType="com.youming.youche.capital.domain.audit.AuditNodeRuleConfigVer">
+        select
+        c.ID as id,
+        c.RULE_ID as ruleId,
+        c.AUDIT_ID as auditId,
+        c.NODE_ID as nodeId,
+        c.RULE_VALUE as ruleValue,
+        DATE_FORMAT(c.create_time ,'%Y-%m-%d %H:%i:%s') as createTime,
+        c.OP_ID as opId,
+        c.TENANT_ID as tenantId,
+        c.id as verId,
+        DATE_FORMAT(c.update_time ,'%Y-%m-%d %H:%i:%s')as updateDate,
+        c.UPDATE_OP_ID as updateOpId
+        from
+        audit_node_rule_config_ver c, audit_rule_config r where c.rule_Id=r.Id and c.TENANT_ID=#{tenantId}
+        <if test="version=null">
+            and c.version is null
+        </if>
+        <if test="version!=null and version!=''">
+            and c.version = #{version}
+        </if>
+        and c.node_Id=#{nodeId}
+    </select>
+
+    <select id="getAuditRuleConfigVer" resultType="com.youming.youche.capital.domain.audit.AuditNodeConfig">
+        select
+        r.ID as Id,
+        r.AUDIT_ID as auditId,
+        r.RULE_NAME as ruleName,
+        r.RULE_TIPS as ruleTips,
+        r.RULE_TYPE as ruleType,
+        r.TARGET_OBJ as targetObj,
+        DATE_FORMAT(r.create_time ,'%Y-%m-%d %H:%i:%s') as createTime,
+        r.OP_ID as opId,
+        r.RULE_KEY as ruleKey,
+        r.RULE_CODE as ruleCode,
+        r.VERSION as nodeId
+        from
+        audit_node_rule_config_ver c, audit_rule_config r where c.rule_Id=r.Id and c.TENANT_ID=#{tenantId}
+        <if test="version=null">
+            and c.version is null
+        </if>
+        <if test="version!=null and version!=''">
+            and c.version = #{version}
+        </if>
+        and c.node_Id=#{nodeId}
+    </select>
+
+    <!--查询业务是否已经有节点进行审核了-->
+    <select id="isAuditIng" resultType="java.lang.Integer">
+        select count(id) from audit_node_inst a where a.AUDIT_CODE=#{auditCode} and a.BUSI_ID =#{busiId} and a.TENANT_ID =#{tenantId} and a.status =1 and a.AUDIT_DATE is not null
+    </select>
+
+    <!--查询业务是否处于待审核的状态-->
+    <select id="queryAuditIng" resultType="com.youming.youche.capital.domain.audit.AuditNodeInst">
+        select * from audit_node_inst a where a.AUDIT_CODE=#{auditCode} and a.BUSI_ID =#{busiId} and a.TENANT_ID =#{tenantId} and a.status =1 and a.AUDIT_RESULT = 0
+    </select>
+
+    <update id="updateAuditInstToFinish">
+        UPDATE audit_node_inst
+        SET status = 0
+        WHERE
+            audit_id = #{auditId}
+            AND busi_id = #{busiId}
+            AND status = 1
+    </update>
+
+    <select id="queryAuditNodeInst" resultType="com.youming.youche.capital.domain.audit.AuditNodeInst">
+        SELECT
+            *
+        FROM
+            audit_node_inst
+        WHERE
+            audit_code = #{auditCode}
+            AND busi_id = #{busiId}
+            AND tenant_id = #{tenantId}
+            AND status = 0
+    </select>
+
+
+<!--    查询用户待审核的数据, 聂杰伟-->
+    <select id="getBusiIdByUserId" resultType="java.lang.Long">
+        select busi_id
+        from audit_node_inst i,
+             audit_user u
+        where u.target_Obj_Id = #{userId}
+          and u.node_id = i.node_id
+          and i.audit_code = #{auditCode}
+          and i.tenant_id = #{tenantId}
+          and i.AUDIT_RESULT = #{auditResult}
+        order by i.ID desc
+    </select>
+</mapper>

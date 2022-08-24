@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.OrderFeeMapper">
+
+    <select id="queryOrderNoPayCustomOil" resultType="java.lang.Long">
+        SELECT
+            SUM(e.PRE_OIL_VIRTUAL_FEE)
+        FROM
+            order_fee e,
+            `order_info_ext` ie,
+            `order_scheduler` s
+        WHERE
+            e.order_id = s.order_id
+          AND e.order_id = ie.order_id
+          AND s.VEHICLE_CLASS = 1
+          AND OIL_USE_TYPE = 1
+          AND PRE_AMOUNT_FLAG = 0
+          AND s.tenant_id = #{tenantId}
+          <if test="excludeOrderId != null and excludeOrderId &gt; 0">
+              AND s.order_id!= #{excludeOrderId}
+          </if>
+    </select>
+    <select id="queryOrderByDriver" resultType="java.lang.Long">
+
+        select info.ID from order_Info_Ext info,order_scheduler sc where info.order_id=sc.ORDER_ID and sc.car_driver_id=#{driverId} and  info.payment_Way=#{paymentWay}
+    </select>
+</mapper>

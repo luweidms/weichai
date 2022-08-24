@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.PlatformServiceChargeMapper">
+
+    <select id="selectVer" resultType="java.lang.Object">
+          select sum(IFNULL(c.no_verification_amount,0))
+          from platform_service_charge c where 1=1 and c.user_id =#{userId}
+          and c.is_verification in(0,1) and c.no_verification_amount > 0
+    </select>
+    <select id="selectIfi" resultType="java.lang.Object">
+          select sum(IFNULL(c.verification_platform_amount,0))
+          from verification_platform_amount c where 1=1 and c.user_id =#{userId} and c.state=0
+    </select>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderReceiptMapper">
+
+    <select id="getCustomerIdByOrderIds" resultType="java.util.Map">
+        SELECT
+            order_id AS orderId,
+            GROUP_CONCAT( RECIVE_NUMBER SEPARATOR ',' ) AS customerId,
+            count(*) AS customerNum
+        FROM
+            order_receipt
+        WHERE
+            order_id IN ( ${orderIds} )
+        GROUP BY
+            ORDER_ID
+    </select>
+
+    <select id="findOrderRecipts" resultType="com.youming.youche.finance.domain.order.OrderReceipt">
+        SELECT
+        id AS id,
+        order_id AS orderId,
+        recive_number AS reciveNumber,
+        flow_id AS flowId,
+        flow_url AS flowUrl,
+        create_time AS createTime,
+        update_time AS updateTime
+        FROM
+        order_receipt
+        <where>
+            <if test="orderId != null and orderId > 0">
+                order_id = #{orderId}
+            </if>
+            <if test="flowId != null and flowId != ''">
+                AND flow_id = #{flowId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.TenantProductRelMapper">
+    <sql id="tprData">
+        tpr.ID,
+            tpr.TENANT_ID,
+            tpr.PRODUCT_ID,
+            tpr.AUTH_STATE,
+            tpr.STATE,
+            tpr.AUTH_REASON,
+            tpr.AUTH_MAN_ID,
+            tpr.FLOAT_BALANCE,
+            tpr.FIXED_BALANCE,
+            tpr.AUTH_DATE,
+            tpr.OP_ID,
+            tpr.UPDATE_TIME,
+            tpr.CREATE_TIME,
+            tpr.IS_AUTH,
+            tpr.SERVICE_CHARGE,
+            tpr.FLOAT_BALANCE_BILL,
+            tpr.FIXED_BALANCE_BILL,
+            tpr.SERVICE_CHARGE_BILL,
+            tpr.SERVICE_AUTH_STATE,
+            tpr.SERVICE_AUTH_REMARK,
+            tpr.COOPERATION_STATE,
+            tpr.FLOAT_SERVICE_CHARGE_BILL,
+            tpr.FLOAT_SERVICE_CHARGE,
+            tpr.LOCALE_BALANCE_STATE
+    </sql>
+    <select id="getServiceProductList" resultType="com.youming.youche.market.domain.facilitator.TenantProductRel">
+        select
+        <include refid="tprData"></include>
+        from service_product sp,Tenant_Product_Rel tpr
+        where sp.Id = tpr.product_Id
+        <if test="tenantId != null and tenantId!=''">
+            and tpr.tenant_Id= #{tenantId}
+        </if>
+        and sp.service_User_Id = #{serviceUserId} and sp.business_Type = #{serviceType}
+    </select>
+    <select id="getTenantProductList"
+            resultType="com.youming.youche.market.dto.facilitator.TenantProductRelOutDto">
+        SELECT
+            tpr.tenant_id AS tenantId,
+            tpr.float_Balance AS floatBalance,
+            tpr.fixed_Balance AS fixedBalance,
+            tpr.service_Charge AS serviceCharge,
+            tpr.float_Balance_bill AS floatBalanceBill,
+            tpr.fixed_Balance_bill AS fixedBalanceBill,
+            tpr.service_Charge_bill AS serviceChargeBill,
+            sp.is_Bill_Ability AS isBillAbility,
+            sp.product_Name AS productName,
+            sp.id AS productId
+        FROM
+            service_product sp
+                LEFT JOIN tenant_product_rel tpr ON sp.id = tpr.product_id
+        WHERE
+            sp.id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

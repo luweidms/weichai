@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleObjectLineVerMapper">
+    <!--修改verState状态-->
+    <update id="updVehicleObjectLineVer">
+        update vehicle_object_line_ver set ver_state = #{verState} where vehicle_code = #{vvehicleCode} and ver_state=1
+    </update>
+</mapper>

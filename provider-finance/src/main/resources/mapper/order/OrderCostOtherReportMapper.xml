@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderCostOtherReportMapper">
+
+     <select id="selectFee" resultType="com.youming.youche.finance.domain.order.OrderCostOtherReport">
+        select c.id as id,
+        c.consume_fee as consumeFee
+        from order_cost_other_report c
+        left join sys_expense o
+        on c.type_id = o.id
+        where
+        (o.tenant_id = #{tenantId} or o.tenant_id = #{tenantId})
+        and
+        o.tenant_id = #{tenantId}
+        and c.state = 5
+        <if test="beginDate != null">
+            and c.update_time <![CDATA[ >= ]]> #{beginDate}
+        </if>
+        <if test="endDate != null">
+            and c.update_time <![CDATA[ <= ]]> #{endDate}
+        </if>
+        group by c.type_name
+    </select>
+</mapper>

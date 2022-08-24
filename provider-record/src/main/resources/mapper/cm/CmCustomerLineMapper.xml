@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.cm.CmCustomerLineMapper">
+    <!--查询所有线路-->
+    <select id="selectAllLine" resultType="com.youming.youche.record.dto.cm.CmCustomerLineDto">
+        SELECT
+        cm.id id ,
+        cm.CUSTOMER_ID customerId,
+        cu.company_name companyName,
+        cm.line_name lineName,
+        cm.line_tel lineTel,
+        cm.source_eand sourceEand,
+        cm.source_nand sourceNand,
+        cm.des_eand desEand,
+        cm.des_nand desNand,
+        cm.effect_begin effectBegin,
+        cm.effect_end effectEnd,
+        cm.state state,
+        cm.ORG_ID orgId,
+        org.org_name orgName,
+        cm.contract_url contractUrl,
+        cm.goods_name goodsName,
+        cm.goods_type goodsType,
+        cm.goods_weight goodsWeight,
+        cm.goods_volume goodsVolume,
+        cm.vehicle_status vehicleStatus,
+        cm.vehicle_length vehicleLength,
+        cm.receive_name receiveName,
+        cm.receive_phone receivePhone,
+        cm.taiwan_date taiwanDate,
+        BACKHAUL_NUMBER backhaulNumber,
+        LINE_CODE_RULE lineCodeRule,
+        LINE_CODE_NAME lineCodeName,
+        cm.SALE_DAPARMENT saleDaparment,
+        SOURCE_PROVINCE sourceProvince,
+        SOURCE_CITY sourceCity,
+        DES_PROVINCE desProvince,
+        DES_CITY desCity,
+        SOURCE_ADDRESS sourceAddress,
+        NAVIGAT_SOURCE_LOCATION navigatSourceLocation,
+        DES_ADDRESS desAddress,
+        NAVIGAT_DES_LOCATION navigatDesLocation,
+        MILEAGE_NUMBER mileageNumber,
+        cm.RECIVE_TIME reciveTime,
+        cm.RECIVE_TIME_DAY reciveTimeDay,
+        cm.PRICE_ENUM priceEnum,
+        cm.ESTIMATE_INCOME estimateIncome,
+        cm.COLLECTION_TIME collectionTime,
+        cm.COLLECTION_TIME_DAY collectionTimeDay,
+        cm.PAY_WAY payWay,
+        cm.AUTH_STATE authState,
+        cm.IS_AUTH isAuth,
+        cm.AUDIT_CONTENT auditContent,
+        cm.arrive_time arriveTime,
+        TIMESTAMPDIFF(DAY,NOW(),CM.EFFECT_END) AS validDays
+        FROM CM_CUSTOMER_LINE cm
+        left join sys_organize org on org.id = cm.org_id
+        left join province sp on cm.SOURCE_PROVINCE=sp.Id
+        left join city sc on cm.SOURCE_CITY=sc.Id
+        left join province dp on cm.DES_PROVINCE=dp.Id
+        left join city dc on cm.DES_CITY=dc.Id,cm_customer_info cu
+        WHERE cu.id=cm.customer_id and CM.TENANT_ID = #{user.tenantId}
+        <if test="customerLine.customerId != null and customerLine.customerId != ''">
+            AND cm.customer_id = #{customerLine.customerId}
+        </if>
+        <if test="customerLine.lineCodeRule != null and customerLine.lineCodeRule != ''">
+            AND LINE_CODE_RULE LIKE CONCAT('%',#{customerLine.lineCodeRule},'%')
+        </if>
+        <if test="customerLine.lineCodeName != null and customerLine.lineCodeName != ''">
+            AND LINE_CODE_NAME LIKE CONCAT('%',#{customerLine.lineCodeName},'%')
+        </if>
+        <if test="customerLine.backhaulNumber != null and customerLine.backhaulNumber !=''">
+            AND BACKHAUL_NUMBER LIKE CONCAT('%',#{customerLine.backhaulNumber},'%')
+        </if>
+        <if test="customerLine.sourceProvince != null and customerLine.sourceProvince !=''">
+            AND SOURCE_PROVINCE LIKE CONCAT('%',#{customerLine.sourceProvince},'%')
+        </if>
+        <if test="customerLine.sourceCity != null and customerLine.sourceCity != ''">
+            AND SOURCE_CITY = #{customerLine.sourceCity}
+        </if>
+        <if test="customerLine.sourceCounty != null and customerLine.sourceCounty != ''">
+            AND SOURCE_COUNTY = #{customerLine.sourceCounty}
+        </if>
+        <if test="customerLine.desProvince != null and customerLine.desProvince != ''">
+            AND DES_PROVINCE = #{customerLine.desProvince}
+        </if>
+        <if test="customerLine.desCity != null and customerLine.desCity != ''">
+            AND DES_CITY = #{customerLine.desCity}
+        </if>
+        <if test="customerLine.desCounty != null and customerLine.desCounty != ''">
+            AND DES_COUNTY = #{customerLine.desCounty}
+        </if>
+        <choose>
+            <when test="customerLine.state != null and customerLine.state != ''">
+                and cm.state = #{customerLine.state}
+            </when>
+            <otherwise>
+                and cm.state &gt;= 0
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="customerLine.authState != null and customerLine.authState != ''">
+                and cm.auth_state = #{customerLine.authState}
+            </when>
+            <otherwise>
+                and cm.auth_state &gt;= 0
+            </otherwise>
+        </choose>
+        <if test="customerLine.companyName != null and customerLine.companyName != ''">
+            AND company_Name like concat ('%',#{customerLine.companyName},'%')
+        </if>
+        <if test="customerLine.lineKeyWord != null and customerLine.lineKeyWord != ''">
+            AND (sp.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or sc.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or dp.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or dc.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.SOURCE_ADDRESS like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.DES_ADDRESS like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.NAVIGAT_DES_LOCATION like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.NAVIGAT_SOURCE_LOCATION like concat('%',#{customerLine.lineKeyWord},'%'))
+        </if>
+        <if test="customerLine.validDays != null and customerLine.validDays != ''">
+            AND TIMESTAMPDIFF(DAY,NOW(),CM.EFFECT_END) &lt;= #{customerLine.validDays}
+        </if>
+        order by cm.id desc
+    </select>
+    <!--导出所有线路-->
+    <select id="exportAllLine" resultType="com.youming.youche.record.dto.cm.CmCustomerLineDto">
+        SELECT
+        cm.id id ,
+        cm.CUSTOMER_ID customerId,
+        cu.company_name companyName,
+        cm.line_name lineName,
+        cm.line_tel lineTel,
+        cm.effect_begin effectBegin,
+        cm.effect_end effectEnd,
+        cm.state state,
+        cm.ORG_ID orgId,
+        org.org_name orgName,
+        cm.contract_url contractUrl,
+        cm.goods_name goodsName,
+        cm.goods_type goodsType,
+        cm.goods_weight goodsWeight,
+        cm.goods_volume goodsVolume,
+        cm.vehicle_status vehicleStatus,
+        cm.vehicle_length vehicleLength,
+        cm.receive_name receiveName,
+        cm.receive_phone receivePhone,
+        cm.taiwan_date taiwanDate,
+        BACKHAUL_NUMBER backhaulNumber,
+        LINE_CODE_RULE lineCodeRule,
+        LINE_CODE_NAME lineCodeName,
+        cm.SALE_DAPARMENT saleDaparment,
+        SOURCE_PROVINCE sourceProvince,
+        SOURCE_CITY sourceCity,
+        DES_PROVINCE desProvince,
+        DES_CITY desCity,
+        SOURCE_ADDRESS sourceAddress,
+        NAVIGAT_SOURCE_LOCATION navigatSourceLocation,
+        DES_ADDRESS desAddress,
+        NAVIGAT_DES_LOCATION navigatDesLocation,
+        MILEAGE_NUMBER mileageNumber,
+        cm.RECIVE_TIME receiveTime,
+        cm.RECIVE_TIME_DAY reciveTimeDay,
+        cm.RECIVE_TIME reciveTime,
+        cm.PRICE_ENUM priceEnum,
+        cm.ESTIMATE_INCOME estimateIncome,
+        cm.COLLECTION_TIME collectionTime,
+        cm.COLLECTION_TIME_DAY collectionTimeDay,
+        cm.PAY_WAY payWay,
+        cm.AUTH_STATE authState,
+        cm.IS_AUTH isAuth,
+        cm.AUDIT_CONTENT auditContent,
+        cm.arrive_time arriveTime,
+        TIMESTAMPDIFF(DAY,NOW(),CM.EFFECT_END) AS validDays
+        FROM CM_CUSTOMER_LINE cm
+        left join sys_organize org on org.id = cm.org_id
+        left join province sp on cm.SOURCE_PROVINCE=sp.Id
+        left join city sc on cm.SOURCE_CITY=sc.Id
+        left join province dp on cm.DES_PROVINCE=dp.Id
+        left join city dc on cm.DES_CITY=dc.Id,cm_customer_info cu
+        WHERE cu.id=cm.customer_id and CM.TENANT_ID = #{user.tenantId}
+        <if test="customerLine.customerId != null and customerLine.customerId != ''">
+            AND cm.customer_id = #{customerLine.customerId}
+        </if>
+        <if test="customerLine.lineCodeRule != null and customerLine.lineCodeRule != ''">
+            AND LINE_CODE_RULE LIKE CONCAT('%',#{customerLine.lineCodeRule},'%')
+        </if>
+        <if test="customerLine.lineCodeName != null and customerLine.lineCodeName != ''">
+            AND LINE_CODE_NAME LIKE CONCAT('%',#{customerLine.lineCodeName},'%')
+        </if>
+        <if test="customerLine.backhaulNumber != null and customerLine.backhaulNumber !=''">
+            AND BACKHAUL_NUMBER LIKE CONCAT('%',#{customerLine.backhaulNumber},'%')
+        </if>
+        <if test="customerLine.sourceProvince != null and customerLine.sourceProvince !=''">
+            AND SOURCE_PROVINCE LIKE CONCAT('%',#{customerLine.sourceProvince},'%')
+        </if>
+        <if test="customerLine.sourceCity != null and customerLine.sourceCity != ''">
+            AND SOURCE_CITY = #{customerLine.sourceCity}
+        </if>
+        <if test="customerLine.sourceCounty != null and customerLine.sourceCounty != ''">
+            AND SOURCE_COUNTY = #{customerLine.sourceCounty}
+        </if>
+        <if test="customerLine.desProvince != null and customerLine.desProvince != ''">
+            AND DES_PROVINCE = #{customerLine.desProvince}
+        </if>
+        <if test="customerLine.desCity != null and customerLine.desCity != ''">
+            AND DES_CITY = #{customerLine.desCity}
+        </if>
+        <if test="customerLine.desCounty != null and customerLine.desCounty != ''">
+            AND DES_COUNTY = #{customerLine.desCounty}
+        </if>
+        <choose>
+            <when test="customerLine.state != null and customerLine.state != ''">
+                and cm.state = #{customerLine.state}
+            </when>
+            <otherwise>
+                and cm.state &gt;= 0
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="customerLine.authState != null and customerLine.authState != ''">
+                and cm.auth_state = #{customerLine.authState}
+            </when>
+            <otherwise>
+                and cm.auth_state &gt;= 0
+            </otherwise>
+        </choose>
+        <if test="customerLine.companyName != null and customerLine.companyName != ''">
+            AND company_Name like concat ('%',#{customerLine.companyName},'%')
+        </if>
+        <if test="customerLine.lineKeyWord != null and customerLine.lineKeyWord != ''">
+            AND (sp.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or sc.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or dp.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or dc.Name like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.SOURCE_ADDRESS like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.DES_ADDRESS like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.NAVIGAT_DES_LOCATION like concat('%',#{customerLine.lineKeyWord},'%')
+            or CM.NAVIGAT_SOURCE_LOCATION like concat('%',#{customerLine.lineKeyWord},'%'))
+        </if>
+        <if test="customerLine.validDays != null and customerLine.validDays != ''">
+            AND TIMESTAMPDIFF(DAY,NOW(),CM.EFFECT_END) &lt;= #{customerLine.validDays}
+        </if>
+        order by cm.id desc
+    </select>
+    <!--根据id查询线路信息-->
+    <select id="selectLineById" resultType="com.youming.youche.record.domain.cm.CmCustomerLine">
+        SELECT
+        cm.id id ,
+        cm.CUSTOMER_ID customerId,
+
+        BACKHAUL_NUMBER backhaulNumber,
+        LINE_CODE_RULE lineCodeRule,
+        LINE_CODE_NAME lineCodeName,
+        cm.ORG_ID orgId,
+        org.org_name orgName,
+        cm.SALE_DAPARMENT saleDaparment,
+        SOURCE_PROVINCE sourceProvince,
+        SOURCE_CITY sourceCity,
+        DES_PROVINCE desProvince,
+        DES_CITY desCity,
+        cu.company_name companyName,
+        SOURCE_ADDRESS sourceAddress,
+        NAVIGAT_SOURCE_LOCATION navigatSourceLocation,
+        DES_ADDRESS desAddress,
+        NAVIGAT_DES_LOCATION navigatDesLocation,
+        MILEAGE_NUMBER mileageNumber,
+        VEHICLE_STATUS vehicleStatus,
+        VEHICLE_LENGTH vehicleLength,
+        cm.RECIVE_TIME receiveTime,
+        cm.RECIVE_TIME_DAY receiveTimeDay,
+        cm.RECIVE_TIME reciveTime,
+        cm.PRICE_ENUM priceEnum,
+        cm.ESTIMATE_INCOME estimateIncome,
+        cm.COLLECTION_TIME collectionTime,
+        cm.COLLECTION_TIME_DAY collectionTimeDay,
+        cm.PAY_WAY payWay,
+        cm.STATE state,
+        cm.AUTH_STATE authState,
+        cm.IS_AUTH isAuth,
+        cm.AUDIT_CONTENT auditContent,
+        cm.contract_url contractUrl,
+        cm.arrive_time arriveTime,
+        TIMESTAMPDIFF(DAY,NOW(),CM.EFFECT_END) AS validDays
+        FROM CM_CUSTOMER_LINE cm
+        left join sys_organize org on org.id = cm.org_id
+        left join province sp on CM.SOURCE_PROVINCE=sp.Id
+        left join city sc on CM.SOURCE_CITY=sc.Id
+        left join province dp on cm.DES_PROVINCE=dp.Id
+        left join city dc on cm.DES_CITY=dc.Id
+        left join cm_customer_info cu on cm.customer_id = cu.id
+        WHERE cm.TENANT_ID = #{tenantId}
+        <if test="lineId != null and lineId != ''">
+            AND cm.id = #{lineId}
+        </if>
+    </select>
+    <select id="checkLineExist" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        cm_customer_line
+        where line_code_name = #{lineCodeName}
+        and tenant_id = #{tenantId}
+        <if test="customerId != null and customerId != ''">
+            and customer_id = #{customerId}
+        </if>
+        <if test="id != null and id != ''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <!--查询路线信息-->
+    <select id="getCustomerLineByLineCode" resultType="com.youming.youche.record.domain.cm.CmCustomerLine">
+        SELECT l.id AS id,l.line_code_rule AS lineCodeRule,l.backhaul_number AS backhaulNumber,l.state AS state from
+        cm_customer_line l
+        <where>
+            l.state=1
+            <if test="tenantId != null">
+                and l.tenant_id = #{tenantId}
+            </if>
+            <if test="lineCodeRule != null and lineCodeRule !=''">
+                and l.line_code_rule LIKE concat('%',#{lineCodeRule},'%')
+            </if>
+        </where>
+        GROUP BY lineCodeRule
+    </select>
+    <select id="selectCustomerLineByBackhaul" resultType="com.youming.youche.record.dto.cm.CmCustomerLineDto">
+        SELECT
+        c.CUSTOMER_NAME customerName,
+        l.LINE_CODE_RULE lineCodeRule,
+        l.BACKHAUL_NUMBER backhaulNumber,
+        t1.name AS source,
+        t2.name AS des
+        FROM cm_customer_info c
+        , cm_customer_line l
+        LEFT JOIN city t1 ON t1.id = l.SOURCE_CITY
+        LEFT JOIN city t2 ON t2.id = l.DES_CITY
+        WHERE 1 = 1
+        AND c.id = l.CUSTOMER_ID
+        AND l.BACKHAUL_NUMBER IS NOT NULL AND TRIM(l.BACKHAUL_NUMBER) != ''
+        AND l.backhaul_State = 1
+        AND l.TENANT_ID = #{customerLine.tenantId}
+        <if test="customerLine.customerName != null and customerLine.customerName != ''">
+            c.customer_name like CONCAT('%',#{customerLine.customerName},'%')
+        </if>
+        <if test="customerLine.lineCodeRule != null and customerLine.lineCodeRule != ''">
+            l.line_code_rule like CONCAT('%',#{customerLine.lineCodeRule},'%')
+        </if>
+        <if test="customerLine.backhaulNumber != null and customerLine.backhaulNumber != ''">
+            l.backhaul_number like CONCAT('%',#{customerLine.backhaulNumber},'%')
+        </if>
+        <if test="customerLine.source != null and customerLine.source != ''">
+            t1.name like CONCAT('%',#{customerLine.source},'%')
+        </if>
+        <if test="customerLine.des != null and customerLine.des != ''">
+            t2.name like CONCAT('%',#{customerLine.des},'%')
+        </if>
+    </select>
+
+    <select id="getCmCustomerLineByLineCodeRules"
+            resultType="com.youming.youche.record.domain.cm.CmCustomerLine">
+        SELECT
+            l.id AS id,
+            l.line_code_rule AS linecoderule,
+            l.backhaul_number AS backhaulnumber,
+            l.state AS state
+        FROM
+            cm_customer_line l
+        WHERE
+            l.state = 1
+            AND l.line_code_rule IN (${lineCodeRules})
+    </select>
+
+    <!--根据选customerId、lineCodeRule、tenantId查出单条线路信息确认展示客户、承运、收货、收入数据-->
+    <select id="selectLineListByAddress" resultType="com.youming.youche.record.dto.cm.CmCustomerLineOrderExtend">
+        SELECT ccl.LINE_CODE_RULE,
+               ccl.ID                     id,
+               ccl.CUSTOMER_ID            customerId,
+               ccl.CONTRACT_NO            contractNo,
+               ccl.LINE_NAME              lineName,
+               ccl.LINE_TEL               lineTel,
+               ccl.TAIWAN_DATE            taiwanDate,
+               ccl.MARET_SALE             maretSale,
+               ccl.SALE_USER_ID           saleUserId,
+               ccl.SALE_NAME              saleName,
+               ccl.SETTLE_CYCLE           settleCycle,
+               ccl.CONTRACT_URL           contractUrl,
+               ccl.CONTRACT_ID            contractId,
+               ccl.ETC_MONEY              etcMoney,
+               ccl.OILCARD_MONEY          oilcardMoney,
+               ccl.ETC_MONEY_MERCHANT     etcMoneyMerchant,
+               ccl.OILCARD_MONEY_MERCHANT oilcardMoneyMerchant,
+               ccl.SOURCE_PROVINCE        sourceProvince,
+               ccl.SOURCE_CITY            sourceCity,
+               ccl.SOURCE_COUNTY          sourceCounty,
+               ccl.SOURCE_EAND            sourceEand,
+               ccl.SOURCE_NAND            sourceNand,
+               ccl.SOURCE_ADDRESS         sourceAddress,
+               ccl.DES_PROVINCE           desProvince,
+               ccl.DES_CITY               desCity,
+               ccl.DES_COUNTY             desCounty,
+               ccl.DES_EAND               desEand,
+               ccl.DES_NAND               desNand,
+               ccl.DES_ADDRESS            desAddress,
+               ccl.RECEIVE_NAME           receiveName,
+               ccl.RECEIVE_PHONE          receivePhone,
+               ccl.GOODS_NAME             goodsName,
+               ccl.GOODS_WEIGHT           goodsWeight,
+               ccl.GOODS_VOLUME                   goodsVolume,
+               ccl.PAY_WAY                        payWay,
+               ccl.GUIDE_MERCHANT                 guideMerchant,
+               ccl.GUIDE_PRICE                    guidePrice,
+               ccl.PRICE_UNIT                     priceUnit,
+               ccl.PRICE_ENUM                     priceEnum,
+               ccl.VEHICLE_LENGTH                 vehicleLength,
+               ccl.VEHICLE_STATUS                 vehicleStatus,
+               ccl.MILEAGE_NUMBER                 mileageNumber,
+               ccl.CM_MILEAGE_NUMBER              cmMileageNumber,
+               ccl.ARRIVE_TIME                    arriveTime,
+               ccl.RECIVE_TIME                    reciveTime,
+               ccl.RECOND_TIME                    recondTime,
+               ccl.INVOICE_TIME                   invoiceTime,
+               ccl.COLLECTION_TIME                collectionTime,
+               ccl.REMARKS                        remarks,
+               ccl.DIVISION_DEPARTMENT            divisionDepartment,
+               ccl.PROJECT_DEPARTMENT             projectDepartment,
+               ccl.SALE_DAPARMENT                 saleDaparment,
+               ccl.EFFECT_BEGIN                   effectBegin,
+               ccl.EFFECT_END                     effectEnd,
+               ccl.ORG_ID                         orgId,
+               ccl.TENANT_ID                      tenantId,
+               ccl.create_time                    createTime,
+               ccl.update_time                    updateTime,
+               ccl.OP_ID                          opId,
+               ccl.OILCARD_TYPE                   oilcardType,
+               ccl.OILCARD_TYPE_MERCHANT          oilcardTypeMerchant,
+               ccl.LINE_CODE_RULE                 lineCodeRule,
+               ccl.NAVIGAT_DES_LOCATION           navigatDesLocation,
+               ccl.NAVIGAT_SOURCE_LOCATION        navigatSourceLocation,
+               ccl.STATE                          state,
+               ccl.CAR_LINE_STATE                 carLineState,
+               ccl.CAR_LINE_STATE_MERCHANT        carLineStateMerchant,
+               ccl.ETC_MONEY_UPDATE               etcMoneyUpdate,
+               ccl.OILCARD_MONEY_UPDATE           oilcardMoneyUpdate,
+               ccl.ETC_MONEY_MERCHANT_UPDATE      etcMoneyMerchantUpdate,
+               ccl.OILCARD_MONEY_MERCHANT_UPDATE  oilcardMoneyMerchantUpdate,
+               ccl.GUIDE_MERCHANT_UPDATE          guideMerchantUpdate,
+               ccl.GUIDE_PRICE_UPDATE             guidePriceUpdate,
+               ccl.CAR_LINE_STATE_UPDATE          carLineStateUpdate,
+               ccl.CAR_LINE_STATE_MERCHANT_UPDATE carLineStateMerchantUpdate,
+               ccl.OILCARD_TYPE_UPDATE            oilcardTypeUpdate,
+               ccl.OILCARD_TYPE_MERCHANT_UPDATE   oilcardTypeMerchantUpdate,
+               ccl.PROFIT                         profit,
+               ccl.PROFIT_MERCHANT                profitMerchant,
+               ccl.ADVISE                         advise,
+               ccl.ADVISE_MERCHANT                adviseMerchant,
+               ccl.ESTIMATE_INCOME                estimateIncome,
+               ccl.OIL_COST_PER                   oilCostPer,
+               ccl.EMPTY_OIL_COST_PER             emptyOilCostPer,
+               ccl.PONTAGE_PER                    pontagePer,
+               ccl.OIL_ID                         oilId,
+               ccl.ADDRESS                        address,
+               ccl.CUSTOMER_NAME                  customerName,
+               ccl.YONGYOU_CODE                   yongyouCode,
+               ccl.BACKHAUL_STATE                 backhaulState,
+               ccl.BACKHAUL_NUMBER                backhaulNumber,
+               ccl.BACKHAUL_FORMAT                backhaulFormat,
+               ccl.ETC_MONEY_CONTRACT             etcMoneyContract,
+               ccl.OILCARD_MONEY_CONTRACT         oilcardMoneyContract,
+               ccl.BACKHAUL_GUIDE_FEE             backhaulGuideFee,
+               ccl.AUTH_STATE                     authState,
+               ccl.AUDIT_CONTENT                  auditContent,
+               ccl.IS_AUTH                        isAuth,
+               ccl.IS_REVERT_GOODS                isRevertGoods,
+               ccl.BACKHAUL_GUIDE_NAME            backhaulGuideName,
+               ccl.BACKHAUL_GUIDE_PHONE           backhaulGuidePhone,
+               ccl.RECIVE_PROVINCE_ID             reciveProvinceId,
+               ccl.RECIVE_CITY_ID                 reciveCityId,
+               ccl.RECIVE_ADDRESS                 reciveAddress,
+               ccl.PLATE_NUMBER                   plateNumber,
+               ccl.DRIVER_USER_ID                 driverUserId,
+               ccl.RECIVE_TIME_DAY                reciveTimeDay,
+               ccl.RECOND_TIME_DAY                recondTimeDay,
+               ccl.INVOICE_TIME_DAY               invoiceTimeDay,
+               ccl.COLLECTION_TIME_DAY            collectionTimeDay,
+               ccl.GOODS_TYPE                     goodsType,
+               ccl.LINE_CODE_NAME                 lineCodeName
+        FROM cm_customer_line ccl
+        LEFT JOIN (SELECT id, GROUP_CONCAT(DES_ADDRESS, NAVIGAT_DES_LOCATION) AS subWayAddr FROM cm_customer_line_subway GROUP BY id) AS a ON a.id = ccl.id
+        WHERE
+        <if test="tenantId != null and tenantId != ''">
+            ccl.TENANT_ID = #{tenantId}
+        </if>
+          AND ccl.AUTH_STATE = 2 AND ccl.STATE = 1
+        <if test="customerId != null and customerId != ''">
+            AND ccl.CUSTOMER_ID = #{customerId}
+        </if>
+        <if test="lineCodeRule != null and lineCodeRule != ''">
+            AND ccl.LINE_CODE_RULE = #{lineCodeRule}
+        </if>
+    </select>
+
+    <select id="doQueryLineByTenantForWX"
+            resultType="com.youming.youche.record.dto.cm.QueryLineByTenantForWXDto">
+        SELECT
+        cm.id AS lineId,
+        line_code_rule AS lineCodeRule,
+        LINE_CODE_NAME AS lineCodeName,
+        source_province AS sourceProvince,
+        source_city AS sourceCity,
+        cm.source_county AS sourceCounty,
+        DES_PROVINCE AS desProvince,
+        des_city AS desCity,
+        cm.des_county AS desCounty,
+        cu.company_name AS companyName,
+        cm.source_address AS sourceAddress,
+        cm.des_address AS desAddress,
+        cm.estimate_income AS estimateIncome,
+        cm.taiwan_date AS taiwanDate,
+        cm.SOURCE_EAND AS sourceEand,
+        cm.SOURCE_NAND AS sourceNand,
+        cm.DES_EAND AS desEand,
+        cm.DES_NAND AS desNand,
+        cm.NAVIGAT_DES_LOCATION AS navigatDesLocation,
+        cm.NAVIGAT_SOURCE_LOCATION AS navigatSourceLocation,
+        cm.ARRIVE_TIME AS arriveTime
+        FROM
+        cm_customer_line cm,
+        cm_customer_info cu
+        WHERE
+        cu.id = cm.customer_id
+        AND cm.tenant_id = #{vo.tenantId}
+        AND CM.STATE = 1
+        <if test="vo.customerId > 0">
+            AND cm.customer_id = #{vo.customerId}
+        </if>
+        <if test="vo.lineCodeRule != null and vo.lineCodeRule != ''">
+            AND cm.line_code_rule LIKE concat( '%',${vo.lineCodeRule}, '%' )
+        </if>
+        <if test="vo.sourceProvince != null and vo.sourceProvince > 0">
+            AND cm.source_province = #{vo.sourceProvince}
+        </if>
+        <if test="vo.sourceCity != null and vo.sourceCity > 0">
+            AND cm.source_city = #{vo.sourceCity}
+        </if>
+        <if test="vo.sourceCounty != null and vo.sourceCounty > 0">
+            AND cm.source_county = #{vo.sourceCounty}
+        </if>
+        <if test="vo.desProvince != null and vo.desProvince > 0">
+            AND cm.des_province = #{vo.desProvince}
+        </if>
+        <if test="vo.desCity != null and vo.desCity > 0">
+            AND cm.des_city = #{vo.desCity}
+        </if>
+        <if test="vo.desCounty != null and vo.desCounty > 0">
+            AND cm.des_county = #{vo.desCounty}
+        </if>
+        <if test="vo.companyName != null and vo.companyName != ''">
+            AND cu.company_name LIKE concat( '%',${vo.companyName}, '%' )
+        </if>
+        <if test="vo.lineCodeName != null and vo.lineCodeName != ''">
+            AND cm.line_code_name LIKE concat( '%',${vo.lineCodeName}, '%' )
+        </if>
+        <if test="vo.detailAddress != null and vo.detailAddress != ''">
+            AND ( cm.source_address LIKE concat( '%',${vo.detailAddress}, '%' ) OR cm.des_address LIKE concat( '%',${vo.detailAddress}, '%' ) )
+        </if>
+        ORDER BY cm.id DESC
+    </select>
+
+    <select id="getTableLineCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select tenant_id, count(1) as count from CM_CUSTOMER_LINE where tenant_id  is not null group by tenant_id
+    </select>
+    <select id="getCmCustomerLineByLineCodeRulesTrailer"
+            resultType="com.youming.youche.record.vo.VehicleLineRelsVo">
+        SELECT
+            l.id AS lineId,
+            l.line_code_rule AS lineCodeRule,
+            l.backhaul_number AS backhaulnumber,
+            l.state AS state
+        FROM
+            cm_customer_line l
+        WHERE
+            l.state = 1
+          AND l.line_code_rule IN (${lineCodeRules})
+    </select>
+</mapper>

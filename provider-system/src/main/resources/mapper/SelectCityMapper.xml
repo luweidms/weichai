@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SelectCityMapper">
+    <select id="doQueryProvices" resultType="com.youming.youche.components.citys.Province">
+        SELECT id,
+        name,
+        sort_id as sortId,
+        prov_type as provType
+        FROM province
+        WHERE 1=1
+        <if test="province.id != null and province.id > 0">
+            AND id = #{province.id}
+        </if>
+        <if test="province.name != null and province.name != ''">
+            AND name like CONCAT('%',#{province.name},'%')
+        </if>
+        ORDER BY sortId ASC
+    </select>
+
+    <select id="doQueryRegion" resultType="com.youming.youche.components.citys.City">
+        SELECT id,
+        prov_id as provId,
+        name,
+        area_code as areaCode,
+        city_type as cityType
+        FROM city
+        WHERE 1=1
+        <if test="city.provId != null">
+            AND prov_id = #{city.provId}
+        </if>
+        <if test="city.id != null and city.id > 0">
+            AND id = #{city.id}
+        </if>
+        <if test="city.name != null and city.name != ''">
+            AND name like CONCAT('%',#{city.name},'%')
+        </if>
+        ORDER BY id ASC
+    </select>
+
+    <select id="getDistrictData" resultType="com.youming.youche.components.citys.District">
+        SELECT id,
+        city_id as cityId,
+        name,
+        post_code postCode,
+        dist_type distType
+        FROM district
+        WHERE 1 = 1
+        <if test="district.cityId != null">
+            AND city_id = #{district.cityId}
+        </if>
+        <if test="district.id != null and district.id > 0">
+            AND id = #{district.id}
+        </if>
+        <if test="district.name != null and district.name != ''">
+            AND name like CONCAT('%',#{district.name},'%')
+        </if>
+        ORDER BY id ASC
+    </select>
+
+</mapper>

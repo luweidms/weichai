@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OaLoanMapper">
+
+    <select id="selectSalary" resultType="com.youming.youche.order.domain.order.OaLoan">
+        ( SELECT
+            o.*
+            FROM
+                oa_loan o
+            WHERE
+                o.CLASSIFY = 2
+                AND o.TENANT_ID =#{tenantId}
+                AND ( o.user_id =#{userId} OR o.CAR_PHONE =#{carPhone} )
+                AND o.sts IN (3,4,5 )
+            AND o.LOAN_SUBJECT IN (#{loanType} )
+
+            <choose>
+                <when test="loanType.contains(5) == true">
+                    AND LOAN_TRANS_REASON = 2
+                </when>
+                <otherwise>
+                    and o.launch=2
+                </otherwise>
+            </choose>
+            <if test="orderId != null and orderId > 0">
+                and o.order_id= #{orderId}
+            </if>
+        )
+    </select>
+
+    <select id="queryOaloanCount" resultType="int">
+        select count(*) from OA_LOAN o where o.order_Id=#{orderId} and launch = 2
+        <if test="null !=userId">
+            and o.user_id = #{userId}
+        </if>
+    </select>
+
+    <select id="queryOaLoanList" resultType="com.youming.youche.order.dto.order.OaLoanListDto">
+        SELECT
+        o.id AS LId,
+        o.amount AS amount,
+        o.loan_subject AS loanSubject,
+        o.is_need_bill AS isNeedBill,
+        o.oa_loan_id AS oaLoanId,
+        o.order_id AS orderId,
+        o.plate_number AS plateNumber,
+        u.mobile_phone AS phoneNumber,
+        o.user_info_name AS userName,
+        o.sts AS sts
+        FROM
+        oa_loan o,
+        user_data_info u
+        WHERE
+        o.user_info_id = u.id
+        AND o.tenant_id = #{tenantId}
+        <if test="orderId != null">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="queryType > 0">
+            <choose>
+                <when test="queryType == 1">
+                    AND o.classify = 1
+                </when>
+                <when test="queryType == 2">
+                    AND o.classify=2 AND (o.launch=1 OR (o.launch=2 AND o.loan_subject IN (
+                    ${getLoanBelongAdminSubjectList} )))
+                </when>
+                <when test="queryType == 3">
+                    AND o.launch=2 AND o.loan_subject IN ( ${getLoanBelongDriverSubjectList} )
+                </when>
+            </choose>
+        </if>
+        <if test="userName != null and userName != ''">
+            AND o.user_info_name LIKE CONCAT('%',#{userName},'%')
+        </if>
+        <if test="mobilePhone != null and mobilePhone != ''">
+            AND u.mobile_phone LIKE CONCAT('%',#{mobilePhone},'%')
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND o.plate_number LIKE CONCAT('%',#{plateNumber},'%')
+        </if>
+        <if test="loanSubjects != null and loanSubjects != ''">
+            AND o.loan_subject IN ( ${loanSubjects} )
+        </if>
+        <if test="oaLoanId != null and  oaLoanId != ''">
+            AND o.oa_loan_id = #{oaLoanId}
+        </if>
+        <if test="states != null and states != ''">
+            AND o.sts IN ( ${states} )
+        </if>
+        <if test="waitDeal">
+            <choose>
+                <when test="lidStr != null and lidStr != ''">
+                    AND o.id IN ( ${lidStr} ) AND o.sts IN (0,1)
+                </when>
+                <!--<otherwise>
+                    AND o.id = ''
+                </otherwise>-->
+            </choose>
+        </if>
+        <if test="orgStr != null and orgStr != ''">
+            AND o.org_id IN ( ${orgStr} )
+        </if>
+        ORDER BY
+        o.app_date DESC
+    </select>
+
+    <select id="queryOaLoanById" resultType="com.youming.youche.order.domain.order.OaLoan">
+        select * from on_load where 1 = 1
+        <choose>
+            <when test="LId != null and LId > 0">
+                and id = #{LId}
+            </when>
+            <when test="busiCodes != null and busiCodes.size() > 0">
+                and on_load_id = #{busiCode}
+            </when>
+            <otherwise>
+                and 1 = 2
+            </otherwise>
+        </choose>
+        limit 1
+    </select>
+
+</mapper>

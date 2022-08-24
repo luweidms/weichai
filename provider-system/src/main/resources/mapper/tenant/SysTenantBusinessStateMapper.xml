@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.tenant.SysTenantBusinessStateMapper">
+
+<update id="updateBusinessState">
+    UPDATE `sys_tenant_business_state`
+    SET `id`=#{sysTenantBusinessState.id},
+        `visit_id`=#{sysTenantBusinessState.visitId},
+        `tenant_id`=#{sysTenantBusinessState.tenantId},
+        `tenant_type`=#{sysTenantBusinessState.tenantType},
+        `annual_turnover`=#{sysTenantBusinessState.annualTurnover},
+        `customer_type`=#{sysTenantBusinessState.customerType},
+        `other_customer_type`=#{sysTenantBusinessState.otherCustomerType},
+        `vehicle_type`=#{sysTenantBusinessState.vehicleType},
+        `own_vehicle_number`=#{sysTenantBusinessState.ownVehicleNumber},
+        `business_vehicle_number`=#{sysTenantBusinessState.businessVehicleNumber},
+        `attached_vehicle_number`=#{sysTenantBusinessState.attachedVehicleNumber},
+        `other_vehicle_user`=#{sysTenantBusinessState.otherVehicleUser},
+        `staff_number`=#{sysTenantBusinessState.staffNumber},
+        `vehicle_manage_number`=#{sysTenantBusinessState.vehicleManageNumber},
+        `dispatcher_number`=#{sysTenantBusinessState.dispatcherNumber},
+        `customer_service_number`=#{sysTenantBusinessState.customerServiceNumber},
+        `financial_number`=#{sysTenantBusinessState.financialNumber},
+        `system_user`=#{sysTenantBusinessState.systemUser},
+        `system_phone`=#{sysTenantBusinessState.systemPhone},
+        `info_user`=#{sysTenantBusinessState.infoUser},
+        `info_phone`=#{sysTenantBusinessState.infoPhone},
+        `open_order_user`=#{sysTenantBusinessState.openOrderUser},
+        `open_order_phone`=#{sysTenantBusinessState.openOrderPhone},
+        `financial_user`=#{sysTenantBusinessState.financialUser},
+        `financial_phone`=#{sysTenantBusinessState.financialPhone},
+        `service_user`=#{sysTenantBusinessState.serviceUser},
+        `service_phone`=#{sysTenantBusinessState.servicePhone},
+        `main_vehicle_percent`=#{sysTenantBusinessState.mainVehiclePercent},
+        `stop_percent`=#{sysTenantBusinessState.stopPercent},
+        `distribut_percent`=#{sysTenantBusinessState.distributPercent},
+        `retail_percent`=#{sysTenantBusinessState.retailPercent},
+        `petro_china_percent`=#{sysTenantBusinessState.petroChinaPercent},
+        `three_party_percent`=#{sysTenantBusinessState.threePartyPercent},
+        `purchase_percent`=#{sysTenantBusinessState.purchasePercent},
+        `external_percent`=#{sysTenantBusinessState.externalPercent},
+        `afterpay_percent`=#{sysTenantBusinessState.afterpayPercent},
+        `prepay_percent`=#{sysTenantBusinessState.prepayPercent},
+        `cash_percent`=#{sysTenantBusinessState.cashPercent},
+        `issuers`=#{sysTenantBusinessState.issuers},
+        `other_issuers`=#{sysTenantBusinessState.otherIssuers},
+        `own_freight_type`=#{sysTenantBusinessState.ownFreightType},
+        `other_freight_type`=#{sysTenantBusinessState.otherFreightType},
+        `system_used`=#{sysTenantBusinessState.systemUsed},
+        `other_hardware_used`=#{sysTenantBusinessState.otherHardwareUsed},
+        `other_system_used`=#{sysTenantBusinessState.otherSystemUsed},
+        `hardware_used`=#{sysTenantBusinessState.hardwareUsed},
+        `update_time`=#{sysTenantBusinessState.updateTime}
+    WHERE (`id`=#{sysTenantBusinessState.id} and `tenant_id`=#{tenantId})
+
+</update>
+</mapper>

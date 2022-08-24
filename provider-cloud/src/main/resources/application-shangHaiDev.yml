@@ -1,0 +1,112 @@
+base:
+  config:
+    nacos:
+#      hostname: 192.168.20.100
+      hostname: 192.168.0.10
+      port: 8848
+    db:
+      hostname: 192.168.0.10
+#      hostname: 192.168.20.109
+      port: 3307
+    redis:
+      hostname: 192.168.0.10
+      port: 6379
+      password: youche123
+#    mongodb:
+#      hostname: 192.168.188.36
+#      port: 27017
+spring:
+  application:
+    name: provider-cloud
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${base.config.db.hostname}:${base.config.db.port}/youche?serverTimezone=Asia/Shanghai&useLegacyDatetimeCode=false&nullNamePatternMatchesAll=true&zeroDateTimeBehavior=CONVERT_TO_NULL&tinyInt1isBit=false&autoReconnect=true&useSSL=false&pinGlobalTxToPhysicalConnection=true
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      idle-timeout: 600000
+      maximum-pool-size: 10
+      auto-commit: true
+      pool-name: MyHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  redis:
+    # Redis数据库索引（默认为0)
+    database: 0
+    # Redis服务器地址
+    host: ${base.config.redis.hostname}
+    # Redis服务器连接端口
+    port: ${base.config.redis.port}
+    # Redis服务器连接密码（默认为空）
+    password: ${base.config.redis.password}
+#    cluster:
+#      nodes: ${base.config.redis.nodes}
+#      max-redirects: 200
+#    jedis:
+#      pool:
+#        #连接池最大连接数（使用负值表示没有限制）
+#        max-active: 300
+#        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+#        max-wait: -1
+#        # 连接池中的最大空闲连接
+#        max-idle: 100
+#        # 连接池中的最小空闲连接
+#        min-idle: 20
+#        # 连接超时时间（毫秒）
+#    timeout: 60000
+#  jpa:
+#    hibernate:
+#      #     更新或者创建数据表结构
+#      ddl-auto: update
+#    #    控制台显示SQL
+#    show-sql: true
+
+logging:
+  level:
+    com.youming.youche.cloud.mapper: debug
+  #将日志输出到文件
+  config: classpath:dev-log.xml
+
+
+dubbo:
+  scan:
+    base-packages: com.youming.youche.cloud.provider.service
+  protocol:
+    name: dubbo
+    port: -1
+#    host: 192.168.9.10 # 本机ip
+  registry:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+    group: YOUCHE_GROUP
+  metadata-report:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+#  config-center:
+#    namespace: 28ac7d69-8afd-474d-924d-28a291330188
+
+jytfz:
+  open-api:
+    appUrl: https://api.cmburl.cn:8065/midsrv/nts
+    appId: 2d060f16-e03c-4c2d-8ec5-1c5e98cdf757
+    appSecret: 8d2961c9-f9a5-4100-b483-e9262f95b8e6
+    secretKey: 3bf0f4cd748a47c29adb6418a6a12add
+    version: 0.1.0
+    platformNo: NTS00061
+    #   招行测试环境：联行号102100099996 ,生产环境：联行号为空即可
+    bnkNo: 102100099996
+
+sms:
+  url: https://139.9.32.119:18312/common/sms/sendTemplateMessage
+  account: 762204
+  password: Wit@message-1011
+tsp:
+  warning:
+    url: https://wit-jt809-api-prod.tongxin.cn/jt809/vehicle/getOperationSafeInfo
+    duration-limit: 1
+  track:
+    url: https://wit-jt809-api-prod.tongxin.cn/jt809/vehicle/getVehicleTrace
+    duration-limit: 24

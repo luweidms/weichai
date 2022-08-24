@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleIdleMapper">
+
+    <select id="queryIdleVehicles" resultType="com.youming.youche.record.vo.IdleVehiclesVo">
+        select
+        *
+        from
+        (select
+        ROUND(cast(timestampdiff(second, vi.create_time,ifnull(vi.update_time, now())) as double) / 3600,2) as idleHour,
+        vi.plate_number as plateNumber,
+        vd.vehicle_status as vehicleStatus,
+        vd.vehicle_length as vehicleLength
+        from vehicle_idle vi
+        left join vehicle_data_info vd on vi.plate_number = vd.plate_number
+        left join trailer_management tm on vi.plate_number = tm.trailer_number
+        where
+        vi.tenant_id = #{tenantId}
+        and
+        vi.update_time IS null
+        <if test="idleVehiclesVo.plateNumber != null and idleVehiclesVo.plateNumber !=''  ">
+            and vi.plate_number like CONCAT('%',#{idleVehiclesVo.plateNumber},'%')
+        </if>
+        group by vi.plate_number
+        ) as v
+        where
+        0 = 0
+        <if test="idleVehiclesVo.startHour != null and idleVehiclesVo.endHour != null">
+            and v.idleHour between #{idleVehiclesVo.startHour} and #{idleVehiclesVo.endHour}
+        </if>
+    </select>
+
+</mapper>

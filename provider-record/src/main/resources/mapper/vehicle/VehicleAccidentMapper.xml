@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleAccidentMapper">
+
+    <insert id="insertAccidentRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO vehicle_accident (
+        id
+        <if test="vehicleAccident.vehicleId != null and vehicleAccident.vehicleId != ''">
+            ,vehicle_id
+        </if>
+        <if test="vehicleAccident.vehicleCode != null and vehicleAccident.vehicleCode != ''">
+            ,vehicle_code
+        </if>
+        <if test="vehicleAccident.accidentStatus != null and vehicleAccident.accidentStatus != ''">
+            ,accident_status
+        </if>
+        <if test="vehicleAccident.reportDate != null and vehicleAccident.reportDate != ''">
+            ,report_date
+        </if>
+        <if test="vehicleAccident.accidentDescription != null and vehicleAccident.accidentDescription != ''">
+            ,accident_description
+        </if>
+        <if test="vehicleAccident.relatedPhotos != null and vehicleAccident.relatedPhotos != ''">
+            ,related_photos
+        </if>
+        <if test="vehicleAccident.insuranceCompany != null and vehicleAccident.insuranceCompany != ''">
+            ,insurance_company
+        </if>
+        <if test="vehicleAccident.insured != null and vehicleAccident.insured != ''">
+            ,Insured
+        </if>
+        <if test="vehicleAccident.id == null">
+            ,create_time
+        </if>
+        <if test="vehicleAccident.claimAmount != null and vehicleAccident.claimAmount != ''">
+            ,claim_amount
+        </if>
+        <if test="vehicleAccident.accidentDate != null and vehicleAccident.accidentDate != ''">
+            ,accident_date
+        </if>
+        <if test="vehicleAccident.accidentPlace != null and vehicleAccident.accidentPlace !=''">
+            ,accident_place
+        </if>
+        <if test="vehicleAccident.accidentCause != null and vehicleAccident.accidentCause != ''">
+            ,accident_cause
+        </if>
+        <if test="vehicleAccident.accidentType != null and vehicleAccident.accidentType != ''">
+            ,accident_type
+        </if>
+        <if test="vehicleAccident.vehicleDamage != null and vehicleAccident.vehicleDamage != ''">
+            ,vehicle_damage
+        </if>
+        <if test="vehicleAccident.otherDamage != null and vehicleAccident.otherDamage != ''">
+            ,other_damage
+        </if>
+        <if test="vehicleAccident.roadLoss != null and vehicleAccident.roadLoss != ''">
+            ,road_loss
+        </if>
+        <if test="vehicleAccident.materialDamage != null and vehicleAccident.materialDamage != ''">
+            ,material_amage
+        </if>
+        <if test="vehicleAccident.wounding != null and vehicleAccident.wounding != ''">
+            ,wounding
+        </if>
+        <if test="vehicleAccident.accidentDriver != null and vehicleAccident.accidentDriver != ''">
+            ,accident_driver
+        </if>
+        <if test="vehicleAccident.mainDriver != null and vehicleAccident.mainDriver != ''">
+            ,main_driver
+        </if>
+        <if test="vehicleAccident.tenantId != null">
+            ,tenant_id
+        </if>
+        <if test="vehicleAccident.orgId != null">
+            ,org_id
+        </if>
+        <if test="vehicleAccident.tenantId != null">
+            ,user_data_id
+        </if>
+        )
+        VALUES
+        (
+        null
+        <if test="vehicleAccident.vehicleId != null and vehicleAccident.vehicleId != ''">
+            ,#{vehicleAccident.vehicleId}
+        </if>
+        <if test="vehicleAccident.vehicleCode != null and vehicleAccident.vehicleCode != ''">
+            ,#{vehicleAccident.vehicleCode}
+        </if>
+        <if test="vehicleAccident.accidentStatus != null and vehicleAccident.accidentStatus != ''">
+            ,#{vehicleAccident.accidentStatus}
+        </if>
+        <if test="vehicleAccident.reportDate != null and vehicleAccident.reportDate != ''">
+            ,#{vehicleAccident.reportDate}
+        </if>
+        <if test="vehicleAccident.accidentDescription != null and vehicleAccident.accidentDescription != ''">
+            ,#{vehicleAccident.accidentDescription}
+        </if>
+        <if test="vehicleAccident.relatedPhotos != null and vehicleAccident.relatedPhotos != ''">
+            ,#{vehicleAccident.relatedPhotos}
+        </if>
+        <if test="vehicleAccident.insuranceCompany != null and vehicleAccident.insuranceCompany != ''">
+            ,#{vehicleAccident.insuranceCompany}
+        </if>
+        <if test="vehicleAccident.insured != null and vehicleAccident.insured != ''">
+            ,#{vehicleAccident.insured}
+        </if>
+        <if test="vehicleAccident.id == null">
+            ,#{vehicleAccident.createTime}
+        </if>
+        <if test="vehicleAccident.claimAmount != null and vehicleAccident.claimAmount != ''">
+            ,#{vehicleAccident.claimAmount}
+        </if>
+        <if test="vehicleAccident.accidentDate != null and vehicleAccident.accidentDate != ''">
+            ,#{vehicleAccident.accidentDate}
+        </if>
+        <if test="vehicleAccident.accidentPlace != null and vehicleAccident.accidentPlace !=''">
+            ,#{vehicleAccident.accidentPlace}
+        </if>
+        <if test="vehicleAccident.accidentCause != null and vehicleAccident.accidentCause != ''">
+            ,#{vehicleAccident.accidentCause}
+        </if>
+        <if test="vehicleAccident.accidentType != null and vehicleAccident.accidentType != ''">
+            ,#{vehicleAccident.accidentType}
+        </if>
+        <if test="vehicleAccident.vehicleDamage != null and vehicleAccident.vehicleDamage != ''">
+            ,#{vehicleAccident.vehicleDamage}
+        </if>
+        <if test="vehicleAccident.otherDamage != null and vehicleAccident.otherDamage != ''">
+            ,#{vehicleAccident.otherDamage}
+        </if>
+        <if test="vehicleAccident.roadLoss != null and vehicleAccident.roadLoss != ''">
+            ,#{vehicleAccident.roadLoss}
+        </if>
+        <if test="vehicleAccident.materialDamage != null and vehicleAccident.materialDamage != ''">
+            ,#{vehicleAccident.materialDamage}
+        </if>
+        <if test="vehicleAccident.wounding != null and vehicleAccident.wounding != ''">
+            ,#{vehicleAccident.wounding}
+        </if>
+        <if test="vehicleAccident.accidentDriver != null and vehicleAccident.accidentDriver != ''">
+            ,#{vehicleAccident.accidentDriver}
+        </if>
+        <if test="vehicleAccident.mainDriver != null and vehicleAccident.mainDriver != ''">
+            ,#{vehicleAccident.mainDriver}
+        </if>
+        <if test="vehicleAccident.tenantId != null">
+            ,#{vehicleAccident.tenantId}
+        </if>
+        <if test="vehicleAccident.orgId != null">
+            ,#{vehicleAccident.orgId}
+        </if>
+        <if test="vehicleAccident.userDataId != null">
+            ,#{vehicleAccident.userDataId}
+        </if>
+        )
+    </insert>
+
+    <sql id="query">
+        SELECT
+        va.id AS id,
+        va.vehicle_id AS vehicleid,
+        va.vehicle_code AS vehiclecode,
+        va.accident_status AS accidentstatus,
+        ( SELECT std.`name` FROM sys_tenant_def std WHERE std.id = va.tenant_id ) AS orgname,
+        di.brand_model AS brandname,
+        di.vehicle_model AS brandtype,
+        va.insurance_company AS insurancecompany,
+        va.insured AS insured,
+        date_format( va.report_date, "%Y-%m-%d" ) AS reportdate,
+        va.accident_date AS accidentdate,
+        va.claim_amount AS claimamount,
+        va.create_time AS createtime
+        FROM
+        vehicle_accident va
+        JOIN vehicle_data_info di ON va.vehicle_id = di.id
+        WHERE
+        1 = 1
+        AND va.tenant_id = #{tenantId}
+        <if test="vehicleCode != null and vehicleCode != ''">
+            AND va.vehicle_code LIKE CONCAT('%',#{vehicleCode},'%')
+        </if>
+        <if test="accidentStatus != null and accidentStatus != '' and accidentStatus != -1">
+            AND va.accident_status = #{accidentStatus}
+        </if>
+        <if test="reportDateStart != null and reportDateStart != ''">
+            AND va.report_date <![CDATA[ >= ]]> #{reportDateStart}
+        </if>
+        <if test="reportDateEnd != null and reportDateEnd != ''">
+            AND va.report_date <![CDATA[ <= ]]> #{reportDateEnd}
+        </if>
+        <if test="accidentDateStart != null and accidentDateStart != ''">
+            AND va.accident_date <![CDATA[ >= ]]> #{accidentDateStart}
+        </if>
+        <if test="accidentDateEnd != null and accidentDateEnd != ''">
+            AND va.accident_date <![CDATA[ <= ]]> #{accidentDateEnd}
+        </if>
+        <if test="createDateStart != null and createDateStart != ''">
+            AND va.create_time <![CDATA[ >= ]]> #{createDateStart}
+        </if>
+        <if test="createDateEnd != null and createDateEnd != ''">
+            AND va.create_time <![CDATA[ <= ]]> #{createDateEnd}
+        </if>
+        ORDER BY
+        va.create_time DESC
+    </sql>
+
+    <select id="queryAllRecord" resultType="com.youming.youche.record.domain.vehicle.VehicleAccident">
+        <include refid="query"/>
+    </select>
+
+    <select id="queryAllRecordExport" resultType="com.youming.youche.record.domain.vehicle.VehicleAccident">
+        <include refid="query"/>
+    </select>
+
+    <select id="selectAccidentById" resultType="com.youming.youche.record.domain.vehicle.VehicleAccident">
+        SELECT
+            id AS id,
+            vehicle_code AS vehicleCode,
+            report_date AS reportDate,
+            accident_description AS accidentDescription,
+            related_photos AS relatedPhotos,
+            insurance_company AS insuranceCompany,
+            Insured AS insured,
+            accident_date AS accidentDate,
+            accident_place AS accidentPlace,
+            accident_cause AS accidentCause,
+            accident_type AS accidentType,
+            vehicle_damage AS vehicleDamage,
+            other_damage AS otherDamage,
+            road_loss AS roadLoss,
+            material_amage AS materialDamage,
+            wounding AS wounding,
+            accident_driver AS accidentDriver,
+            main_driver AS mainDriver,
+            claim_amount AS claimAmount
+        FROM
+            vehicle_accident
+        WHERE
+            id = #{id}
+    </select>
+
+    <update id="updateAccidentById">
+        UPDATE vehicle_accident
+        <set>
+            <if test="vehicleAccident.accidentStatus != null and vehicleAccident.accidentStatus != ''">
+                accident_status = #{vehicleAccident.accidentStatus},
+            </if>
+            <if test="vehicleAccident.reportDate != null and vehicleAccident.reportDate != ''">
+                report_date = #{vehicleAccident.reportDate},
+            </if>
+            <if test="vehicleAccident.accidentDescription != null and vehicleAccident.accidentDescription != ''">
+                accident_description = #{vehicleAccident.accidentDescription},
+            </if>
+            <if test="vehicleAccident.relatedPhotos != null and vehicleAccident.relatedPhotos != ''">
+                related_photos = #{vehicleAccident.relatedPhotos},
+            </if>
+            <if test="vehicleAccident.insuranceCompany != null and vehicleAccident.insuranceCompany != ''">
+                insurance_company = #{vehicleAccident.insuranceCompany},
+            </if>
+            <if test="vehicleAccident.insured != null and vehicleAccident.insured != ''">
+                Insured = #{vehicleAccident.insured},
+            </if>
+            <if test="vehicleAccident.claimAmount != null and vehicleAccident.claimAmount != ''">
+                claim_amount = #{vehicleAccident.claimAmount},
+            </if>
+            <if test="vehicleAccident.claimDate != null and vehicleAccident.claimDate != ''">
+                claim_date = #{vehicleAccident.claimDate},
+            </if>
+            <if test="vehicleAccident.accidentDate != null and vehicleAccident.accidentDate != ''">
+                accident_date= #{vehicleAccident.accidentDate},
+            </if>
+            <if test="vehicleAccident.accidentPlace != null and vehicleAccident.accidentPlace != ''">
+                accident_place = #{vehicleAccident.accidentPlace},
+            </if>
+            <if test="vehicleAccident.accidentCause != null and vehicleAccident.accidentCause != ''">
+                accident_cause = #{vehicleAccident.accidentCause},
+            </if>
+            <if test="vehicleAccident.accidentType != null and vehicleAccident.accidentType != ''">
+                accident_type = #{vehicleAccident.accidentType},
+            </if>
+            <if test="vehicleAccident.vehicleDamage != null and vehicleAccident.vehicleDamage != ''">
+                vehicle_damage = #{vehicleAccident.vehicleDamage},
+            </if>
+            <if test="vehicleAccident.otherDamage != null and vehicleAccident.otherDamage != ''">
+                other_damage = #{vehicleAccident.otherDamage},
+            </if>
+            <if test="vehicleAccident.roadLoss != null and vehicleAccident.roadLoss != ''">
+                road_loss = #{vehicleAccident.roadLoss},
+            </if>
+            <if test="vehicleAccident.materialDamage != null and vehicleAccident.materialDamage != ''">
+                material_amage = #{vehicleAccident.materialDamage},
+            </if>
+            <if test="vehicleAccident.wounding != null and vehicleAccident.wounding != ''">
+                wounding = #{vehicleAccident.wounding},
+            </if>
+            <if test="vehicleAccident.accidentDriver != null and vehicleAccident.accidentDriver != ''">
+                accident_driver = #{vehicleAccident.accidentDriver},
+            </if>
+            <if test="vehicleAccident.mainDriver != null and vehicleAccident.mainDriver != ''">
+                main_driver = #{vehicleAccident.mainDriver},
+            </if>
+            update_time = #{vehicleAccident.updateTime}
+        </set>
+        WHERE
+        id = #{vehicleAccident.id}
+    </update>
+
+    <sql id="details">
+        SELECT
+        va.id,
+        vdi.user_id,
+        vdi.plate_number AS plateNumber,
+        vdi.licence_type AS licenceType,
+        vdi.brand_model AS brandModel,
+        vdi.vehicle_model AS vehicleModel,
+        vdi.vehicle_status as vehicleStatus,
+        va.accident_date AS accidentDate,
+        va.accident_place AS accidentPlace,
+        va.accident_cause AS accidentCause,
+        va.accident_type AS accidentType,
+        va.vehicle_damage AS vehicleDamage,
+        va.other_damage AS otherDamage,
+        va.road_loss AS roadLoss,
+        va.material_amage AS materialAmage,
+        va.wounding,
+        va.accident_driver accidentDriver,
+        va.main_driver AS mainDriver,
+        va.insurance_company as insuranceCompany,
+        va.Insured,
+        va.report_date as reportDate,
+        va.claim_amount as claimAmount,
+        vdi.id as vehicle_code,
+        tvr.vehicle_class as vehicleClass,
+        tm.id as managementId,
+        ( SELECT std.`name` FROM sys_tenant_def std WHERE std.id = va.tenant_id ) AS departmentName
+        FROM
+        vehicle_accident va
+        LEFT JOIN vehicle_data_info vdi ON va.vehicle_code = vdi.plate_number
+        LEFT JOIN tenant_vehicle_rel tvr on va.vehicle_code = tvr.vehicle_code
+        LEFT JOIN trailer_management tm on tm.trailer_number=va.vehicle_code
+        <where>
+            1 = 1
+            AND va.tenant_id = #{tenantId}
+            <if test="monthTimeStart != null and monthTimeStart !=''">
+                and date(va.accident_date) &gt;= #{monthTimeStart}
+            </if>
+            <if test="monthTimeEnd != null and monthTimeEnd !=''">
+                and date(va.accident_date) &lt;= #{monthTimeEnd}
+            </if>
+            <if test="licenceType != null">
+                and vdi.licence_type = #{licenceType}
+            </if>
+            <if test="accidentStatus != null">
+                and va.accident_status = #{accidentStatus}
+            </if>
+        </where>
+        order by va.create_time desc
+    </sql>
+
+    <!--分页查询事故明细-->
+    <select id="getVehicledentAccident" resultType="com.youming.youche.record.vo.VehicledentAccidentVo">
+        <include refid="details"/>
+    </select>
+
+    <select id="getVehicledentAccidentExport" resultType="com.youming.youche.record.vo.VehicledentAccidentVo">
+        <include refid="details"/>
+    </select>
+
+    <select id="getVehicleClaimAmountByMonth" resultType="java.lang.Long">
+        SELECT
+            SUM( claim_amount )
+        FROM
+            vehicle_accident
+        WHERE
+            accident_status = 3
+            AND vehicle_id = #{vehicleCode}
+            AND tenant_id = #{tenantId}
+            AND DATE_FORMAT( create_time, '%Y-%m' ) = #{month}
+    </select>
+
+</mapper>

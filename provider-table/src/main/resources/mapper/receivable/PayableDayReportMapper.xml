@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.receivable.PayableDayReportMapper">
+
+    <select id="getPayableDayReportList" resultType="com.youming.youche.table.dto.receivable.PayableDayReportDto">
+        SELECT
+            p.user_id,
+            u.linkman as userName,
+            p.busi_id,
+            p.create_date,
+            p.txn_amount,
+            p.paid_normal_amount,
+            p.paid_overdue_amount,
+            p.nopaid_normal_amount,
+            p.nopaid_overdue_amount
+        FROM
+        payable_day_report p,
+        user_data_info u
+        WHERE
+        p.user_id = u.id
+        AND p.tenant_id = #{tenantId}
+        <if test="time != null and time != ''">
+            AND p.create_date like CONCAT(#{time}, "%")
+        </if>
+        <if test="userName != null and userName != ''">
+            and u.linkman like CONCAT("%", #{userName}, "%")
+        </if>
+        AND p.create_time = ( SELECT max( create_time ) FROM payable_day_report )
+    </select>
+
+    <select id="getPayableDayReportPage" resultType="com.youming.youche.table.dto.receivable.PayableDayReportDto">
+        SELECT
+        p.user_id,
+        u.linkman as userName,
+        p.busi_id,
+        p.create_date,
+        p.txn_amount,
+        p.paid_normal_amount,
+        p.paid_overdue_amount,
+        p.nopaid_normal_amount,
+        p.nopaid_overdue_amount
+        FROM
+        payable_day_report p,
+        user_data_info u
+        WHERE
+        p.user_id = u.id
+        AND p.tenant_id = #{tenantId}
+        <if test="time != null and time != ''">
+            AND p.create_date like CONCAT(#{time}, "%")
+        </if>
+        <if test="userName != null and userName != ''">
+            and u.linkman like CONCAT("%", #{userName}, "%")
+        </if>
+        AND p.create_time = ( SELECT max( create_time ) FROM payable_day_report )
+        order by create_date desc
+    </select>
+
+    <select id="getPayableDayReportSum" resultType="com.youming.youche.table.dto.receivable.PayableDayReportSumDto">
+        SELECT
+        sum( p.txn_amount ) AS txn_amount,
+        sum( p.paid_normal_amount ) AS paid_normal_amount,
+        sum( p.paid_overdue_amount ) AS paid_overdue_amount,
+        sum( p.nopaid_normal_amount ) AS nopaid_normal_amount,
+        sum( p.nopaid_overdue_amount ) AS nopaid_overdue_amount
+        FROM
+        payable_day_report p,
+        user_data_info u
+        WHERE
+        p.user_id = u.id
+        AND p.tenant_id = #{tenantId}
+        AND p.create_date like CONCAT(#{time}, "%")
+        <if test="userName != null and userName != ''">
+            and u.linkman like CONCAT("%", #{userName}, "%")
+        </if>
+        AND p.create_time = ( SELECT max( create_time ) FROM payable_day_report )
+    </select>
+</mapper>

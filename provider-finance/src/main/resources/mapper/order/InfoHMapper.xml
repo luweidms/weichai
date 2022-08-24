@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.InfoHMapper">
+
+    <select id="getDealOrderInfoList" parameterType="com.youming.youche.finance.vo.order.OrderDealInfoVo" resultType="com.youming.youche.finance.dto.order.OrderDealInfoDto">
+        SELECT
+        i.ORDER_ID orderId,
+        ROUND( ( i.NO_PAY_FINAL + i.NO_PAY_DEBT ) / 100, 2 ) noPayFinal,
+        i.FINAL_PLAN_DATE finalPianDate,
+        o.SOURCE_REGION sourceRegion,
+        o.DES_REGION desRegion,
+        o.END_DATE endDate,
+        i.FIANL_STS fianlSts
+        FROM order_info_h o,order_limit i where i.ORDER_ID=o.ORDER_ID
+        AND i.USER_ID = #{orderDealInfoVo.userId} and i.TENANT_ID = #{orderDealInfoVo.tenantId}
+        <if test="orderDealInfoVo.sourceRegion != null and orderDealInfoVo.sourceRegion >= 0">
+            and o.SOURCE_REGION = #{orderDealInfoVo.sourceRegion}
+        </if>
+        <if test="orderDealInfoVo.desRegion != null and orderDealInfoVo.desRegion >= 0">
+            and o.DES_REGION = #{orderDealInfoVo.desRegion}
+        </if>
+        <if test="orderDealInfoVo.orderId != null and orderDealInfoVo.orderId >= 0">
+            and o.ORDER_ID = #{orderDealInfoVo.orderId}
+        </if>
+        <if test="orderDealInfoVo.startTime != null and orderDealInfoVo.startTime != ''">
+            AND o.END_DATE <![CDATA[ >= ]]> #{orderDealInfoVo.startTime}
+        </if>
+        <if test="orderDealInfoVo.endTime != null and orderDealInfoVo.endTime != ''">
+            AND o.END_DATE <![CDATA[ <= ]]> #{orderDealInfoVo.endTime}
+        </if>
+        <if test="orderDealInfoVo.finalStartTime != null and orderDealInfoVo.finalStartTime != ''">
+            AND i.FINAL_PLAN_DATE <![CDATA[ >= ]]> #{orderDealInfoVo.finalStartTime}
+        </if>
+        <if test="orderDealInfoVo.finalEndTime != null and orderDealInfoVo.finalEndTime != ''">
+            AND i.FINAL_PLAN_DATE <![CDATA[ <= ]]> #{orderDealInfoVo.finalEndTime}
+        </if>
+        <if test="orderDealInfoVo.businessNumber != null and orderDealInfoVo.businessNumber >= 0">
+            and i.FIANL_STS = #{orderDealInfoVo.businessNumber}
+        </if>
+        <if test="orderDealInfoVo.pageNum != null and orderDealInfoVo.pageSize != null">
+            limit ${orderDealInfoVo.pageNum * orderDealInfoVo.pageSize}, #{orderDealInfoVo.pageSize}
+        </if>
+    </select>
+
+    <select id="getDealOrderInfoCount" parameterType="com.youming.youche.finance.vo.order.OrderDealInfoVo" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM order_info_h o,order_limit i where i.ORDER_ID=o.ORDER_ID
+        AND i.USER_ID = #{orderDealInfoVo.userId} and i.TENANT_ID = #{orderDealInfoVo.tenantId}
+        <if test="orderDealInfoVo.sourceRegion != null and orderDealInfoVo.sourceRegion >= 0">
+            and o.SOURCE_REGION = #{orderDealInfoVo.sourceRegion}
+        </if>
+        <if test="orderDealInfoVo.desRegion != null and orderDealInfoVo.desRegion >= 0">
+            and o.DES_REGION = #{orderDealInfoVo.desRegion}
+        </if>
+        <if test="orderDealInfoVo.orderId != null and orderDealInfoVo.orderId >= 0">
+            and o.ORDER_ID = #{orderDealInfoVo.orderId}
+        </if>
+        <if test="orderDealInfoVo.startTime != null and orderDealInfoVo.startTime != ''">
+            AND o.END_DATE <![CDATA[ >= ]]> #{orderDealInfoVo.startTime}
+        </if>
+        <if test="orderDealInfoVo.endTime != null and orderDealInfoVo.endTime != ''">
+            AND o.END_DATE <![CDATA[ <= ]]> #{orderDealInfoVo.endTime}
+        </if>
+        <if test="orderDealInfoVo.finalStartTime != null and orderDealInfoVo.finalStartTime != ''">
+            AND i.FINAL_PLAN_DATE <![CDATA[ >= ]]> #{orderDealInfoVo.finalStartTime}
+        </if>
+        <if test="orderDealInfoVo.finalEndTime != null and orderDealInfoVo.finalEndTime != ''">
+            AND i.FINAL_PLAN_DATE <![CDATA[ <= ]]> #{orderDealInfoVo.finalEndTime}
+        </if>
+        <if test="orderDealInfoVo.businessNumber != null and orderDealInfoVo.businessNumber >= 0">
+            and i.FIANL_STS = #{orderDealInfoVo.businessNumber}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.trailer.TrailerManagementVerMapper">
+    <sql id="TrailerManagementVerListData">
+            `id`,
+            `trailer_id`,
+            `trailer_number`,
+            `trailer_length`,
+            `trailer_status`,
+            `trailer_load`,
+            `trailer_volume`,
+            `create_time`,
+            `is_state`,
+            `op_id`,
+            `tenant_id`,
+            `nand`,
+            `eand`,
+            `source_province`,
+            `source_region`,
+            `source_county`,
+            `des_province`,
+            `des_region`,
+            `des_county`,
+            `source`,
+            `des`,
+            `cra_version`,
+            `brand_model`,
+            `oper_certi`,
+            `vin_no`,
+            `trailer_wide`,
+            `trailer_high`,
+            `trailer_bridge_number`,
+            `trailer_material`,
+            `registration_time`,
+            `trailer_picture_url`,
+            `trailer_picture_id`,
+            `registration_numble`,
+            `vehicle_validity_time`,
+            `operate_validity_time`,
+            `validity_time`,
+            `update_time`,
+            `update_op_id`,
+            `is_autit`,
+            `vehicle_validity_expired_time`,
+            `operate_validity_expired_time`,
+            `oper_certi_url`,
+            `car_version`,
+            `create_date`,
+            `update_date`,
+            `idle`
+    </sql>
+    <!--查询挂车历史-->
+    <select id="getTrailerManagementVerList" resultType="com.youming.youche.record.domain.trailer.TrailerManagementVer">
+        select <include refid="TrailerManagementVerListData"></include> from trailer_management_ver where trailer_id = #{trailerId} and is_autit = #{isAutit} and tenant_id = #{tenantId}
+    </select>
+
+    <!--更新状态-->
+    <update id="updtTrailerVerAuditStatus">
+        update trailer_management_ver set is_autit = #{newStatus} where  trailer_id = #{trailerId} and is_autit = #{oldStatus} and tenant_id= #{tenantId}
+    </update>
+</mapper>

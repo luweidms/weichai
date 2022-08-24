@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.contract.ContractMapper">
+    <select id="queryAll" resultType="com.youming.youche.record.vo.ContractVo">
+
+        select id as id, ht_bh as htBh,ht_name as htName,ht_createtime as htCreatetime,ht_lefttime as
+        htLefttime,ht_updatetime as
+        htUpdatetime from youche.contract
+        <where>
+            AND tenant_id = #{tenantId}
+            <if test="contractDto.htBh != null and contractDto.htBh != ''">
+                and ht_bh like CONCAT ('%',#{contractDto.htBh},'%')
+            </if>
+            <if test="contractDto.htName != null and contractDto.htName != ''">
+                and ht_name like CONCAT ('%',#{contractDto.htName},'%')
+            </if>
+        </where>
+        ORDER BY ht_createtime DESC
+    </select>
+    <delete id="ContrcatdDel">
+        delete
+        from youche.contract
+        where id = #{id}
+    </delete>
+
+    <insert id="ContrcatdAdd">
+        INSERT INTO contract (ht_bh,
+                              ht_name,
+                              ht_createtime,
+                              ht_lefttime,
+                              ht_updatetime,
+                              ht_content,
+                              ht_accessory,
+                              tenant_id)
+        VALUES (#{htBh},
+                #{htName},
+                #{htCreatetime},
+                #{htLefttime},
+                #{htUpdatetime},
+                #{htContent},
+                #{htAccessory},
+                #{tenantId})
+    </insert>
+    <update id="ContrcatdUpdata">
+        UPDATE contract
+        SET ht_bh         = #{htBh},
+            ht_name       = #{htName},
+            ht_content    = #{htContent},
+            ht_accessory  = #{htAccessory},
+            ht_createtime = #{htCreatetime},
+            ht_lefttime   = #{htLefttime},
+            ht_updatetime = #{htUpdatetime}
+        WHERE id = #{id};
+
+    </update>
+</mapper>

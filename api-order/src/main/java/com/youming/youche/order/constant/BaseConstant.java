@@ -1,0 +1,58 @@
+package com.youming.youche.order.constant;
+
+public interface BaseConstant {
+
+     int ENTITY_ID_1400104 = 1400104 ; //会员档案--修改手机号码
+     int ENTITY_ID_1400105 = 1400105 ; //会员档案--修改会员类型
+     int ENTITY_ID_120002 = 120002 ; //考勤管理权限
+
+    /**
+     * 所有数据权限ENTITY_ID
+     */
+     long ALL_DATA = 1000000002L;
+    /**
+     * 所有数据权限ENTITY_ID
+     */
+     long OBMS_ALL_DATA = 2000000002L;
+     long OBMS_ORG_DATA = 2000000001L;
+
+    /**
+     * 收入权限ENTITY_ID
+     */
+     long ORDER_INCOME = 1000000101L;
+
+    /**
+     * 成本权限ENTITY_ID
+     */
+     long ORDER_COST = 1000000102L;
+    /**
+     * 收入权限ENTITY_ID
+     */
+     long INCOME = 1000000103L;
+
+    /**
+     * 成本权限ENTITY_ID
+     */
+     long COST = 1000000104L;
+
+     String OWN_CAR_OPEN_BILL="OWN_CAR_OPEN_BILL";
+
+     String CUSTOMER_SERVICE_PHONE="CUSTOMER_SERVICE_PHONE";
+
+     String NEED_BILL_BANK_CARD_QUANTITY_LIMIT="NEED_BILL_BANK_CARD_QUANTITY_LIMIT";
+
+     String TERRACE_BILL_OIL_FEE_PROPORTION="TERRACE_BILL_OIL_FEE_PROPORTION";
+
+     String ESTIMATE_DEPARTURE_TIME="ESTIMATE_DEPARTURE_TIME";
+
+//     String NEED_BILL_BANK_CARD_QUANTITY_LIMIT="NEED_BILL_BANK_CARD_QUANTITY_LIMIT";
+    String DEFAULT_WARN_BLANCE="DEFAULT_WARN_BLANCE";
+
+    String OIL_RECHARGE_BUSI_TYPE="OIL_RECHARGE_BUSI_TYPE";
+
+    String ACCOUNT_BOOK_TYPE="ACCOUNT_BOOK_TYPE";
+
+    String TENANT_TERRACE_BILL_LIMIT="TENANT_TERRACE_BILL_LIMIT";
+
+    String PLEDGE_OILCARD_FEE="PLEDGE_OILCARD_FEE";
+}

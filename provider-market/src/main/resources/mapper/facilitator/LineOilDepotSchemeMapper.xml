@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.LineOilDepotSchemeMapper">
+
+    <select id="getLineOilDepotSchemeByLineId"
+            resultType="com.youming.youche.market.dto.facilitator.LineOilDepotSchemeDataInfoDto">
+        SELECT
+            sp.*, tpr.*,
+            si.service_Name AS serviceName,
+            (
+                SELECT
+                    oil_Price
+                FROM
+                    Oil_Price_Province
+                WHERE
+                    sp.province_Id = province_Id
+                GROUP BY
+                    province_Id
+            ) AS provincePrice,
+            tpr.tenant_id AS productTenantId
+        FROM
+            Service_Product sp
+                INNER JOIN Tenant_Product_Rel tpr ON sp.Id = tpr.product_Id
+                INNER JOIN service_info si ON sp.service_User_Id = si.service_User_Id
+        WHERE
+            IF (
+                        (
+                            SELECT
+                                count(1)
+                            FROM
+                                tenant_product_rel t
+                            WHERE
+                                t.PRODUCT_ID = sp.ID
+                              AND t.TENANT_ID = #{tenantId}
+                        ) > 0,
+                        tpr.tenant_Id = #{tenantId},
+                        tpr.tenant_Id = 1
+                )
+          AND sp.business_Type = 1
+          AND tpr.state = 1
+          AND tpr.auth_State = 2
+          AND sp.auth_state = 2
+          AND sp.state = 1
+          <if test="lineOilQueryIn.productFullName != null and lineOilQueryIn.productFullName != ''">
+              and sp.product_name= #{lineOilQueryIn.productFullName}
+          </if>
+          <if test="lineOilQueryIn.productName != null and lineOilQueryIn.productName != ''">
+              and sp.product_name like  CONCAT ('%', #{lineOilQueryIn.productName},'%')
+          </if>
+          <if test="lineOilQueryIn.oilSelect != null and lineOilQueryIn.oilSelect == 1">
+              and tpr.tenant_id = #{tenantId}
+          </if>
+          <if test="lineOilQueryIn.oilSelect != null and lineOilQueryIn.oilSelect == 2">
+              and sp.is_share = 1
+          </if>
+    </select>
+    <select id="getLineOilDepotSchemeByLineIdInfo"
+            resultType="com.youming.youche.market.dto.facilitator.LineOilDepotSchemeDataDto">
+        <if test="lineOilQueryDto.type != null and lineOilQueryDto.type == 1">
+            SELECT
+            l.oil_Id AS oilId,
+            l.oil_Name AS oilName,
+            l.service_call AS oilPhone,
+            l.business_user_name AS userName,
+            l.address AS address,
+            IFNULL(l.Depend_Distance / 1000, 0) AS distance,
+            l.eand AS eand,
+            l.nand AS nand,
+            IFNULL(l.along_Distance / 1000, 0) AS alongDistance,
+            l.business_user_name AS serviceName,
+            <choose>
+                <when test="lineOilQueryDto.isBill != null and   lineOilQueryDto.isBill == 1">
+                    CAST(l.Oil_Price_Bill/100 as decimal(38, 2)) as oilPrice
+                </when>
+                <otherwise>
+                    CAST(l.oil_price/100  as decimal(38, 2)) as oilPrice
+                </otherwise>
+            </choose>
+            from line_oil_depot_scheme l  INNER JOIN  tenant_product_rel tpl on l.OIL_ID = tpl.PRODUCT_ID
+            INNER JOIN  service_product sp on sp.service_user_id = l.business_user_id
+            where  l.line_id = #{lineOilQueryDto.lineId}
+            and l.tenant_id = #{user.tenantId}
+            <if test="lineOilQueryDto.productFullName != null and lineOilQueryDto.productFullName != ''">
+                and l.oil_Name= #{lineOilQueryDto.productFullName}
+            </if>
+            <if test="lineOilQueryDto.productName != null and lineOilQueryDto.productName != ''">
+                and l.oil_Name like  CONCAT ('%', #{lineOilQueryDto.productName},'%')
+            </if>
+            <if test="lineOilQueryDto.oilSelect != null and lineOilQueryDto.oilSelect == 1">
+                and tpl.tenant_id = #{user.tenantId}
+                and sp.tenant_id = #{user.tenantId}
+            </if>
+            <if test="lineOilQueryDto.oilSelect != null and lineOilQueryDto.oilSelect == 2">
+                and sp.is_share = 1
+            </if>
+            group by l.oil_id
+            <choose>
+                <when test="lineOilQueryDto.orderBy != null and lineOilQueryDto.orderBy  != ''">
+
+                        <if test='"oilPrice"== lineOilQueryDto.orderBy'>
+                            <choose>
+                                <when test='lineOilQueryDto.isBill != null and lineOilQueryDto.isBill == 1'>
+                                    order by l.oil_price_bill asc
+                                </when>
+                                <otherwise>
+                                    order by l.oil_price asc
+                                </otherwise>
+                            </choose>
+                        </if>
+                        <if test='lineOilQueryDto.orderBy == "alongDistance"'>
+                            order by l.along_Distance asc
+                        </if>
+                        <if test='lineOilQueryDto.orderBy == "dependDistance"'>
+                            order by l.depend_distance asc
+                        </if>
+                </when>
+                <otherwise>
+                    order by l.depend_distance asc
+                </otherwise>
+            </choose>
+        </if>
+        <if test="lineOilQueryDto.type != null and lineOilQueryDto.type == 2">
+            SELECT
+            sp.*, tpr.*,
+            si.service_Name AS serviceName,
+            (
+            SELECT
+            oil_Price
+            FROM
+            Oil_Price_Province
+            WHERE
+            sp.province_Id = province_Id
+            GROUP BY
+            province_Id
+            ) AS provincePrice,
+            tpr.tenant_id AS productTenantId
+            FROM
+            Service_Product sp
+            INNER JOIN Tenant_Product_Rel tpr ON sp.Id = tpr.product_Id
+            INNER JOIN service_info si ON sp.service_User_Id = si.service_User_Id
+            WHERE 1=1
+            and IF ((SELECT count(1) FROM tenant_product_rel t WHERE t.PRODUCT_ID = sp.ID AND t.TENANT_ID = #{user.tenantId}) > 0,tpr.tenant_Id = #{user.tenantId},tpr.tenant_Id = 1)
+            AND sp.business_Type = 1
+            AND tpr.state = 1
+            AND tpr.auth_State =2
+            AND sp.auth_state = 2
+            AND sp.state = 1
+            <if test="lineOilQueryDto.productFullName != null and lineOilQueryDto.productFullName != ''">
+                and sp.product_name= #{lineOilQueryDto.productName}
+            </if>
+            <if test="lineOilQueryDto.productName != null and lineOilQueryDto.productName != ''">
+                and sp.product_name like  CONCAT('%',#{lineOilQueryDto.productName},'%')
+            </if>
+            <if test="lineOilQueryDto.oilSelect != null and lineOilQueryDto.oilSelect ==1">
+                and tpr.tenant_id = #{user.tenantId}
+            </if>
+            <if test="lineOilQueryDto.oilSelect != null and lineOilQueryDto.oilSelect == 2">
+                and sp.is_share = 1
+            </if>
+        </if>
+        <if test="lineOilQueryDto.type != null and lineOilQueryDto.type == 2 and lineOilQueryDto.type == 1">
+
+            SELECT
+            sp.*, tpr.*, u.*, opp.*
+            FROM
+            Service_Product sp
+            INNER JOIN tenant_product_rel tpr ON sp.product_id = tpr.product_id
+            AND tpr.tenant_id = #{user.tenantId}
+            INNER JOIN user_data_info u ON u.user_id = sp.service_User_Id
+            LEFT JOIN Oil_Price_Province opp ON opp.province_Id = sp.province_Id
+            WHERE
+            sp.id IN
+            <foreach collection="oilIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            AND tpr.state = 1
+        </if>
+    </select>
+</mapper>

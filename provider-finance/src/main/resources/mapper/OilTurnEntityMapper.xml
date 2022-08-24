@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.OilTurnEntityMapper">
+
+    <select id="getOilTurnEntity" resultType="com.youming.youche.finance.domain.OilTurnEntity">
+        SELECT `id`, `batch_id`, `assign_total`, `car_driver_id`, `car_user_type`, `company_name`, `create_date`, `depend_time`, `des_region`, `is_report`, `no_verification_amount`, `oil_card_num`, `order_id`, `plate_number`, `report_remark`, `report_time`, `root_org_id`, `source_region`, `state`, `tenant_id`, `vehicle_affiliation`, `vehicle_code`, `vehicle_lengh`, `vehicle_status`, `verification_date`
+        FROM oil_turn_entity
+        where id=#{id}
+    </select>
+
+
+    <update id="updateById">
+        UPDATE oil_turn_entity
+        SET state=#{state}, verification_date=#{verificationDate},no_verification_amount=#{noVerificationAmount}
+        WHERE id=#{id}
+    </update>
+
+
+</mapper>

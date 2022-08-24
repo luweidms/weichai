@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.youka.ServiceProductOilsMapper">
+<select id="count" resultType="com.youming.youche.market.domain.youka.ServiceProductOils">
+    SELECT
+        count( 1 )
+    FROM
+        oil_card_info
+    WHERE
+        oil_card_num =#{oilCardNum}
+      and oil_card_type = #{oilCardType}
+      and etc_card_type =#{etcCardType}
+      and state not in (6,7)
+
+</select>
+</mapper>

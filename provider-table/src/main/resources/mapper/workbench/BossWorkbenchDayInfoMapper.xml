@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.workbench.BossWorkbenchDayInfoMapper">
+
+    <select id="getBossWorkbenchDayInfoList" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchDayInfo">
+        SELECT
+        total.id,
+        total.tenant_id,
+        total.time,
+        total.business_income,
+        total.business_cost,
+        total.business_profit,
+        total.create_time,
+        total.update_time
+        FROM
+        (
+        SELECT
+        ( @i := @i + 1 ) pm,
+        info.id,
+        info.tenant_id,
+        info.time,
+        info.business_income,
+        info.business_cost,
+        info.business_profit,
+        info.create_time,
+        info.update_time
+        FROM
+        boss_workbench_day_info info,
+        ( SELECT @i := 0 ) t
+        WHERE
+        info.tenant_id = #{tenantId}
+        AND time BETWEEN #{startTime}
+        AND #{endTime}
+        ORDER BY
+        info.create_time DESC
+        ) AS total
+        GROUP BY
+        total.time
+        ORDER BY total.time ASC
+    </select>
+
+    <select id="selectBossWorkbenchDayInfoNew" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchDayInfo">
+        select * from boss_workbench_day_info where tenant_id = #{tenantId} and time = #{time}
+        and create_time = #{localDateTime}
+    </select>
+</mapper>

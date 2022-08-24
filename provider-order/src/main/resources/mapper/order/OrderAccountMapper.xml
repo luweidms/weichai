@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderAccountMapper">
+    <resultMap id="OaloanAndUserDateInfoDto" type="com.youming.youche.order.dto.OaloanAndUserDateInfoDto">
+        <association property="oaloan" javaType="com.youming.youche.order.domain.order.OaLoan">
+            <id column="id" property="id"/>
+            <result column="user_info_id" property="userInfoId"/>
+            <result column="user_info_name" property="userInfoName"/>
+            <result column="root_org_id" property="rootOrgId"/>
+            <result column="org_id" property="orgId"/>
+            <result column="loan_type" property="loanType"/>
+            <result column="app_date" property="appDate"/>
+            <result column="app_reason" property="appReason"/>
+            <result column="amount" property="amount"/>
+            <result column="bank_name" property="bankName"/>
+            <result column="province" property="province"/>
+            <result column="city" property="city"/>
+            <result column="acc_no" property="accNo"/>
+            <result column="acc_name" property="accName"/>
+            <result column="is_amortize" property="isAmortize"/>
+            <result column="repay_days" property="repayDays"/>
+            <result column="amortize_date" property="amortizeDate"/>
+            <result column="repay_date" property="repayDate"/>
+            <result column="payed_amount" property="payedAmount"/>
+            <result column="state" property="state"/>
+            <result column="verify_org_id" property="verifyOrgId"/>
+            <result column="verify_op_id" property="verifyOpId"/>
+            <result column="node_id" property="nodeId"/>
+            <result column="verify_date" property="verifyDate"/>
+            <result column="verify_notes" property="verifyNotes"/>
+            <result column="company_name" property="companyName"/>
+            <result column="loan_subject" property="loanSubject"/>
+            <result column="pool_balance" property="poolBalance"/>
+            <result column="borrow_amount" property="borrowAmount"/>
+            <result column="plate_number" property="plateNumber"/>
+            <result column="remark" property="remark"/>
+            <result column="bank_branch" property="bankBranch"/>
+            <result column="car_owner_name" property="carOwnerName"/>
+            <result column="car_phone" property="carPhone"/>
+            <result column="order_id" property="orderId"/>
+            <result column="classify" property="classify"/>
+            <result column="big_root_id" property="bigRootId"/>
+            <result column="launch" property="launch"/>
+            <result column="tenant_id" property="tenantId"/>
+            <result column="loan_trans_reason" property="loanTransReason"/>
+            <result column="oa_loan_id" property="oaLoanId"/>
+            <result column="weight" property="weight"/>
+            <result column="fund_allocation_org_id" property="fundAllocationOrgId"/>
+            <result column="salary_deduction" property="salaryDeduction"/>
+            <result column="salary_deduction_slave" property="salaryDeductionSlave"/>
+            <result column="verify_remark" property="verifyRemark"/>
+            <result column="flow_id" property="flowId"/>
+            <result column="deductible_state" property="deductibleState"/>
+            <result column="deductible_amount" property="deductibleAmount"/>
+            <result column="deductible_time" property="deductibleTime"/>
+            <result column="borrow_name" property="borrowName"/>
+            <result column="borrow_phone" property="borrowPhone"/>
+            <result column="borrow_user_info_id" property="borrowUserInfoId"/>
+            <result column="borrow_type" property="borrowType"/>
+            <result column="accident_date" property="accidentDate"/>
+            <result column="insurance_date" property="insuranceDate"/>
+            <result column="accident_type" property="accidentType"/>
+            <result column="accident_reason" property="accidentReason"/>
+            <result column="duty_divide" property="dutyDivide"/>
+            <result column="accident_divide" property="accidentDivide"/>
+            <result column="insurance_firm" property="insuranceFirm"/>
+            <result column="insurance_money" property="insuranceMoney"/>
+            <result column="accident_explain" property="accidentExplain"/>
+            <result column="report_number" property="reportNumber"/>
+            <result column="insurance_explain" property="insuranceExplain"/>
+            <result column="pay_flow_id" property="payFlowId"/>
+            <result column="bank_type" property="bankType"/>
+            <result column="is_need_bill" property="isNeedBill"/>
+            <result column="collect_acct_id" property="collectAcctId"/>
+            <result column="pay_user_type" property="payUserType"/>
+            <result column="rece_user_type" property="receUserType"/>
+            <result column="verify_user_id" property="verifyUserId"/>
+            <result column="verify_user_name" property="verifyUserName"/>
+            <result column="borrow_user_id" property="borrowUserId"/>
+            <result column="sts" property="sts"/>
+            <result column="user_id" property="userId"/>
+            <result column="user_name" property="userName"/>
+            <result column="identification" property="identification"/>
+        </association>
+        <association property="userDataInfo" javaType="com.youming.youche.capital.domain.UserDataInfo">
+            <id column="id" property="id"/>
+            <result column="linkman" property="linkman"/>
+            <result column="email" property="email"/>
+            <result column="contact_number" property="contactNumber"/>
+            <result column="mobile_phone" property="mobilePhone"/>
+            <result column="identification" property="identification"/>
+            <result column="login_name" property="loginName"/>
+            <result column="user_type" property="userType"/>
+            <result column="user_price" property="userPrice"/>
+            <result column="user_price_url" property="userPriceUrl"/>
+            <result column="iden_picture_front" property="idenPictureFront"/>
+            <result column="iden_picture_front_url" property="idenPictureFrontUrl"/>
+            <result column="iden_picture_back" property="idenPictureBack"/>
+            <result column="iden_picture_back_url" property="idenPictureBackUrl"/>
+            <result column="channel_type" property="channelType"/>
+            <result column="driving_license" property="drivingLicense"/>
+            <result column="driving_license_url" property="drivingLicenseUrl"/>
+            <result column="adriver_license_original" property="adriverLicenseOriginal"/>
+            <result column="adriver_license_original_url" property="adriverLicenseOriginalUrl"/>
+            <result column="adriver_license_duplicate" property="adriverLicenseDuplicate"/>
+            <result column="adriver_license_duplicate_url" property="adriverLicenseDuplicateUrl"/>
+            <result column="op_id" property="opId"/>
+            <result column="op_date" property="opDate"/>
+            <result column="id_type" property="idType"/>
+            <result column="notarize_count" property="notarizeCount"/>
+            <result column="is_perfect_info" property="isPerfectInfo"/>
+            <result column="qr_code_id" property="qrCodeId"/>
+            <result column="qr_code_url" property="qrCodeUrl"/>
+            <result column="source_flag" property="sourceFlag"/>
+            <result column="qc_certi" property="qcCerti"/>
+            <result column="qc_certi_url" property="qcCertiUrl"/>
+            <result column="tenant_id" property="tenantId"/>
+            <result column="adriver_license_sn" property="adriverLicenseSn"/>
+            <result column="auth_state" property="authState"/>
+            <result column="acc_password" property="accPassword"/>
+            <result column="mod_pwdtime" property="modPwdtime"/>
+            <result column="has_ver" property="hasVer"/>
+            <result column="verif_reason" property="verifReason"/>
+            <result column="auth_man_id" property="authManId"/>
+            <result column="attached_user_id" property="attachedUserId"/>
+            <result column="attached_org_id" property="attachedOrgId"/>
+            <result column="vehicle_type" property="vehicleType"/>
+            <result column="completeness" property="completeness"/>
+            <result column="quick_flag" property="quickFlag"/>
+            <result column="driver_license_time" property="driverLicenseTime"/>
+            <result column="driver_license_expired_time" property="driverLicenseExpiredTime"/>
+            <result column="qc_certi_time" property="qcCertiTime"/>
+            <result column="qc_certi_expired_time" property="qcCertiExpiredTime"/>
+            <result column="luge_agreement" property="lugeAgreement"/>
+            <result column="luge_agreement_url" property="lugeAgreementUrl"/>
+        </association>
+    </resultMap>
+    <select id="doAccountQuery" resultType="com.youming.youche.order.vo.UserAccountVo">
+        select tms.userId,tms.accState,tms.billId,tms.userType,tms.sourceTenantId,tms.fromTenantId,tms.marginBalance,
+        tms.oilBalance,
+        tms.etcBalance,tms.repairFund,
+        tms.pledgeOilCardFee,tms.receivableOverdueBalance,tms.payableOverdueBalance,tms.linkman
+        from (
+        select o.user_id userId,
+        o.ACC_STATE accState,
+        u.MOBILE_PHONE billId,
+        o.user_type userType,
+        o.SOURCE_TENANT_ID sourceTenantId,
+        u.linkman linkman,
+        u.tenant_id fromTenantId,
+        SUM(o.MARGIN_BALANCE) marginBalance,
+        (SELECT SUM(RECHARGE_OIL_BALANCE + OIL_BALANCE) FROM order_account_oil_source WHERE user_id=o.user_Id AND
+        tenant_id=o.SOURCE_TENANT_ID and user_type=o.user_type ) oilBalance,
+        SUM(o.ETC_BALANCE) etcBalance,
+        SUM(o.REPAIR_FUND) repairFund,
+        SUM(o.PLEDGE_OILCARD_FEE) pledgeOilCardFee,
+        <!--        SUM(o.RECEIVABLE_OVERDUE_BALANCE) receivableOverdueBalance,-->
+        (
+        select ifnull(sum(p.txn_amt),0) from
+        PAYOUT_INTF p,
+        user_data_info u,
+        payout_intf_expansion e
+        WHERE
+        1=1
+        and p.PAY_TENANT_ID = #{out.tenantId}
+        AND p.PAY_USER_TYPE = 6
+        AND p.user_id = o.user_id
+        AND p.PAY_TYPE = 2
+        AND p.TXN_TYPE = 200
+        AND ( p.RESP_CODE != 5 OR p.RESP_CODE IS NULL )
+        AND ( p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2 )
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        and p.VERIFICATION_STATE = 1
+        ) as receivableOverdueBalance,
+        SUM(o.PAYABLE_OVERDUE_BALANCE) payableOverdueBalance
+        FROM
+        order_account o
+        left join user_data_info u on o.user_id = u.id
+        WHERE
+        o.SOURCE_TENANT_ID=#{out.tenantId}
+        and
+        o.user_type = 3
+        <if test="out.billId!=null and out.billId!='' ">and u.MOBILE_PHONE = #{out.billId}</if>
+        <if test="out.linkman!=null and out.linkman!='' ">and u.linkman like CONCAT('%',#{out.linkman},'%')</if>
+        <if test="out.accState!=null and out.accState!='' and out.accState!=-1 ">and o.acc_state = #{out.accState}</if>
+        and o.USER_ID in (select DISTINCT userid from (
+        SELECT
+        u.id as userid
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+        r.TENANT_ID = #{out.tenantId}
+        AND u.user_type IN ( 1, 3 )
+        AND r.CAR_USER_TYPE = 1
+        AND r.state = 2
+        union all
+        SELECT
+        distinct u.id as userid
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.id = u.TENANT_ID,
+        TENANT_USER_REL_VER r
+        WHERE
+        r.USER_ID = u.ID
+        AND r.TENANT_ID =#{out.tenantId}
+        AND u.user_type in (1,3)
+        AND r.CAR_USER_TYPE = 1) as t)
+        GROUP BY o.user_id,o.user_type
+        ) tms where 1=1
+        <if test="out.strRepairFundBeginDouble!=null">and tms.repairFund &gt;= #{out.strRepairFundBeginDouble}</if>
+        <if test="out.strRepairFundEndDouble!=null ">and tms.repairFund &lt;= #{out.strRepairFundEndDouble}</if>
+        <if test="out.strmarginBeginDouble!=null ">and tms.marginBalance &gt;= #{out.strmarginBeginDouble}</if>
+        <if test="out.strmarginEndDouble!=null ">and tms.marginBalance &lt;= #{out.strmarginEndDouble}</if>
+        <if test="out.stroilBeginDouble!=null ">and tms.oilBalance &gt;= #{out.stroilBeginDouble}</if>
+        <if test="out.stroilEndDouble!=null">and tms.oilBalance &lt;= #{out.stroilEndDouble}</if>
+        <if test="out.stretcBeginDouble!=null ">and tms.etcBalance &gt;= #{out.stretcBeginDouble}</if>
+        <if test="out.stretcEndDouble!=null ">and tms.etcBalance &lt;= #{out.stretcEndDouble}</if>
+        <if test="out.receivableOverdueBalanceBeginStrDouble!=null ">and tms.receivableOverdueBalance &gt;=
+            #{out.receivableOverdueBalanceBeginStrDouble}
+        </if>
+        <if test="out.receivableOverdueBalanceEndStrDouble!=null ">and tms.receivableOverdueBalance &lt;=
+            #{out.receivableOverdueBalanceEndStrDouble}
+        </if>
+        <!--        <if test="out.payableOverdueBalanceBeginStrDouble!=null "> and tms.payableOverdueBalance &gt;= #{out.payableOverdueBalanceBeginStrDouble} </if>-->
+        <!--        <if test="out.payableOverdueBalanceEndStrDouble!=null "> and tms.payableOverdueBalance &lt;= #{out.payableOverdueBalanceEndStrDouble} </if>-->
+    </select>
+
+
+    <select id="doAccountQueryHis" resultType="com.youming.youche.order.vo.UserAccountVo">
+        select tms.userId,tms.accState,tms.billId,tms.userType,tms.sourceTenantId,
+        tms.operatorName,tms.fromTenantId,tms.marginBalance,
+        tms.oilBalance,tms.etcBalance,tms.repairFund,
+        tms.pledgeOilCardFee,tms.receivableOverdueBalance,tms.payableOverdueBalance,tms.linkman
+        from (
+        select o.user_id userId,
+        o.ACC_STATE accState,
+        u.MOBILE_PHONE billId,
+        o.user_type userType,
+        o.SOURCE_TENANT_ID sourceTenantId,
+        b.name operatorName,
+        u.linkman linkman,
+        r.tenant_id fromTenantId,
+        o.MARGIN_BALANCE marginBalance,
+        (SELECT SUM(RECHARGE_OIL_BALANCE + OIL_BALANCE) FROM order_account_oil_source WHERE user_id=o.user_Id AND
+        tenant_id=o.SOURCE_TENANT_ID and user_type=o.user_type ) oilBalance,
+        o.ETC_BALANCE etcBalance,
+        o.REPAIR_FUND repairFund,
+        o.PLEDGE_OILCARD_FEE pledgeOilCardFee,
+        o.RECEIVABLE_OVERDUE_BALANCE receivableOverdueBalance,
+        o.PAYABLE_OVERDUE_BALANCE payableOverdueBalance
+        FROM order_account o,sys_user b,user_data_info u,TENANT_USER_REL_VER r,sys_tenant_def def
+        WHERE
+        r.tenant_id= 12
+        and o.user_id = u.id
+        AND r.user_id = u.id
+        and b.user_info_id = r.USER_ID
+        and def.id = r.TENANT_ID
+        AND u.user_type in (1,3)
+        AND r.ver_state=9
+        <if test="out.billId!=null and out.billId!='' ">and u.MOBILE_PHONE = #{out.billId}</if>
+        <if test="out.linkman!=null and out.linkman!='' ">and u.linkman like CONCAT('%',#{out.linkman},'%')</if>
+        <if test="out.accState!=null and out.accState!='' and out.accState!=-1 ">and o.acc_state = #{out.accState}</if>
+        GROUP BY r.id
+        ) tms where 1=1
+        <if test="out.strRepairFundBegin!=null and out.strRepairFundBegin!=''">and tms.repairFund &gt;=
+            #{out.strRepairFundBegin}
+        </if>
+        <if test="out.strRepairFundEnd!=null and out.strRepairFundEnd!=''">and tms.repairFund &lt;=
+            #{out.strRepairFundEnd}
+        </if>
+        <if test="out.strmarginBegin!=null and out.strmarginBegin!=''">and tms.marginBalance &gt;=
+            #{out.strmarginBegin}
+        </if>
+        <if test="out.strmarginEnd!=null and out.strmarginEnd!=''">and tms.marginBalance &lt;= #{out.strmarginEnd}</if>
+        <if test="out.stroilBegin!=null and out.stroilBegin!=''">and tms.oilBalance &gt;= #{out.stroilBegin}</if>
+        <if test="out.stroilEnd!=null and out.stroilEnd!=''">and tms.oilBalance &lt;= #{out.stroilEnd}</if>
+        <if test="out.stretcBegin!=null and out.stretcBegin!=''">and tms.etcBalance &gt;= #{out.stretcBegin}</if>
+        <if test="out.stretcEnd!=null and out.stretcEnd!=''">and tms.etcBalance &lt;= #{out.stretcEnd}</if>
+        <if test="out.receivableOverdueBalanceBeginStr!=null and out.receivableOverdueBalanceBeginStr!=''">and
+            tms.receivableOverdueBalance &gt;= #{out.receivableOverdueBalanceBeginStr}
+        </if>
+        <if test="out.receivableOverdueBalanceEndStr!=null and out.receivableOverdueBalanceEndStr!=''">and
+            tms.receivableOverdueBalance &lt;= #{out.receivableOverdueBalanceEndStr}
+        </if>
+        <if test="out.payableOverdueBalanceBeginStr!=null and out.payableOverdueBalanceBeginStr!=''">and
+            tms.payableOverdueBalance &gt;= #{out.payableOverdueBalanceBeginStr}
+        </if>
+        <if test="out.payableOverdueBalanceEndStr!=null and out.payableOverdueBalanceEndStr!=''">and
+            tms.payableOverdueBalance &lt;= #{out.payableOverdueBalanceEndStr}
+        </if>
+
+    </select>
+
+
+    <select id="doAccountQueryS" resultType="com.youming.youche.order.vo.UserAccountVo">
+        select tms.userId,tms.accState,tms.billId,tms.userType,tms.sourceTenantId,tms.fromTenantId,tms.marginBalance,
+        tms.oilBalance,
+        tms.etcBalance,tms.repairFund,
+        tms.pledgeOilCardFee,tms.receivableOverdueBalance,tms.payableOverdueBalance,tms.linkman
+        from (
+        select o.user_id userId,
+        o.ACC_STATE accState,
+        u.MOBILE_PHONE billId,
+        o.user_type userType,
+        o.SOURCE_TENANT_ID sourceTenantId,
+        u.linkman linkman,
+        u.tenant_id fromTenantId,
+        SUM(o.MARGIN_BALANCE) marginBalance,
+        (SELECT SUM(RECHARGE_OIL_BALANCE + OIL_BALANCE) FROM order_account_oil_source WHERE user_id=o.user_Id AND
+        tenant_id=o.SOURCE_TENANT_ID and user_type=o.user_type ) oilBalance,
+        SUM(o.ETC_BALANCE) etcBalance,
+        SUM(o.REPAIR_FUND) repairFund,
+        SUM(o.PLEDGE_OILCARD_FEE) pledgeOilCardFee,
+        <!--        SUM(o.RECEIVABLE_OVERDUE_BALANCE) receivableOverdueBalance,-->
+        (
+        select ifnull(sum(p.txn_amt),0) from
+        PAYOUT_INTF p,
+        user_data_info u,
+        payout_intf_expansion e
+        WHERE
+        1=1
+        and p.PAY_TENANT_ID = #{out.tenantId}
+        AND p.PAY_USER_TYPE = 6
+        AND p.user_id = o.user_id
+        AND p.PAY_TYPE = 2
+        AND p.TXN_TYPE = 200
+        AND ( p.RESP_CODE != 5 OR p.RESP_CODE IS NULL )
+        AND ( p.IS_AUTOMATIC != 1 OR p.VERIFICATION_STATE != 2 )
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        and p.VERIFICATION_STATE = 1
+        ) as receivableOverdueBalance,
+        SUM(o.PAYABLE_OVERDUE_BALANCE) payableOverdueBalance
+        FROM
+        order_account o
+        left join user_data_info u on o.user_id = u.id
+        WHERE
+        o.SOURCE_TENANT_ID=#{out.tenantId}
+        and
+        o.user_type = 3
+        <if test="out.billId!=null and out.billId!='' ">
+            and u.MOBILE_PHONE = #{out.billId}
+        </if>
+        <if test="out.linkman!=null and out.linkman!='' ">and u.linkman like CONCAT('%',#{out.linkman},'%')</if>
+        <if test="out.accState!=null and out.accState!='' and out.accState!=-1 ">and o.acc_state = #{out.accState}</if>
+        and o.USER_ID in (select DISTINCT userid from (
+        SELECT
+        u.id as userid
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+        LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+        r.TENANT_ID = #{out.tenantId}
+        AND u.user_type IN ( 1, 3 )
+        AND r.CAR_USER_TYPE = 1
+        AND r.state = 2
+        union all
+        SELECT
+        distinct u.id as userid
+        FROM
+        user_data_info u
+        LEFT JOIN sys_tenant_def def ON def.id = u.TENANT_ID,
+        TENANT_USER_REL_VER r
+        WHERE
+        r.USER_ID = u.ID
+        AND r.TENANT_ID =#{out.tenantId}
+        AND u.user_type in (1,3)
+        AND r.CAR_USER_TYPE = 1) as t)
+        GROUP BY o.user_id,o.user_type
+        ) tms where 1=1
+        <if test="out.strRepairFundBeginDouble!=null">and tms.repairFund &gt;= #{out.strRepairFundBeginDouble}</if>
+        <if test="out.strRepairFundEndDouble!=null ">and tms.repairFund &lt;= #{out.strRepairFundEndDouble}</if>
+        <if test="out.strmarginBeginDouble!=null ">and tms.marginBalance &gt;= #{out.strmarginBeginDouble}</if>
+        <if test="out.strmarginEndDouble!=null ">and tms.marginBalance &lt;= #{out.strmarginEndDouble}</if>
+        <if test="out.stroilBeginDouble!=null ">and tms.oilBalance &gt;= #{out.stroilBeginDouble}</if>
+        <if test="out.stroilEndDouble!=null">and tms.oilBalance &lt;= #{out.stroilEndDouble}</if>
+        <if test="out.stretcBeginDouble!=null ">and tms.etcBalance &gt;= #{out.stretcBeginDouble}</if>
+        <if test="out.stretcEndDouble!=null ">and tms.etcBalance &lt;= #{out.stretcEndDouble}</if>
+        <if test="out.receivableOverdueBalanceBeginStrDouble!=null ">
+            and tms.receivableOverdueBalance &gt;= #{out.receivableOverdueBalanceBeginStrDouble}
+        </if>
+        <if test="out.receivableOverdueBalanceEndStrDouble!=null ">
+            and tms.receivableOverdueBalance &lt;= #{out.receivableOverdueBalanceEndStrDouble}
+        </if>
+        <if test="out.payableOverdueBalanceBeginStrDouble!=null ">
+            and tms.payableOverdueBalance &gt;= #{out.payableOverdueBalanceBeginStrDouble}
+        </if>
+        <if test="out.payableOverdueBalanceEndStrDouble!=null ">
+            and tms.payableOverdueBalance &lt;= #{out.payableOverdueBalanceEndStrDouble}
+        </if>
+    </select>
+
+    <select id="doAccountQuerySum" resultType="com.youming.youche.order.dto.AccountDto">
+        select SUM(tms.marginBalance) marginBalance,
+        SUM(tms.oilBalance) oilBalance,
+        SUM(tms.etcBalance) etcBalance,
+        SUM(tms.repairFund) repairFund,
+        SUM(tms.pledgeOilCardFee) pledgeOilCardFee,
+        SUM(tms.receivableOverdueBalance) receivableOverdueBalance,
+        SUM(tms.payableOverdueBalance) payableOverdueBalance
+        from (
+        select o.user_id userId,
+        o.ACC_STATE accState,
+        b.BILL_ID billId,
+        o.user_type userType,
+        o.SOURCE_TENANT_ID sourceTenantId,
+        b.name operatorName,
+        b.tenant_id fromTenantId,
+        (SELECT SUM(RECHARGE_OIL_BALANCE + OIL_BALANCE) FROM order_account_oil_source WHERE user_id=o.user_Id AND
+        tenant_id=o.SOURCE_TENANT_ID and user_type=o.user_type) oilBalance,
+        SUM(o.MARGIN_BALANCE) marginBalance,
+        SUM(o.ETC_BALANCE) etcBalance,
+        SUM(o.REPAIR_FUND) repairFund,
+        SUM(o.PLEDGE_OILCARD_FEE) pledgeOilCardFee,
+        SUM(o.RECEIVABLE_OVERDUE_BALANCE) receivableOverdueBalance,
+        SUM(o.PAYABLE_OVERDUE_BALANCE) payableOverdueBalance
+        FROM order_account o,sys_user b
+        WHERE o.user_id=b.user_info_id
+        AND o.SOURCE_TENANT_ID=b.tenant_id
+        <if test="out.billId!=null and out.billId!='' ">and b.bill_id = #{out.billId}</if>
+        <if test="out.operatorName!=null and out.operatorName!='' ">and b.operator_name like
+            CONCAT('%',#{out.operatorName},'%')
+        </if>
+        <if test="out.accState!=null and out.accState!='' and out.out.accState!=-1 ">and o.acc_state = #{out.accState}
+        </if>
+        and o.USER_ID !=#{out.userId}
+        GROUP BY o.USER_ID,o.USER_TYPE
+        ) tms where 1=1
+        <if test="out.strRepairFundBegin!=null and out.strRepairFundBegin!=''">and tms.repairFund &gt;=
+            #{out.strRepairFundBegin}
+        </if>
+        <if test="out.StrRepairFundEnd!=null and out.StrRepairFundEnd!=''">and tms.repairFund &lt;=
+            #{out.strRepairFundEnd}
+        </if>
+        <if test="out.StrmarginBegin!=null and out.StrmarginBegin!=''">and tms.marginBalance &gt;=
+            #{out.strmarginBegin}
+        </if>
+        <if test="out.StrmarginEnd!=null and out.StrmarginEnd!=''">and tms.marginBalance &lt;= #{out.strmarginEnd}</if>
+        <if test="out.StroilBegin!=null and out.StroilBegin!=''">and tms.oilBalance &gt;= #{out.stroilBegin}</if>
+        <if test="out.StroilEnd!=null and out.StroilEnd!=''">and tms.oilBalance &lt;= #{out.stroilEnd}</if>
+        <if test="out.StretcBegin!=null and out.StretcBegin!=''">and tms.etcBalance &gt;= #{out.stretcBegin}</if>
+        <if test="out.StretcEnd!=null and out.StretcEnd!=''">and tms.etcBalance &lt;= #{out.stretcEnd}</if>
+        <if test="out.ReceivableOverdueBalanceBeginStr!=null and out.ReceivableOverdueBalanceBeginStr!=''">and
+            tms.receivableOverdueBalance &gt;= #{out.receivableOverdueBalanceBeginStr}
+        </if>
+        <if test="out.ReceivableOverdueBalanceEndStr!=null and out.ReceivableOverdueBalanceEndStr!=''">and
+            tms.receivableOverdueBalance &lt;= #{out.receivableOverdueBalanceEndStr}
+        </if>
+        <if test="out.PayableOverdueBalanceBeginStr!=null and out.PayableOverdueBalanceBeginStr!=''">and
+            tms.payableOverdueBalance &gt;= #{out.payableOverdueBalanceBeginStr}
+        </if>
+        <if test="out.PayableOverdueBalanceEndStr!=null and out.PayableOverdueBalanceEndStr!=''">and
+            tms.payableOverdueBalance &lt;= #{out.payableOverdueBalanceEndStr}
+        </if>
+
+    </select>
+
+    <select id="findOrderAccount" resultType="com.youming.youche.order.domain.OrderAccount">
+        select * from order_account a where 1=1
+        <if test="userId >0">
+            and a.user_id= #{userId}
+        </if>
+        <if test="userType >0">
+            and a.user_type= #{userType}
+        </if>
+        <if test="sourceTenantId >0">
+            and a.source_tenant_id= #{sourceTenantId}
+        </if>
+        order by a.margin_balance desc
+    </select>
+    <select id="selectFee" resultType="com.youming.youche.order.dto.BaseNameDto">
+        SELECT base.name,base.phone,base.type,a.* FROM
+        (
+        SELECT oa.USER_ID AS userId,oa.ACC_STATE AS accState ,'1' AS userState
+        ,oa.user_type AS userType
+        ,sum(ifnull(oa.RECEIVABLE_OVERDUE_BALANCE,0)) AS receivableOverdueBalance
+        ,sum(ifnull(oa.PAYABLE_OVERDUE_BALANCE,0)) AS payableOverdueBalance
+        ,sum(ifnull(oa.MARGIN_BALANCE,0)) AS marginBalance
+        ,sum(ifnull(oa.OIL_BALANCE,0)) AS oilBalance
+        ,sum(ifnull(oa.ETC_BALANCE,0)) AS etcBalance
+        ,sum(ifnull(oa.REPAIR_FUND,0)) AS repairFund
+        ,sum(ifnull(oa.PLEDGE_OILCARD_FEE,0)) AS pledgeOilCardFee
+        FROM order_account oa WHERE (oa.SOURCE_TENANT_ID=#{tenantId} and oa.USER_ID!=#{userId})
+        <if test="accState != null and accState != ''">
+            AND oa.ACC_STATE=#{accState}
+        </if>
+        <if test="userType != null and userType != ''">
+            AND oa.user_type=#{userType}
+        </if>
+        GROUP BY oa.USER_ID,oa.ACC_STATE,oa.user_type
+        UNION
+        SELECT (SELECT ADMIN_USER from sys_tenant_def WHERE TENANT_ID=oa.SOURCE_TENANT_ID) AS userId,oa.ACC_STATE AS
+        accState ,'0' AS userState
+        ,oa.user_type AS userType
+        ,sum(ifnull(oa.RECEIVABLE_OVERDUE_BALANCE,0)) AS receivableOverdueBalance
+        ,sum(ifnull(oa.PAYABLE_OVERDUE_BALANCE,0)) AS payableOverdueBalance
+        ,sum(ifnull(oa.MARGIN_BALANCE,0)) AS marginBalance
+        ,sum(ifnull(oa.OIL_BALANCE,0)) AS oilBalance
+        ,sum(ifnull(oa.ETC_BALANCE,0)) AS etcBalance
+        ,sum(ifnull(oa.REPAIR_FUND,0)) AS repairFund
+        ,sum(ifnull(oa.PLEDGE_OILCARD_FEE,0)) AS pledgeOilCardFee
+        FROM order_account oa WHERE (oa.SOURCE_TENANT_ID!=#{tenantId} and oa.USER_ID=#{userId}
+        AND oa.SOURCE_TENANT_ID NOT IN (SELECT TENANT_ID FROM sys_tenant_def WHERE ADMIN_USER IN (SELECT USER_ID FROM
+        order_account WHERE SOURCE_TENANT_ID=#{tenantId} and USER_ID!=#{userId})))
+        <if test="accState != null and accState != ''">
+            AND oa.ACC_STATE=#{accState}
+        </if>
+        <if test="userType != null and userType != ''">
+            AND oa.user_type=#{userType}
+        </if>
+        GROUP BY oa.SOURCE_TENANT_ID,oa.ACC_STATE,oa.user_type
+        ) a
+        ,(SELECT a.id,
+        CASE
+        WHEN b.NAME IS NOT NULL THEN b.NAME
+        WHEN c.SERVICE_NAME IS NOT NULL THEN c.SERVICE_NAME
+        ELSE a.LINKMAN
+        END AS name,
+        CASE
+        WHEN b.NAME IS NOT NULL THEN b.LINK_PHONE
+        ELSE a.MOBILE_PHONE
+        END AS phone,
+        CASE
+        WHEN b.NAME IS NOT NULL THEN '1'
+        ELSE '0'
+        END AS type
+        FROM user_data_info a LEFT JOIN sys_tenant_def b ON a.id=b.ADMIN_USER
+        LEFT JOIN service_info c ON a.id=c.SERVICE_USER_ID) base
+        WHERE a.userId=base.id
+        <if test="name != null and name != ''">
+            AND base.name LIKE #{name}
+        </if>
+    </select>
+    <select id="accountDetails" resultType="com.youming.youche.order.dto.BaseNameDto">
+        select name                                       as name,
+               sum(orb.txn_amt - ifnull(ofeh.income_insurance_fee, 0) - ifnull(ofeh.income_oil_virtual_fee, 0) -
+                   ifnull(ofeh.income_oil_fee, 0))        as txnAmt,
+               sum(if(paid > 0,
+                      orb.paid - ifnull(ofeh.income_insurance_fee, 0) - ifnull(ofeh.income_oil_virtual_fee, 0) -
+                      ifnull(ofeh.income_oil_fee, 0), 0)) as paid
+        from overdue_receivable as orb
+                 left join order_fee_ext_h as ofeh
+                           on ofeh.order_id = orb.order_id and orb.type = 1
+        where orb.tenant_id = #{tenantId}
+          and orb.`type` = #{type}
+          and admin_user_id is not null
+        group by admin_user_id
+    </select>
+    <select id="selectOr" resultType="com.youming.youche.order.dto.ReceivableOverdueBalanceDto">
+        SELECT sum(ifnull(oa.RECEIVABLE_OVERDUE_BALANCE, 0)) AS receivableOverdueBalance
+             , sum(ifnull(oa.PAYABLE_OVERDUE_BALANCE, 0))    AS payableOverdueBalance
+        FROM order_account oa
+        WHERE oa.SOURCE_TENANT_ID = #{sysTenantUserId}
+          and oa.USER_ID = #{tenantUserId}
+          and oa.USER_TYPE = #{userType}
+        GROUP BY oa.USER_ID
+    </select>
+
+    <select id="selectOrs" resultMap="OaloanAndUserDateInfoDto">
+        SELECT o.*,u.* FROM oa_loan o ,user_data_info u WHERE o.user_info_id = u.id
+        AND o.LAUNCH = 2 AND o.LOAN_SUBJECT IN
+        <foreach collection="subjectList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        AND o.STS IN (3,4,5)
+        <if test="orderId != null and orderId>0 ">
+            AND o.ORDER_ID = #{orderId}
+        </if>
+        <if test="queryMonth != null and queryMonth !='' ">
+            AND DATE_FORMAT( o.APP_DATE,'%Y-%m') = #{queryMonth}
+        </if>
+        <if test="loanSubjectList != null and loanSubjectList != ''">
+            AND o.LOAN_SUBJECT in
+            <foreach collection="loanSubjectLists" item="loanSubject" separator="," open="(" close=")">
+            #{loanSubject}
+            </foreach>
+        </if>
+        <if test="stateList != null and stateList !='' ">
+            AND o.STS in
+            <foreach collection="stateLists" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        and o.user_info_id=#{userId}
+        ORDER BY o.APP_DATE DESC
+    </select>
+
+    <select id="selectOrsTwo" resultType="com.youming.youche.order.domain.order.OrderLimit">
+        SELECT ol.* FROM order_limit ol WHERE ol.USER_ID=#{userId} and PLEDGE_OILCARD_FEE>0 and ol.user_type=#{userType}
+        <if test="tenantId != null and tenantId != ''"></if>
+        AND ol.TENANT_ID=#{tenantId}
+    </select>
+    <select id="queryLoanDetail" resultType="com.youming.youche.order.dto.LoanDetail">
+        SELECT o.ORDER_ID                                      as orderId,
+               o.oa_loan_id                                    as oaLoanId,
+               o.LOAN_SUBJECT                                  as loanSubject,
+               o.AMOUNT                                        as amount,
+               o.PAYED_AMOUNT                                  as payedAmount,
+               IFNULL(o.amount, 0) - IFNULL(o.PAYED_AMOUNT, 0) as noPayAmount,
+               o.STS                                           as sts,
+               o.APP_DATE                                      as appDate
+        FROM oa_loan o,
+             order_info i,
+             order_scheduler sc
+        WHERE o.ORDER_ID = i.ORDER_ID
+          AND sc.ORDER_ID = i.ORDER_ID
+          AND o.USER_ID = #{userId}
+          AND o.TENANT_ID = #{tenantId}
+          AND DATE_FORMAT(sc.DEPEND_TIME, '%y-%m') = DATE_FORMAT(CONCAT(#{settleMonth}, '01'), '%y-%m')
+          AND o.STS IN (3, 4)
+        UNION ALL
+        SELECT o.ORDER_ID                                      as orderId,
+               o.oa_loan_id                                    as oaLoanId,
+               o.LOAN_SUBJECT                                  as loanSubject,
+               o.AMOUNT                                        as amount,
+               o.PAYED_AMOUNT                                  as payedAmount,
+               IFNULL(o.amount, 0) - IFNULL(o.PAYED_AMOUNT, 0) as noPayAmount,
+               o.STS                                           as sts,
+               o.APP_DATE                                      as appDate
+        FROM oa_loan o,
+             order_info_h i,
+             order_scheduler_h sc
+        WHERE o.ORDER_ID = i.ORDER_ID
+          AND sc.ORDER_ID = i.ORDER_ID
+          AND DATE_FORMAT(sc.DEPEND_TIME, '%y-%m') = DATE_FORMAT(CONCAT(#{settleMonth}, '01'), '%y-%m')
+          AND o.USER_ID = #{userId}
+          AND o.TENANT_ID = #{tenantId}
+          AND o.STS IN (3, 4)
+    </select>
+    <select id="queryOrderDebtDetail" resultType="com.youming.youche.order.dto.OrderDebtDetail">
+        SELECT *
+        FROM (
+                 SELECT sc.ORDER_ID    AS orderId,
+                        sc.DEPEND_TIME AS dependTime,
+                        l.DEBT_MONEY   AS debtMoney,
+                        l.PAID_DEBT    AS paidDebt,
+                        l.NO_PAY_DEBT  AS noPayDebt
+                 FROM order_scheduler sc,
+                      order_limit l
+                 WHERE sc.ORDER_ID = l.ORDER_ID
+                   AND l.DEBT_MONEY > 0
+                   AND sc.CAR_DRIVER_ID = #{userId}
+                   AND DATE_FORMAT(sc.DEPEND_TIME, '%y-%m') = DATE_FORMAT(#{settleMonthData}, '%y-%m')
+                 UNION ALL
+                 SELECT sc.ORDER_ID    AS orderId,
+                        sc.DEPEND_TIME AS dependTime,
+                        l.DEBT_MONEY   AS debtMoney,
+                        l.PAID_DEBT    AS paidDebt,
+                        l.NO_PAY_DEBT  AS noPayDebt
+                 FROM order_scheduler_h sc,
+                      order_limit l
+                 WHERE sc.ORDER_ID = l.ORDER_ID
+                   AND l.DEBT_MONEY > 0
+                   AND sc.CAR_DRIVER_ID = #{userId}
+                   AND DATE_FORMAT(sc.DEPEND_TIME, '%y-%m') = DATE_FORMAT(#{settleMonthData}, '%y-%m')) tmp
+    </select>
+    <select id="queryPeccancDetail" resultType="com.youming.youche.order.dto.PeccancDetailDto">
+        SELECT o.BORROW_USER_ID AS borrowUserId,
+               o.oa_loan_id     AS oaLoanId,
+               o.VERIFY_DATE    AS verifyDate,
+               o.PLATE_NUMBER   AS plateNumber,
+               o.order_id       AS orderId,
+               o.AMOUNT         AS amount
+        FROM oa_loan o
+        WHERE LOAN_SUBJECT = 5
+          AND LOAN_TRANS_REASON = 2
+          AND DATE_FORMAT(APP_DATE, '%y-%m') = DATE_FORMAT(CONCAT(#{settleMonthData}, '-01'), '%y-%m')
+          AND o.STS IN (3, 4)
+          AND o.BORROW_USER_ID = #{userId}
+    </select>
+</mapper>

@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.AccountStatementMapper">
+
+
+    <select id="getAccountStatements" resultType="com.youming.youche.finance.domain.AccountStatement">
+        SELECT `id`, `bill_month`, `bill_number`, `car_num`, `car_total_fee`, `create_date`, `deduction_type`, `etc_turn_cash`, `exception_in`, `exception_out`, `is_report`,
+               `margin_balance`, `no_pay_fee`, `oil_card_deposit`, `oil_turn_cash`, `op_id`, `order_num`, `order_total_fee`, `paid_fee`, `pay_user_type`, `rece_user_type`, `receiver_name`,
+               `receiver_phone`, `receiver_user_id`, `remark`, `report_remark`, `report_time`, `send_time`, `settlement_amount`, `settlement_remark`, `state`, `tenant_bill`, `tenant_id`,
+               `tenant_name`, `time_penalty`, `update_date`, `update_op_id`, `ver`, `verification_state`
+        FROM account_statement a WHERE a.STATE!=0
+        <if test="accountStatement.tenantId!=null and accountStatement.tenantId!=''">  AND a.TENANT_ID = #{accountStatement.tenantId}</if>
+        <if test="accountStatement.receiverUserId!=null and accountStatement.receiverUserId!=''">  AND a.receiver_user_Id = #{accountStatement.receiverUserId}</if>
+        <if test="accountStatement.billMonth!=null and accountStatement.billMonth!=''"> AND a.BILL_MONTH like CONCAT('%',#{accountStatement.billMonth},'%')</if>
+        <if test="accountStatement.receiverName!=null and accountStatement.receiverName!=''">  AND a.RECEIVER_NAME like CONCAT('%',#{accountStatement.receiverName},'%')</if>
+        <if test="accountStatement.receiverPhone!=null and accountStatement.receiverPhone!=''">   AND a.RECEIVER_PHONE like CONCAT('%',#{accountStatement.receiverPhone},'%')</if>
+        <if test="accountStatement.state!=null and accountStatement.state!=''">  AND a.STATE = #{accountStatement.state}</if>
+        <if test="accountStatement.tenantName!=null and accountStatement.tenantName!=''">  AND a.TENANT_NAME like CONCAT('%',#{accountStatement.tenantName},'%')</if>
+        <if test="accountStatement.tenantBill!=null and accountStatement.tenantBill!=''">  AND a.TENANT_BILL like CONCAT('%',#{accountStatement.tenantBill},'%')</if>
+        <if test="opType==2"> AND a.STATE>1 </if>
+        ORDER BY a.CREATE_DATE DESC
+    </select>
+
+    <select id="getAccountStatementList" resultType="com.youming.youche.finance.domain.AccountStatement">
+        SELECT `id`, `bill_month`, `bill_number`, `car_num`, `car_total_fee`, `create_date`, `deduction_type`, `etc_turn_cash`, `exception_in`, `exception_out`, `is_report`,
+        `margin_balance`, `no_pay_fee`, `oil_card_deposit`, `oil_turn_cash`, `op_id`, `order_num`, `order_total_fee`, `paid_fee`, `pay_user_type`, `rece_user_type`, `receiver_name`,
+        `receiver_phone`, `receiver_user_id`, `remark`, `report_remark`, `report_time`, `send_time`, `settlement_amount`, `settlement_remark`, `state`, `tenant_bill`, `tenant_id`,
+        `tenant_name`, `time_penalty`, `update_date`, `update_op_id`, `ver`, `verification_state`
+        FROM account_statement a WHERE a.STATE!=0
+        <if test="accountStatement.tenantId!=null and accountStatement.tenantId!=''">  AND a.TENANT_ID = #{accountStatement.tenantId}</if>
+        <if test="accountStatement.receiverUserId!=null and accountStatement.receiverUserId!=''">  AND a.receiver_user_Id = #{accountStatement.receiverUserId}</if>
+        <if test="accountStatement.billMonth!=null and accountStatement.billMonth!=''"> AND a.BILL_MONTH like CONCAT('%',#{accountStatement.billMonth},'%')</if>
+        <if test="accountStatement.receiverName!=null and accountStatement.receiverName!=''">  AND a.RECEIVER_NAME like CONCAT('%',#{accountStatement.receiverName},'%')</if>
+        <if test="accountStatement.receiverPhone!=null and accountStatement.receiverPhone!=''">   AND a.RECEIVER_PHONE like CONCAT('%',#{accountStatement.receiverPhone},'%')</if>
+        <if test="accountStatement.state!=null and accountStatement.state!=''">  AND a.STATE = #{accountStatement.state}</if>
+        <if test="accountStatement.tenantName!=null and accountStatement.tenantName!=''">  AND a.TENANT_NAME like CONCAT('%',#{accountStatement.tenantName},'%')</if>
+        <if test="accountStatement.tenantBill!=null and accountStatement.tenantBill!=''">  AND a.TENANT_BILL like CONCAT('%',#{accountStatement.tenantBill},'%')</if>
+        <if test="opType==2"> AND a.STATE>1 </if>
+        ORDER BY a.CREATE_DATE DESC
+    </select>
+
+    <select id="queryAccountStatement" resultType="com.youming.youche.finance.domain.AccountStatement">
+        SELECT `id`, `bill_month`, `bill_number`, `car_num`, `car_total_fee`, `create_date`, `deduction_type`, `etc_turn_cash`, `exception_in`, `exception_out`, `is_report`,
+        `margin_balance`, `no_pay_fee`, `oil_card_deposit`, `oil_turn_cash`, `op_id`, `order_num`, `order_total_fee`, `paid_fee`, `pay_user_type`, `rece_user_type`, `receiver_name`,
+        `receiver_phone`, `receiver_user_id`, `remark`, `report_remark`, `report_time`, `send_time`, `settlement_amount`, `settlement_remark`, `state`, `tenant_bill`, `tenant_id`,
+        `tenant_name`, `time_penalty`, `update_date`, `update_op_id`, `ver`, `verification_state`
+        FROM account_statement a where a.bill_month like CONCAT("%", #{billMonth}, "%")
+        and a.tenant_id = #{tenantId}
+        and receiver_phone in
+        <foreach collection="receiverPhone" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryLastBillForMonth" resultType="java.lang.Long">
+        SELECT
+        min( a.id ) flowId
+        FROM
+        account_statement a,
+        account_statement_details b
+        WHERE
+        a.id = b.account_statement_id
+        AND a.STATE != 4
+        AND b.STATE = 1
+        AND ( b.count_type IS NULL OR b.count_type = 1 OR a.id = #{flowId} )
+        AND a.BILL_MONTH LIKE CONCAT('%',#{month},'%')
+        <choose>
+            <when test="receiverUserId == null || receiverUserId > 1">
+                AND a.RECEIVER_PHONE = #{receiverPhone}
+            </when>
+            <otherwise>
+                AND a.RECEIVER_USER_ID= = #{receiverUserId}
+            </otherwise>
+        </choose>
+        AND b.PLATE_NUMBER = #{plateNumber}
+        AND a.TENANT_ID = #{tenantId}
+    </select>
+
+    <select id="selectLastBillForMonth" resultType="java.lang.Long">
+        SELECT min(a.FLOW_ID) flowId FROM account_statement a, account_statement_details b WHERE a.FLOW_ID = b.account_statement_id AND b.STATE=1
+        AND (a.STATE!=4 or a.FLOW_ID = #{flowId}) AND (b.countType IS NULL OR b.countType = 1) AND a.BILL_MONTH LIKE CONCAT('%',#{month},'%') 
+        <choose>
+            <when test="receiverUserId == null or receiverUserId &lt; 1">
+                AND a.RECEIVER_PHONE= #{receiverPhone}
+            </when>
+            <otherwise>
+                AND a.RECEIVER_USER_ID= #{receiverUserId}
+            </otherwise>
+        </choose>
+        AND b.PLATE_NUMBER= #{plateNumber} AND a.TENANT_ID = #{tenantId}
+    </select>
+
+    <select id="doQueryBillReceiverPageList" resultType="com.youming.youche.finance.dto.DoQueryBillReceiverPageListDto">
+        SELECT rel.BILL_RECEIVER_MOBILE AS billReceiverMobile,
+        CONCAT(rel.BILL_RECEIVER_USER_ID,'') AS billReceiverUserId,
+        rel.BILL_RECEIVER_NAME AS billReceiverName,
+        rel.VEHICLE_CLASS AS vehicleClass,
+        CASE WHEN std.ADMIN_USER IS NOT NULL THEN 6 WHEN std.ADMIN_USER IS NULL AND udi.id IS NOT NULL THEN 3 ELSE NULL END AS userType,
+        (SELECT COUNT(1) FROM
+        <choose>
+            <when test="vo.monList != null and vo.monList.size() > 0">
+                (select id,BILL_RECEIVER_MOBILE,BILL_RECEIVER_NAME,BILL_RECEIVER_USER_ID,TENANT_ID,PLATE_NUMBER,VEHICLE_CODE,VEHICLE_CLASS,CREATE_DATE from tenant_vehicle_rel where VEHICLE_CLASS in (2,4) and trim(BILL_RECEIVER_MOBILE) != ''
+                union all select REL_ID,BILL_RECEIVER_MOBILE,BILL_RECEIVER_NAME,BILL_RECEIVER_USER_ID,TENANT_ID,PLATE_NUMBER,VEHICLE_CODE,VEHICLE_CLASS,CREATE_DATE from tenant_vehicle_rel_ver
+                where ver_state = 9 and VEHICLE_CLASS in (2,4) and trim(BILL_RECEIVER_MOBILE) != '' and DATE_FORMAT(CREATE_DATE, '%Y-%m') IN
+                <foreach collection="vo.monList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                tenant_vehicle_rel
+            </otherwise>
+        </choose>
+        tvr WHERE tvr.BILL_RECEIVER_MOBILE = rel.BILL_RECEIVER_MOBILE AND tvr.TENANT_ID = #{vo.tenantId}) AS vehicleNum
+        FROM
+        <choose>
+            <when test="vo.monList != null and vo.monList.size() > 0">
+                (select id,BILL_RECEIVER_MOBILE,BILL_RECEIVER_NAME,BILL_RECEIVER_USER_ID,TENANT_ID,PLATE_NUMBER,VEHICLE_CODE,VEHICLE_CLASS,CREATE_DATE from tenant_vehicle_rel where VEHICLE_CLASS in (2,4) and trim(BILL_RECEIVER_MOBILE) != ''
+                union all select REL_ID,BILL_RECEIVER_MOBILE,BILL_RECEIVER_NAME,BILL_RECEIVER_USER_ID,TENANT_ID,PLATE_NUMBER,VEHICLE_CODE,VEHICLE_CLASS,CREATE_DATE from tenant_vehicle_rel_ver
+                where ver_state = 9 and VEHICLE_CLASS in (2,4) and trim(BILL_RECEIVER_MOBILE) != '' and DATE_FORMAT(CREATE_DATE, '%Y-%m') IN
+                <foreach collection="vo.monList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                tenant_vehicle_rel
+            </otherwise>
+        </choose>
+        rel
+        LEFT JOIN sys_tenant_def std ON std.ADMIN_USER = rel.BILL_RECEIVER_USER_ID
+        LEFT JOIN user_data_info udi ON udi.id = rel.BILL_RECEIVER_USER_ID
+        WHERE rel.BILL_RECEIVER_MOBILE IS NOT NULL AND TRIM(rel.BILL_RECEIVER_MOBILE) != ''
+        <if test="vo.billReceiverMobile != null and vo.billReceiverMobile != ''">
+            AND rel.BILL_RECEIVER_MOBILE = #{vo.billReceiverMobile}
+        </if>
+        <if test="vo.billReceiverName != null and vo.billReceiverName != ''">
+            AND rel.BILL_RECEIVER_NAME like CONCAT('%',#{vo.billReceiverName},'%')
+        </if>
+        <if test="vo.vehicleClass != null and vo.vehicleClass > 0">
+            AND rel.VEHICLE_CLASS = #{vo.vehicleClass}
+        </if>
+        GROUP BY rel.BILL_RECEIVER_MOBILE,rel.BILL_RECEIVER_NAME,rel.BILL_RECEIVER_USER_ID ORDER BY rel.CREATE_DATE DESC
+    </select>
+
+    <select id="selectAccountStatementUserPage" resultType="com.youming.youche.finance.dto.AccountStatementUserDto">
+        select
+        collection_user_phone as billReceiverMobile,
+        collection_user_name as billReceiverName,
+        collection_user_id as billReceiverUserId
+        from (
+            select collection_user_phone,collection_user_name,collection_user_id from order_scheduler where plate_number in
+                (
+                SELECT plate_number from tenant_vehicle_rel where vehicle_class in (2,3)  and tenant_id = #{tenantId}
+                )
+                and is_collection = 1
+                <if test="collectionUserName != null and collectionUserName != ''">
+                    and collection_user_name like CONCAT('%',#{collectionUserName},'%')
+                </if>
+                <if test="collectionUserPhone != null and collectionUserPhone != ''">
+                    and collection_user_phone like CONCAT('%',#{collectionUserPhone},'%')
+                </if>
+                and date_format(depend_time,'%Y-%m') in
+                (
+                    <foreach collection="monList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                )
+            union
+            select collection_user_phone,collection_user_name,collection_user_id from order_scheduler_h where plate_number in
+                (
+                    SELECT plate_number from tenant_vehicle_rel where vehicle_class in (2,3)  and tenant_id = #{tenantId}
+                )
+                and is_collection = 1
+                <if test="collectionUserName != null and collectionUserName != ''">
+                    and collection_user_name like CONCAT('%',#{collectionUserName},'%')
+                </if>
+                <if test="collectionUserPhone != null and collectionUserPhone != ''">
+                    and collection_user_phone like CONCAT('%',#{collectionUserPhone},'%')
+                </if>
+                and date_format(depend_time,'%Y-%m') in
+                    (
+                        <foreach collection="monList" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    )
+            ) as total group by collection_user_id
+    </select>
+
+    <select id="selectAccountStatementByMonAndUserId" resultType="com.youming.youche.finance.domain.AccountStatement">
+        select * from account_statement where receiver_user_id = #{receiverUserId} and bill_month = #{billMonth} limit 1
+    </select>
+
+    <select id="getAccountStatementOrderList" resultType="java.lang.Long">
+        select order_id  from order_scheduler where
+        is_collection = 1
+        and collection_user_id = #{collectionUserId}
+        and tenant_id = #{tenantId}
+        and DATE_FORMAT(depend_time, '%Y-%m') in (
+        <foreach collection="monList" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+        union
+        select order_id  from order_scheduler_h where
+        is_collection = 1
+        and collection_user_id = #{collectionUserId}
+        and tenant_id = #{tenantId}
+        and DATE_FORMAT(depend_time, '%Y-%m') in (
+        <foreach collection="monList" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <select id="getAccountStatementOrderListAgingFee" resultType="java.lang.Long">
+        select sum(fine_price) from order_aging_info where order_id in
+        (
+            <foreach collection="orderIds" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </select>
+
+    <select id="getAccountStatementOrderListAgingFeeGroup" resultType="com.youming.youche.finance.dto.OrderFeeDto">
+        select order_id, sum(fine_price) as fee from order_aging_info where order_id in
+        (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        ) group by order_id
+    </select>
+
+
+    <select id="getAccountStatementOrderListTotalFee" resultType="java.lang.Long">
+        select sum(total.total_fee) from
+            (
+                select ifnull(total_fee,0) as total_fee from order_fee where order_id in
+                    (
+                        <foreach collection="orderIds" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    )
+                union all
+                select ifnull(total_fee,0) as total_fee from order_fee_h where order_id in
+                    (
+                    <foreach collection="orderIds" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+            ) as total
+    </select>
+
+    <select id="getAccountStatementOrderListExceptionIn" resultType="java.lang.Long">
+        select ifnull(sum(abs(problem_price)),0) from order_problem_info where order_id in
+        (
+            <foreach collection="orderIds" item="item" separator=",">
+                #{item}
+            </foreach>
+        ) and problem_type in ('1', '6', '8', '3', '7', '10') and state = 3 and problem_condition = 1
+    </select>
+
+    <select id="getAccountStatementOrderListExceptionInGroup" resultType="com.youming.youche.finance.dto.OrderFeeDto">
+        select order_id, ifnull(sum(abs(problem_price)),0) as fee from order_problem_info where order_id in
+        (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        ) and problem_type in ('1', '6', '8', '3', '7', '10') and state = 3 and problem_condition = 1 group by order_id
+    </select>
+
+    <select id="getAccountStatementOrderListExceptionOut" resultType="java.lang.Long">
+        select ifnull(sum(abs(problem_price)),0) from order_problem_info where order_id in
+        (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        ) and problem_type in ('2', '5', '4', '9') and state = 3 and problem_condition = 1
+    </select>
+
+    <select id="getAccountStatementOrderListExceptionOutGroup" resultType="com.youming.youche.finance.dto.OrderFeeDto">
+        select order_id, ifnull(sum(abs(problem_price)),0) as fee from order_problem_info where order_id in
+        (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        ) and problem_type in ('2', '5', '4', '9') and state = 3 and problem_condition = 1 group by order_id
+    </select>
+
+    <select id="getAccountStatementOrderListPaidFee" resultType="java.lang.Long">
+        select ifnull(sum(p.txn_amt),0) from subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e WHERE
+        p.pay_tenant_id = #{tenantId}
+        AND p.pay_obj_id = #{userInfoId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1  OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        AND (p.pay_confirm = 2 or (p.is_automatic = 1 and resp_code = 6))
+        and p.order_id in (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <select id="getAccountStatementOrderListPaidFeeGroup" resultType="com.youming.youche.finance.dto.OrderFeeDto">
+        select p.order_id as order_id, ifnull(sum(p.txn_amt),0) as fee from subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e WHERE
+        p.pay_tenant_id = #{tenantId}
+        AND p.pay_obj_id = #{userInfoId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1  OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        AND (p.pay_confirm = 2 or (p.is_automatic = 1 and resp_code = 6))
+        and p.order_id in (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+        group by p.order_id
+    </select>
+
+    <select id="getAccountStatementOrderListNoPaidFee" resultType="java.lang.Long">
+        select ifnull(sum(p.txn_amt),0) from subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e
+        WHERE
+        p.pay_tenant_id = #{tenantId}
+        AND p.pay_obj_id = #{userInfoId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1  OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        and (p.PAY_CONFIRM != 2 and (p.IS_AUTOMATIC != 1 or p.RESP_CODE != 6))
+        and p.order_id in (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <select id="getAccountStatementOrderListNoPaidFeeGroup" resultType="com.youming.youche.finance.dto.OrderFeeDto">
+        select p.order_id as order_id, ifnull(sum(p.txn_amt),0) as fee from subjects_info s,user_data_info u,payout_intf p,payout_intf_expansion e
+        WHERE
+        p.pay_tenant_id = #{tenantId}
+        AND p.pay_obj_id = #{userInfoId}
+        AND pay_user_type = 6
+        AND p.txn_type = 200
+        AND (p.resp_code != 5 OR p.resp_code IS NULL)
+        AND (p.is_automatic != 1  OR p.verification_state != 2)
+        AND p.subjects_id = s.id
+        AND p.user_id = u.id
+        AND p.id = e.flow_id
+        and (p.PAY_CONFIRM != 2 and (p.IS_AUTOMATIC != 1 or p.RESP_CODE != 6))
+        and p.order_id in (
+        <foreach collection="orderIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        ) group by p.order_id
+    </select>
+
+    <select id="queryAccountStatementOrders" resultType="com.youming.youche.finance.dto.QueryAccountStatementOrdersDto">
+        select * from (
+        select
+            s.order_id as orderId,
+            s.depend_time as dependTime,
+            o.order_state as orderState,
+            g.company_name as companyName,
+            s.source_name as sourceName,
+            s.car_driver_id as carDriverId,
+            s.car_driver_man as carDriverMan,
+            s.car_driver_phone as carDriverPhone,
+            ifnull(s.is_collection,0) as isCollection,
+            CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`
+            WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END payeeUserId,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_MAN`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_NAME`  ELSE o.`to_tenant_name` END payee,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_PHONE`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_PHONE`  ELSE st.LINK_PHONE END payeePhone,
+            IFNULL(f.`TOTAL_FEE`,0) totalFee,
+            IFNULL(f.`PRE_CASH_FEE`,0) preCashFee,
+            IFNULL(f.`PRE_OIL_FEE`,0) + IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) totalOilFee,
+            IFNULL(f.`PRE_OIL_FEE`,0) preOilFee,
+            IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) preOilVirtualFee,
+            IFNULL(f.`PRE_ETC_FEE`,0) preEtcFee,
+            IFNULL(f.`ARRIVE_PAYMENT_FEE`,0) arrivePaymentFee,
+            IFNULL(f.`ARRIVE_PAYMENT_STATE`,0) arrivePaymentState,
+            IFNULL(f.`FINAL_FEE`,0) finalFee,
+            l.`FIANL_STS` fianlSts,
+            IFNULL(l.`MARGIN_TURN`,0) + IFNULL(l.`MARGIN_ADVANCE`,0) + IFNULL(l.`MARGIN_SETTLEMENT`,0) + IFNULL(l.`MARGIN_DEDUCTION`,0) paidFinal
+            from order_info o LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id` left join order_limit l on o.order_id = l.order_id,
+            order_scheduler s, order_goods g, order_fee f, account_statement_order_info asoi
+            where
+                o.order_id = s.order_id
+                and o.order_id = g.order_id
+                and o.order_id = f.order_id
+                and o.order_id = asoi.order_id
+                and asoi.account_statement_id = #{vo.flowId}
+<!--                and l.`USER_ID` = CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`-->
+<!--                WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END-->
+            <if test="vo.orderId != null and vo.orderId > 0">
+                and o.order_id = #{vo.orderId}
+            </if>
+            <if test="vo.dependStartTime != null and vo.dependStartTime != ''">
+                and s.depend_time <![CDATA[ >= ]]> #{vo.dependStartTime}
+            </if>
+            <if test="vo.dependEndTime != null and vo.dependEndTime != ''">
+                and s.depend_time <![CDATA[ <= ]]> #{vo.dependEndTime}
+            </if>
+            <if test="vo.orderState != null">
+                and o.order_state = #{orderState}
+            </if>
+            <if test="vo.companyName != null and vo.companyName != ''">
+                and g.company_name like CONCAT('%',#{vo.companyName},'%')
+            </if>
+            <if test="vo.sourceName != null and vo.sourceName != ''">
+                and s.source_name like CONCAT('%',#{vo.sourceName},'%')
+            </if>
+            <if test="vo.carDriverMan != null and vo.carDriverMan != ''">
+                and s.car_driver_man like CONCAT('%',#{vo.carDriverMan},'%')
+            </if>
+            <if test="vo.carDriverPhone != null and vo.carDriverPhone != ''">
+                and s.car_driver_phone like CONCAT('%',#{vo.carDriverPhone},'%')
+            </if>
+            <if test="vo.finalState != null">
+                and l.`FIANL_STS` = #{vo.finalState}
+            </if>
+        union
+        select
+            s.order_id as orderId,
+            s.depend_time as dependTime,
+            o.order_state as orderState,
+            g.company_name as companyName,
+            s.source_name as sourceName,
+            s.car_driver_id as carDriverId,
+            s.car_driver_man as carDriverMan,
+            s.car_driver_phone as carDriverPhone,
+            ifnull(s.is_collection,0) as isCollection,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END payeeUserId,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_MAN`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_NAME`  ELSE o.`to_tenant_name` END payee,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_PHONE`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_PHONE`  ELSE st.LINK_PHONE END payeePhone,
+            IFNULL(f.`TOTAL_FEE`,0) totalFee,
+            IFNULL(f.`PRE_CASH_FEE`,0) preCashFee,
+            IFNULL(f.`PRE_OIL_FEE`,0) + IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) totalOilFee,
+            IFNULL(f.`PRE_OIL_FEE`,0) preOilFee,
+            IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) preOilVirtualFee,
+            IFNULL(f.`PRE_ETC_FEE`,0) preEtcFee,
+            IFNULL(f.`ARRIVE_PAYMENT_FEE`,0) arrivePaymentFee,
+            IFNULL(f.`ARRIVE_PAYMENT_STATE`,0) arrivePaymentState,
+            IFNULL(f.`FINAL_FEE`,0) finalFee,
+            l.`FIANL_STS` fianlSts,
+            IFNULL(l.`MARGIN_TURN`,0) + IFNULL(l.`MARGIN_ADVANCE`,0) + IFNULL(l.`MARGIN_SETTLEMENT`,0) + IFNULL(l.`MARGIN_DEDUCTION`,0) paidFinal
+        from order_info_h o LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id` left join order_limit l on o.order_id = l.order_id,
+        order_scheduler_h s, order_goods_h g, order_fee_h f,account_statement_order_info asoi
+        where
+        o.order_id = s.order_id
+        and o.order_id = g.order_id
+        and o.order_id = f.order_id
+        and o.order_id = asoi.order_id
+        and asoi.account_statement_id = #{vo.flowId}
+<!--        and l.`USER_ID` = CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`-->
+<!--        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END-->
+        <if test="vo.orderId != null and vo.orderId > 0">
+            and o.order_id = #{vo.orderId}
+        </if>
+        <if test="vo.dependStartTime != null and vo.dependStartTime != ''">
+            and s.depend_time <![CDATA[ >= ]]> #{vo.dependStartTime}
+        </if>
+        <if test="vo.dependEndTime != null and vo.dependEndTime != ''">
+            and s.depend_time <![CDATA[ <= ]]> #{vo.dependEndTime}
+        </if>
+        <if test="vo.orderState != null">
+            and o.order_state = #{orderState}
+        </if>
+        <if test="vo.companyName != null and vo.companyName != ''">
+            and g.company_name like CONCAT('%',#{vo.companyName},'%')
+        </if>
+        <if test="vo.sourceName != null and vo.sourceName != ''">
+            and s.source_name like CONCAT('%',#{vo.sourceName},'%')
+        </if>
+        <if test="vo.carDriverMan != null and vo.carDriverMan != ''">
+            and s.car_driver_man like CONCAT('%',#{vo.carDriverMan},'%')
+        </if>
+        <if test="vo.carDriverPhone != null and vo.carDriverPhone != ''">
+            and s.car_driver_phone like CONCAT('%',#{vo.carDriverPhone},'%')
+        </if>
+        <if test="vo.finalState != null">
+            and l.`FIANL_STS` = #{vo.finalState}
+        </if>
+        ) as total
+        where 1 = 1
+        <if test="vo.payee != null and vo.payee != ''">
+            and total.payee like CONCAT('%',#{vo.payee},'%')
+        </if>
+        <if test="vo.payeePhone != null and vo.payeePhone != ''">
+            and total.payeePhone like CONCAT('%',#{vo.payeePhone},'%')
+        </if>
+        order by orderId
+    </select>
+
+    <select id="queryAccountStatementOrderList" resultType="com.youming.youche.finance.dto.QueryAccountStatementOrdersDto">
+        select * from (
+        select
+        s.order_id as orderId,
+        s.depend_time as dependTime,
+        o.order_state as orderState,
+        g.company_name as companyName,
+        s.source_name as sourceName,
+        s.car_driver_id as carDriverId,
+        s.car_driver_man as carDriverMan,
+        s.car_driver_phone as carDriverPhone,
+        ifnull(s.is_collection,0) as isCollection,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END payeeUserId,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_MAN`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_NAME`  ELSE o.`to_tenant_name` END payee,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_PHONE`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_PHONE`  ELSE st.LINK_PHONE END payeePhone,
+        IFNULL(f.`TOTAL_FEE`,0) totalFee,
+        IFNULL(f.`PRE_CASH_FEE`,0) preCashFee,
+        IFNULL(f.`PRE_OIL_FEE`,0) + IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) totalOilFee,
+        IFNULL(f.`PRE_OIL_FEE`,0) preOilFee,
+        IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) preOilVirtualFee,
+        IFNULL(f.`PRE_ETC_FEE`,0) preEtcFee,
+        IFNULL(f.`ARRIVE_PAYMENT_FEE`,0) arrivePaymentFee,
+        IFNULL(f.`ARRIVE_PAYMENT_STATE`,0) arrivePaymentState,
+        IFNULL(f.`FINAL_FEE`,0) finalFee,
+        l.`FIANL_STS` fianlSts,
+        IFNULL(l.`MARGIN_TURN`,0) + IFNULL(l.`MARGIN_ADVANCE`,0) + IFNULL(l.`MARGIN_SETTLEMENT`,0) + IFNULL(l.`MARGIN_DEDUCTION`,0) paidFinal
+        from order_info o LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id` left join order_limit l on o.order_id = l.order_id,
+        order_scheduler s, order_goods g, order_fee f, account_statement_order_info asoi
+        where
+        o.order_id = s.order_id
+        and o.order_id = g.order_id
+        and o.order_id = f.order_id
+        and o.order_id = asoi.order_id
+        and asoi.account_statement_id = #{vo.flowId}
+        <!--                and l.`USER_ID` = CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`-->
+        <!--                WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END-->
+        <if test="vo.orderId != null and vo.orderId > 0">
+            and o.order_id = #{vo.orderId}
+        </if>
+        <if test="vo.dependStartTime != null and vo.dependStartTime != ''">
+            and s.depend_time <![CDATA[ >= ]]> #{vo.dependStartTime}
+        </if>
+        <if test="vo.dependEndTime != null and vo.dependEndTime != ''">
+            and s.depend_time <![CDATA[ <= ]]> #{vo.dependEndTime}
+        </if>
+        <if test="vo.orderState != null">
+            and o.order_state = #{vo.orderState}
+        </if>
+        <if test="vo.companyName != null and vo.companyName != ''">
+            and g.company_name like CONCAT('%',#{vo.companyName},'%')
+        </if>
+        <if test="vo.sourceName != null and vo.sourceName != ''">
+            and s.source_name like CONCAT('%',#{vo.sourceName},'%')
+        </if>
+        <if test="vo.carDriverMan != null and vo.carDriverMan != ''">
+            and s.car_driver_man like CONCAT('%',#{vo.carDriverMan},'%')
+        </if>
+        <if test="vo.carDriverPhone != null and vo.carDriverPhone != ''">
+            and s.car_driver_phone like CONCAT('%',#{vo.carDriverPhone},'%')
+        </if>
+        <if test="vo.finalState != null">
+            and l.`FIANL_STS` = #{vo.finalState}
+        </if>
+        union
+        select
+        s.order_id as orderId,
+        s.depend_time as dependTime,
+        o.order_state as orderState,
+        g.company_name as companyName,
+        s.source_name as sourceName,
+        s.car_driver_id as carDriverId,
+        s.car_driver_man as carDriverMan,
+        s.car_driver_phone as carDriverPhone,
+        ifnull(s.is_collection,0) as isCollection,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END payeeUserId,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_MAN`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_NAME`  ELSE o.`to_tenant_name` END payee,
+        CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_PHONE`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_PHONE`  ELSE st.LINK_PHONE END payeePhone,
+        IFNULL(f.`TOTAL_FEE`,0) totalFee,
+        IFNULL(f.`PRE_CASH_FEE`,0) preCashFee,
+        IFNULL(f.`PRE_OIL_FEE`,0) + IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) totalOilFee,
+        IFNULL(f.`PRE_OIL_FEE`,0) preOilFee,
+        IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) preOilVirtualFee,
+        IFNULL(f.`PRE_ETC_FEE`,0) preEtcFee,
+        IFNULL(f.`ARRIVE_PAYMENT_FEE`,0) arrivePaymentFee,
+        IFNULL(f.`ARRIVE_PAYMENT_STATE`,0) arrivePaymentState,
+        IFNULL(f.`FINAL_FEE`,0) finalFee,
+        l.`FIANL_STS` fianlSts,
+        IFNULL(l.`MARGIN_TURN`,0) + IFNULL(l.`MARGIN_ADVANCE`,0) + IFNULL(l.`MARGIN_SETTLEMENT`,0) + IFNULL(l.`MARGIN_DEDUCTION`,0) paidFinal
+        from order_info_h o LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id` left join order_limit l on o.order_id = l.order_id,
+        order_scheduler_h s, order_goods_h g, order_fee_h f,account_statement_order_info asoi
+        where
+        o.order_id = s.order_id
+        and o.order_id = g.order_id
+        and o.order_id = f.order_id
+        and o.order_id = asoi.order_id
+        and asoi.account_statement_id = #{vo.flowId}
+        <!--        and l.`USER_ID` = CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`-->
+        <!--        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END-->
+        <if test="vo.orderId != null and vo.orderId > 0">
+            and o.order_id = #{vo.orderId}
+        </if>
+        <if test="vo.dependStartTime != null and vo.dependStartTime != ''">
+            and s.depend_time <![CDATA[ >= ]]> #{vo.dependStartTime}
+        </if>
+        <if test="vo.dependEndTime != null and vo.dependEndTime != ''">
+            and s.depend_time <![CDATA[ <= ]]> #{vo.dependEndTime}
+        </if>
+        <if test="vo.orderState != null">
+            and o.order_state = #{vo.orderState}
+        </if>
+        <if test="vo.companyName != null and vo.companyName != ''">
+            and g.company_name like CONCAT('%',#{vo.companyName},'%')
+        </if>
+        <if test="vo.sourceName != null and vo.sourceName != ''">
+            and s.source_name like CONCAT('%',#{vo.sourceName},'%')
+        </if>
+        <if test="vo.carDriverMan != null and vo.carDriverMan != ''">
+            and s.car_driver_man like CONCAT('%',#{vo.carDriverMan},'%')
+        </if>
+        <if test="vo.carDriverPhone != null and vo.carDriverPhone != ''">
+            and s.car_driver_phone like CONCAT('%',#{vo.carDriverPhone},'%')
+        </if>
+        <if test="vo.finalState != null">
+            and l.`FIANL_STS` = #{vo.finalState}
+        </if>
+        ) as total
+        where 1 = 1
+        <if test="vo.payee != null and vo.payee != ''">
+            and total.payee like CONCAT('%',#{vo.payee},'%')
+        </if>
+        <if test="vo.payeePhone != null and vo.payeePhone != ''">
+            and total.payeePhone like CONCAT('%',#{vo.payeePhone},'%')
+        </if>
+        order by orderId
+    </select>
+</mapper>

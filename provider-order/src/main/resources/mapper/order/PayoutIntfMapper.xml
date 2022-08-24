@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.PayoutIntfMapper">
+
+    <select id="getPayoutIntfBalanceForRedis" resultType="java.lang.Long">
+        SELECT
+        ifnull( sum( txn_amt ), 0 )+ ifnull( sum( bill_service_fee ), 0 )
+        FROM
+        payout_intf p
+        WHERE
+        1 = 1
+        <if test="userId > 0">
+            AND pay_obj_id = #{userId}
+        </if>
+        <if test="bankType > -1">
+            AND account_type = #{bankType}
+        </if>
+        <if test="accountNo != null and accountNo != ''">
+            AND pay_acc_no = #{accountNo}
+        </if>
+        <if test="payUserType > 0">
+            AND pay_user_type =#{payUserType}
+        </if>
+        <if test="userType > 0">
+            AND user_type = #{userType}
+        </if>
+        AND is_automatic = 1
+        AND txn_type IN (${txnTypes})
+        AND (
+        resp_code NOT IN (3,5)
+        OR resp_code IS NULL)
+    </select>
+
+    <select id="getAccountLockSum" resultType="java.lang.Long">
+         SELECT
+            ifnull( sum( lock_balance ), 0 )
+        FROM
+            pingan_lock_info
+        WHERE
+            pingan_acc_id = #{custAcctId}
+    </select>
+
+    <select id="getPayUnDoPayAccount" resultType="java.lang.Long">
+        SELECT
+        ifnull( sum( txn_amt ), 0 )+ ifnull( sum( bill_service_fee ), 0 )
+        FROM
+        payout_intf p
+        WHERE
+        1 = 1
+        <if test="pinganAccId != null and pinganAccId != ''">
+            AND pay_acc_no = #{pinganAccId}
+        </if>
+        AND resp_code = 5
+    </select>
+
+    <select id="getPayoutIntfBalance" resultType="java.lang.Long">
+        SELECT
+        ifnull( sum( txn_amt ), 0 )+ ifnull( sum( bill_service_fee ), 0 )
+        FROM
+        payout_intf p
+        WHERE
+        1 = 1
+        <if test="userId > 0">
+            AND pay_obj_id = #{userId}
+        </if>
+        <if test="bankType > -1">
+            AND account_type = #{bankType}
+
+        </if>
+        <if test="accountNo != null and accountNo != ''">
+            AND account_type = #{accountNo}
+        </if>
+        <if test="payUserType > 0">
+            AND pay_user_type = #{payUserType}
+        </if>
+        <if test="userType > 0">
+            AND user_type = #{userType}
+        </if>
+        AND txn_type IN (300)
+        AND (
+        resp_code NOT IN (0,3,5)
+        OR resp_code IS NULL)
+    </select>
+
+    <select id="selectOrList" resultType="com.youming.youche.finance.dto.PayoutInfoOutDto">
+        select p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        s.NAME name,
+        p.RESP_CODE respCode,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.VERIFICATION_STATE verificationState,
+        e.FILE_ID fileId,
+        e.FILE_URL fileUrl
+        from
+        payout_intf p
+        left join order_op_record oor on p.ORDER_ID = oor.order_id and	oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        left join sys_tenant_def s on s.id = p.PAY_TENANT_ID
+        where  p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and p.user_id= #{userId} and (p.IS_AUTOMATIC!=1   or p.VERIFICATION_STATE!=2)
+        and p.id=e.flow_id
+        AND p.busi_id IN (21000003, 22000038)
+        <if test="sourceTenantId != null and sourceTenantId > 0">
+            and p.PAY_TENANT_ID=#{sourceTenantId}
+        </if>
+        <if test="name != null and name != ''">
+            and s.NAME like CONCAT('%',#{name},'%')
+        </if>
+        <if test="flowId != null and flowId > 0">
+            and p.id like CONCAT('%',#{flowId},'%')
+        </if>
+<!--        <if test="flowId != null and flowId > 0">-->
+<!--            and p.id=#{flowId}-->
+<!--        </if>-->
+        <if test="userType != null and userType > 0">
+            and p.user_type=#{userType}
+        </if>
+        <if test="state != null and state != ''">
+            and (
+            <if test='states.contains("0")'>
+                p.PAY_CONFIRM =0
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            <if test='states.contains("2") or states.contains("0")'>
+                <if test='states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.RESP_CODE !=3
+            </if>
+            <if test='states.contains("3")'>
+                <if test='states.contains("2") or states.contains("1") or states.contains("0")'>
+                    or
+                </if>
+                p.RESP_CODE =3
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+    <select id="selectBeOverdue" resultType="com.youming.youche.order.dto.PayoutInfosOutDto">
+        select p.CREATE_DATE createDate,
+        p.TXN_AMT txnAmt,
+        p.ORDER_ID orderId,
+        p.BUSI_ID busiId,
+        s.NAME name,
+        p.RESP_CODE respCode,
+        p.PAY_CONFIRM payConfirm,
+        p.IS_AUTOMATIC isAutoMatic,
+        p.id flowId,
+        p.user_type userType,
+        p.pay_user_type payUserType,
+        p.VERIFICATION_STATE verificationState
+        from payout_intf p,sys_tenant_def s where p.TENANT_ID=s.id  and p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and p.PAY_OBJ_ID=#{userId} and (p.IS_AUTOMATIC!=1   or p.VERIFICATION_STATE!=2)
+        and  (p.BUSI_ID!=21000023 and p.BUSI_ID!=21000113 and p.BUSI_ID!=21000024 or p.VERIFICATION_STATE!=2)
+         <if test="sourceTenantId != null and sourceTenantId > 0">
+             and p.TENANT_ID=#{sourceTenantId}
+         </if>
+         <if test="name != null and name != ''">
+             and s.NAME like #{name}
+         </if>
+         <if test="orderId != null and orderId > 0">
+             and p.ORDER_ID=#{orderId}
+         </if>
+         <if test="businessNumbers != null and businessNumbers != ''">
+             and p.BUSI_ID IN
+             <foreach collection="busiIds" item="item" open="(" close=")" separator=",">
+                 #{item}
+             </foreach>
+         </if>
+        and p.pay_user_type=#{userType}
+        <if test="state != null and state != ''">
+            and (
+            <if test='states.contains("0")'>
+                p.PAY_CONFIRM =0
+            </if>
+            <if test='states.contains("1")'>
+                <if test='states.contains("0")'>
+                    or
+                </if>
+                p.PAY_CONFIRM =2
+            </if>
+            )
+        </if>
+        ORDER BY p.CREATE_DATE DESC
+    </select>
+    <select id="billingDetailsByWx" resultType="com.youming.youche.order.dto.PayoutInfosOutDto">
+        select
+        sum(IFNULL(p.txn_amt,0)) as txnAmt,
+        sum(IFNULL(p.wait_billing_amount,0)) AS waitBillingAmount,
+        sum(IFNULL(p.already_billing_amount,0)) as alreadyBillingAmount,
+        p.pay_tenant_id as payTenantId
+        from payout_intf p
+        where 1=1 and p.user_id =#{userId}
+        and p.vehicle_affiliation !=0
+        and p.resp_code =3 and p.txn_type =200
+        <if test="tenantId != null and tenantId.size()>0  &gt; 0 ">
+            and p.pay_tenant_id IN
+            <foreach collection="tenantId" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="months!=null">
+            and DATE_FORMAT(p.create_date,"%Y-%m") = DATE_FORMAT("months","%Y-%m")
+        </if>
+        <if test="userType>0">
+            and p.user_type=#{userType}
+        </if>
+        <if test="payUserType>0">
+            and p.pay_user_type=#{payUserType}
+        </if>
+        group by p.pay_tenant_id
+    </select>
+    <select id="select" resultType="com.youming.youche.order.dto.QueryPayManagerDto">
+        select
+        pay.busi_code busiCode ,
+        pay.pay_id payId ,
+        pay.apply_user_name applyUserName,
+        pay.apply_time applyTime,
+        pay.pay_amt payAmt,
+        pay.pay_type payType,
+        pay.pay_remark payRemark,
+        bank.acct_name receUserName,
+        bank.bank_name receBankName,
+        bank.acct_no receBankNo,
+        pay.is_need_biil isNeedBiil,
+        pay.audit_user_name auditUserName,
+        pay.audit_time auditTime,
+        pay.state state ,
+        pay.PAY_TYPE_NAME payTypeName,
+        u.MOBILE_PHONE mobilePhone,
+        pay.org_id orgId ,
+        pay.is_audit isAudit
+        from user_data_info u,pay_manager pay left join account_bank_rel bank on pay.rece_acc_no = bank.pingan_collect_acct_id
+        where pay.pay_tenant_id = #{queryPayManagerVo.tenantId} and u.id=pay.APPLY_USER_ID
+        <if test="queryPayManagerVo.lids != null and queryPayManagerVo.lids.size() > 0">
+        and pay.PAY_ID in
+        <foreach collection="queryPayManagerVo.lids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        </if>
+        and (pay.state=0 or pay.state=4)
+        <if test="queryPayManagerVo.waitDeal == true">
+            <choose>
+                <when test="lids!=null and lids.size()>0">
+                    and pay.PAY_ID in
+                    <foreach collection="lids" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                     and (pay.state=0 or pay.state=4)
+                </when>
+                <otherwise>
+                    and pay.PAY_ID = ''
+                </otherwise>
+            </choose>
+        </if>
+        <if test="queryPayManagerVo.hasAllDataPermission == false">
+            <if test="queryPayManagerVo.orgList!=null and queryPayManagerVo.orgList.size()>0">
+                AND (pay.ORG_ID in
+                <foreach collection="queryPayManagerVo.orgList" item="item" open="(" close=")" separator=",">
+                item
+            </foreach>
+             OR pay.ORG_ID is null OR pay.ORG_ID =-1 )
+            </if>
+        </if>
+        <if test="queryPayManagerVo.mobilePhone != null and queryPayManagerVo.mobilePhone != ''">
+            and u.MOBILE_PHONE like #{queryPayManagerVo.mobilePhone}
+        </if>
+        <if test="queryPayManagerVo.payNo != null and queryPayManagerVo.payNo >-1">
+            and pay.pay_no = #{queryPayManagerVo.payNo}
+        </if>
+        <if test="queryPayManagerVo.busiCode != null and queryPayManagerVo.busiCode != ''">
+            and pay.busi_code like #{queryPayManagerVo.busiCode}
+        </if>
+        <if test="queryPayManagerVo.startTime != null and queryPayManagerVo.startTime != ''">
+            and pay.apply_time &gt; #{queryPayManagerVo.startTime}
+        </if>
+        <if test="queryPayManagerVo.endTime != null and queryPayManagerVo.endTime != ''">
+            and pay.apply_time &lt; #{queryPayManagerVo.endTime}
+        </if>
+        <if test="queryPayManagerVo.state != null and queryPayManagerVo.state>-1">
+            and pay.state = #{queryPayManagerVo.state}
+        </if>
+        <if test="queryPayManagerVo.stateWX != null and queryPayManagerVo.stateWX != ''">
+            <if test="queryPayManagerVo.states!=null and queryPayManagerVo.states.size()>0">
+                and pay.state in (#{queryPayManagerVo.states})
+            </if>
+        </if>
+        <if test="queryPayManagerVo.payTypeName != null and queryPayManagerVo.payTypeName != '' ">
+
+                and pay.PAY_TYPE_NAME IN (#{queryPayManagerVo.payTypeName})
+
+
+        </if>
+        <if test="queryPayManagerVo.applyUserName != null and queryPayManagerVo.applyUserName != ''">
+            and pay.apply_user_name like #{queryPayManagerVo.applyUserName}
+        </if>
+        <if test="queryPayManagerVo.startAmt != null and queryPayManagerVo.startAmt != ''">
+            and pay.pay_amt &gt; {queryPayManagerVo.startAmt}
+        </if>
+        <if test="queryPayManagerVo.endAmt != null and queryPayManagerVo.endAmt != ''">
+            and pay.pay_amt &lt; #{queryPayManagerVo.endAmt}
+        </if>
+        <if test="queryPayManagerVo.receName != null and queryPayManagerVo.receName != ''">
+            and pay.rece_Name like #{queryPayManagerVo.receName}
+        </if>
+        <if test="queryPayManagerVo.receBankNo != null and queryPayManagerVo.receBankNo != ''">
+            and pay.rece_Bank_No like #{queryPayManagerVo.receBankNo}
+        </if>
+        order by pay.pay_Id desc
+    </select>
+
+    <select id="countOnFlowPayoutInfo" resultType="java.lang.Long">
+        SELECT count(1) FROM payout_intf where 1=1
+        <if test="type==1">
+            AND pingan_collect_acct_id = #{accNo}
+        </if>
+        <if test="type==1">
+            AND pay_acc_no = #{accNo}
+        </if>
+        <if test="type!=''">
+            AND (pingan_collect_acct_id = #{accNo} OR pay_acc_no = #{accNo})
+        </if>
+        <if test="txnTypes!=null and txnTypes.length>0">
+            and txn_type in
+            <foreach collection="txnTypes" index="index" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="respCodes!=null and respCodes.length>0">
+            and resp_code in
+            <foreach collection="respCodes" index="index" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        <if test="subjectsId!=null and subjectsId &gt; 0">
+            AND subjects_id = #{subjectsId}
+        </if>
+    </select>
+    <select id="selectSum" resultType="java.lang.Long">
+        SELECT sum(TXN_AMT) amount FROM payout_intf WHERE user_id=#{userId} AND SUBJECTS_ID IN (1611) AND RESP_CODE is NULL
+        <if test="userType !=null and userType > 0">
+            AND USER_TYPE=#{userType}
+         </if>
+        <if test="payUserType !=null and payUserType > 0">
+            AND PAY_USER_TYPE=#{payUserType}
+        </if>
+    </select>
+    <select id="selectSums" resultType="java.lang.Long">
+        SELECT sum(TXN_AMT) amount FROM payout_intf WHERE user_id=#{userId} AND SUBJECTS_ID IN (1816) AND RESP_CODE is NULL and  user_id=PAY_OBJ_ID and VERIFICATION_STATE!=2
+        <if test="userType !=null and userType > 0">
+            AND USER_TYPE=#{userType}
+        </if>
+        <if test="payUserType !=null and payUserType > 0">
+            AND PAY_USER_TYPE=#{payUserType}
+        </if>
+    </select>
+    <select id="selectOr" resultType="java.lang.Long">
+        SELECT IFNULL(SUM(txn_Amt),0) FROM payout_intf p WHERE 1=1
+        <if test="userId != null and userId != ''">
+            AND user_id =#{userId}
+        </if>
+        <if test="userType != null and userType != ''">
+            AND user_type =#{userType}
+        </if>
+        AND resp_code =6
+    </select>
+</mapper>

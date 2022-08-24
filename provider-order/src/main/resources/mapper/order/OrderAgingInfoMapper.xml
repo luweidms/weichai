@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderAgingInfoMapper">
+
+    <select id="queryOrderAgingQuery" resultType="com.youming.youche.order.dto.OrderAgingInfoDto">
+       select * from(
+        SELECT
+        o.`ORDER_ID` AS orderId,
+        s.`ARRIVE_TIME` AS arriveTime,
+        o.`ORDER_TYPE` AS orderType,
+        o.`ORDER_STATE` AS orderState,
+        s.source_Id AS sourceId,
+        g.`COMPANY_NAME` AS companyName,
+        o.`SOURCE_REGION` AS sourceRegion,
+        o.`DES_REGION` AS desRegion,
+        s.`DEPEND_TIME` AS dependTime,
+        s.`PLATE_NUMBER` AS plateNumber,
+        a.id AS agingId,
+        a.ORDER_START_DATE AS orderStartDate,
+        a.ORDER_ARRIVE_DATE AS orderArriveDate,
+        a.ARRIVE_TIME AS arriveHour,
+        a.fine_Price AS finePrice,
+        a.AUDIT_STS AS auditState,
+        1 AS selectType ,- 1 AS appealId
+        FROM
+        `order_aging_info` a,
+        order_info o
+        LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+        order_goods g,
+        `order_scheduler` s
+        <where>
+            a.order_id = o.`ORDER_ID`
+            AND o.`ORDER_ID` = g.`ORDER_ID`
+            AND o.`ORDER_ID` = s.`ORDER_ID`
+            AND (
+            a.AUDIT_STS =0
+            OR a.AUDIT_STS =1
+            )
+            <if test="orderAgingListInVo.auditState != null and orderAgingListInVo.auditState &gt; 0">
+                and a.AUDIT_STS = #{orderAgingListInVo.auditState}
+            </if>
+            <if test="orderAgingListInVo.todo != null and orderAgingListInVo.todo">
+                <choose>
+                    <when test="orderAgingListInVo.agingIds != null and orderAgingListInVo.agingIds.size &gt; 0">
+                        and a.Id in
+                        <foreach collection="orderAgingListInVo.agingIds" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        and a.Id in  (-1)
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="orderAgingListInVo.companyName != null and orderAgingListInVo.companyName != ''">
+                and g.`COMPANY_NAME` like CONCAT('%',#{orderAgingListInVo.companyName},'%')
+            </if>
+            <if test="orderAgingListInVo.plateNumber != null and orderAgingListInVo.plateNumber != ''">
+                and s.`PLATE_NUMBER` like CONCAT('%',#{orderAgingListInVo.plateNumber},'%')
+            </if>
+            <if test="orderAgingListInVo.opName != null and orderAgingListInVo.opName != ''">
+                and o.`OP_NAME` = #{orderAgingListInVo.opName}
+            </if>
+            <if test="orderAgingListInVo.orderId != null and orderAgingListInVo.orderId &gt; 0">
+                and o.`ORDER_ID` = #{orderAgingListInVo.orderId}
+            </if>
+            <if test="orderAgingListInVo.orgId != null and orderAgingListInVo.orgId &gt; 0">
+                and o.`ORG_ID` = #{orderAgingListInVo.orgId}
+            </if>
+            <if test="orderAgingListInVo.hasAllData != null and !orderAgingListInVo.hasAllData">
+                <choose>
+                    <when test="orderAgingListInVo.orgIdList != null and orderAgingListInVo.orgIdList.size > 0">
+                        and o.ORG_ID in
+                        <foreach collection="orderAgingListInVo.orgIdList" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        and o.ORG_ID in  (-1)
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="orderAgingListInVo.orderState != null and orderAgingListInVo.orderState &gt; 0">
+                and o.`ORDER_STATE` = #{orderAgingListInVo.orderState}
+            </if>
+            <if test="orderAgingListInVo.orderType != null and orderAgingListInVo.orderType &gt; 0">
+                and o.`ORDER_TYPE` = #{orderAgingListInVo.orderType}
+            </if>
+            <if test="orderAgingListInVo.desRegion != null and orderAgingListInVo.desRegion &gt; 0">
+                AND ( o.DES_REGION =#{orderAgingListInVo.desRegion} or t.REGION = #{orderAgingListInVo.desRegion} )
+            </if>
+            <if test="orderAgingListInVo.sourceRegion != null and orderAgingListInVo.sourceRegion &gt; 0">
+                AND (o.SOURCE_REGION =#{orderAgingListInVo.sourceRegion} or t.REGION = #{orderAgingListInVo.desRegion} )
+            </if>
+            <if test="orderAgingListInVo.beginDependTime != null and orderAgingListInVo.beginDependTime != '' ">
+               and s.DEPEND_TIME <![CDATA[ >= ]]>   #{orderAgingListInVo.beginDependTime}
+            </if>
+            <if test="orderAgingListInVo.endDependTime != null and orderAgingListInVo.endDependTime != ''">
+               and s.DEPEND_TIME  <![CDATA[ <= ]]>  #{orderAgingListInVo.endDependTime}
+            </if>
+            and o.TENANT_ID = #{tenantId}
+        </where>
+        <if test="isAgingAppeal and isAging">
+            UNION
+        </if>
+        <if test="isAgingAppeal">
+            SELECT
+            o.`ORDER_ID` AS orderId,
+            s.`ARRIVE_TIME` AS arriveTime,
+            o.`ORDER_TYPE` AS orderType,
+            o.`ORDER_STATE` AS orderState,
+            s.source_Id AS sourceId,
+            g.`COMPANY_NAME` AS companyName,
+            o.`SOURCE_REGION` AS sourceRegion,
+            o.`DES_REGION` AS desRegion,
+            s.`DEPEND_TIME` AS dependTime,
+            s.`PLATE_NUMBER` AS plateNumber,
+            a.id AS agingId,
+            a.ORDER_START_DATE AS orderStartDate,
+            a.ORDER_ARRIVE_DATE AS orderArriveDate,
+            a.ARRIVE_TIME AS arriveHour,
+            a.fine_Price AS finePrice,
+            ap.AUDIT_STS AS auditState,
+            2 AS selectType,
+            ap.id AS appealId
+            FROM
+            `order_aging_info` a,
+            order_aging_appeal_info ap,
+            order_info o
+            LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+            order_goods g,
+            `order_scheduler` s
+            <where>
+                a.order_id = o.`ORDER_ID`
+                AND o.`ORDER_ID` = g.`ORDER_ID`
+                AND o.`ORDER_ID` = s.`ORDER_ID`
+                AND a.`ID` = ap.AGING_ID
+                AND ap.AUDIT_STS in (0,1)
+                AND a.AUDIT_STS =3
+               <if test="orderAgingListInVo.auditState != null and orderAgingListInVo.auditState &gt;= 0">
+                   and ap.AUDIT_STS = #{orderAgingListInVo.auditState}
+               </if>
+               <if test="orderAgingListInVo.todo != null and orderAgingListInVo.todo">
+                   <choose>
+                       <when test="orderAgingListInVo.appealIds != null  and  orderAgingListInVo.appealIds.size &gt; 0">
+                           and ap.id in
+                           <foreach collection="orderAgingListInVo.appealIds" item="item" open="(" separator="," close=")">
+                               #{item}
+                           </foreach>
+                       </when>
+                       <otherwise>
+                           and ap.id in   (-1)
+                       </otherwise>
+                   </choose>
+               </if>
+                <if test="orderAgingListInVo.companyName != null and orderAgingListInVo.companyName != ''">
+                    and g.`COMPANY_NAME` like CONCAT('%',#{orderAgingListInVo.companyName},'%')
+                </if>
+                <if test="orderAgingListInVo.plateNumber != null and orderAgingListInVo.plateNumber != ''">
+                    and s.`PLATE_NUMBER` like CONCAT('%',#{orderAgingListInVo.plateNumber},'%')
+                </if>
+                <if test="orderAgingListInVo.opName != null and orderAgingListInVo.opName != ''">
+                    and o.`OP_NAME` = #{orderAgingListInVo.opName}
+                </if>
+                <if test="orderAgingListInVo.orderId != null and orderAgingListInVo.orderId &gt; 0">
+                    and o.`ORDER_ID` = #{orderAgingListInVo.orderId}
+                </if>
+                <if test="orderAgingListInVo.orgId != null and orderAgingListInVo.orgId &gt; 0">
+                    and o.`ORG_ID` = #{orderAgingListInVo.orgId}
+                </if>
+                <if test="orderAgingListInVo.hasAllData != null and !orderAgingListInVo.hasAllData">
+                    <choose>
+                        <when test="orderAgingListInVo.orgIdList != null and orderAgingListInVo.orgIdList.size &gt; 0">
+                            and o.ORG_ID in
+                            <foreach collection="orderAgingListInVo.orgIdList" item="item" open="(" separator="," close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            and o.ORG_ID in   (-1)
+                        </otherwise>
+                    </choose>
+                </if>
+                <if test="orderAgingListInVo.orderState != null and orderAgingListInVo.orderState &gt; 0">
+                    and o.`ORDER_STATE` = #{orderAgingListInVo.orderState}
+                </if>
+                <if test="orderAgingListInVo.orderType != null and orderAgingListInVo.orderType &gt; 0">
+                    and o.`ORDER_TYPE` = #{orderAgingListInVo.orderType}
+                </if>
+                <if test="orderAgingListInVo.desRegion != null and orderAgingListInVo.desRegion &gt; 0">
+                    AND ( o.DES_REGION = #{orderAgingListInVo.desRegion} or t.REGION = #{orderAgingListInVo.desRegion} )
+                </if>
+                <if test="orderAgingListInVo.sourceRegion != null and orderAgingListInVo.sourceRegion &gt; 0">
+                    AND (o.SOURCE_REGION =#{orderAgingListInVo.sourceRegion} or t.REGION = #{orderAgingListInVo.desRegion} )
+                </if>
+                <if test="orderAgingListInVo.beginDependTime != null and orderAgingListInVo.beginDependTime != '' ">
+                    and s.DEPEND_TIME  <![CDATA[ >= ]]>   #{orderAgingListInVo.beginDependTime}
+                </if>
+                <if test="orderAgingListInVo.endDependTime != null and orderAgingListInVo.endDependTime != ''">
+                    and s.DEPEND_TIME <![CDATA[ <= ]]>   #{orderAgingListInVo.endDependTime}
+                </if>
+                and o.TENANT_ID = #{tenantId}
+            </where>
+        </if>
+        ) tmp GROUP BY
+        tmp.orderId
+        ORDER BY
+        tmp.dependTime DESC
+    </select>
+    <select id="queryOrderAgingList" resultType="com.youming.youche.order.dto.QueryAuditAgingDto">
+        SELECT
+            order_id AS orderId,
+            `SOURCE_REGION` AS sourceRegion,
+            `DES_REGION` AS desRegion,
+            `ARRIVE_TIME` AS arriveTime,
+            `ARRIVE_HOUR` AS arriveHour,
+            `FINE_PRICE` AS finePrice,
+           `ORDER_START_DATE` AS orderStartDate,
+           `ORDER_ARRIVE_DATE` AS orderArriveDate,
+            oai.`AUDIT_STS` AS agingSts,
+            oaai.AUDIT_STS AS appealSts,
+            user_id AS userId,
+            user_name AS userName,
+            user_phone AS userPhone,
+            oai.id AS agingId,
+            oaai.id AS appealId,
+            oai.line_Node AS lineNode
+        FROM
+            `order_aging_info` oai
+                LEFT JOIN `order_aging_appeal_info` oaai ON oaai.aging_id = oai.id
+        <where>
+            <if test="orderId != null and orderId &gt; 0">
+                and order_Id= #{orderId}
+            </if>
+            <if test="state != null and state &gt; 0">
+                and oai.`AUDIT_STS`=#{state}
+            </if>
+        </where>
+    </select>
+
+    <select id="getTableInvalidExamineCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_id) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( * )
+        FROM
+        (
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        o.`ORDER_ID` AS orderId,
+        s.`ARRIVE_TIME` AS arriveTime,
+        o.`ORDER_TYPE` AS orderType,
+        o.`ORDER_STATE` AS orderState,
+        s.source_Id AS sourceId,
+        g.`COMPANY_NAME` AS companyName,
+        o.`SOURCE_REGION` AS sourceRegion,
+        o.`DES_REGION` AS desRegion,
+        s.`DEPEND_TIME` AS dependTime,
+        s.`PLATE_NUMBER` AS plateNumber,
+        a.id AS agingId,
+        a.ORDER_START_DATE AS orderStartDate,
+        a.ORDER_ARRIVE_DATE AS orderArriveDate,
+        a.ARRIVE_TIME AS arriveHour,
+        a.fine_Price AS finePrice,
+        a.AUDIT_STS AS auditState,
+        1 AS selectType,
+        - 1 AS appealId
+        FROM
+        `order_aging_info` a,
+        order_info o
+        LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+        order_goods g,
+        `order_scheduler` s
+        WHERE
+        a.order_id = o.`ORDER_ID`
+        AND o.`ORDER_ID` = g.`ORDER_ID`
+        AND o.`ORDER_ID` = s.`ORDER_ID`
+        AND ( a.AUDIT_STS = 0 OR a.AUDIT_STS = 1 )
+        AND a.Id IN (
+        SELECT
+        busi_id
+        FROM
+        Audit_Node_Inst i,
+        audit_user u
+        WHERE
+        u.target_Obj_Id = s.user_info_id
+        AND u.node_id = i.node_id
+        AND i.AUDIT_CODE IN ( 300004, 300005 )
+        AND i.TENANT_ID = ifnull(std.id, s.tenant_id)
+        AND i.AUDIT_RESULT = 0
+        )
+        AND o.TENANT_ID = ifnull(std.id, s.tenant_code) UNION
+        SELECT
+        o.`ORDER_ID` AS orderId,
+        s.`ARRIVE_TIME` AS arriveTime,
+        o.`ORDER_TYPE` AS orderType,
+        o.`ORDER_STATE` AS orderState,
+        s.source_Id AS sourceId,
+        g.`COMPANY_NAME` AS companyName,
+        o.`SOURCE_REGION` AS sourceRegion,
+        o.`DES_REGION` AS desRegion,
+        s.`DEPEND_TIME` AS dependTime,
+        s.`PLATE_NUMBER` AS plateNumber,
+        a.id AS agingId,
+        a.ORDER_START_DATE AS orderStartDate,
+        a.ORDER_ARRIVE_DATE AS orderArriveDate,
+        a.ARRIVE_TIME AS arriveHour,
+        a.fine_Price AS finePrice,
+        ap.AUDIT_STS AS auditState,
+        2 AS selectType,
+        ap.id AS appealId
+        FROM
+        `order_aging_info` a,
+        order_aging_appeal_info ap,
+        order_info o
+        LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+        order_goods g,
+        `order_scheduler` s
+        WHERE
+        a.order_id = o.`ORDER_ID`
+        AND o.`ORDER_ID` = g.`ORDER_ID`
+        AND o.`ORDER_ID` = s.`ORDER_ID`
+        AND a.`ID` = ap.AGING_ID
+        AND ap.AUDIT_STS = 0
+        AND a.AUDIT_STS = 3
+        AND ap.id IN ( - 1 )
+        AND o.TENANT_ID = ifnull(std.id, s.tenant_id)
+        ) tmp
+        GROUP BY
+        tmp.orderId
+        ORDER BY
+        tmp.dependTime DESC
+        ) TOTAL
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="getStatisticsStatuteOfLimitations" resultType="java.lang.Integer">
+        SELECT
+            count( tmp.orderid )
+        FROM
+            (
+            SELECT
+                o.`order_id` AS orderid
+            FROM
+                `order_aging_info` a,
+                order_info o
+                LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+                order_goods g,
+                `order_scheduler` s
+            WHERE
+                a.order_id = o.`order_id`
+                AND o.`order_id` = g.`order_id`
+                AND o.`order_id` = s.`order_id`
+                AND ( a.audit_sts = 0 OR a.audit_sts = 1 )
+                <if test="agingIdStr != null and agingIdStr != ''">
+                    AND a.id IN ( ${agingIdStr} )
+                </if>
+                AND o.tenant_id = #{tenantId}  UNION
+            SELECT
+                o.`order_id` AS orderid
+            FROM
+                `order_aging_info` a,
+                order_aging_appeal_info ap,
+                order_info o
+                LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+                order_goods g,
+                `order_scheduler` s
+            WHERE
+                a.order_id = o.`order_id`
+                AND o.`order_id` = g.`order_id`
+                AND o.`order_id` = s.`order_id`
+                AND a.`id` = ap.aging_id
+                AND ap.audit_sts = 0
+                AND a.audit_sts = 3
+                <if test="appealIdStr != null and appealIdStr != ''">
+                    AND ap.id IN ( ${appealIdStr} )
+                </if>
+            AND o.tenant_id = #{tenantId}
+            ) tmp
+    </select>
+
+</mapper>

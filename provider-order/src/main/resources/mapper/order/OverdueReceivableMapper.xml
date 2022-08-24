@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OverdueReceivableMapper">
+
+    <!--统计应收逾期总额-->
+    <select id="sumOverdueReceivable" resultType="com.youming.youche.finance.dto.OverdueReceivableDto">
+        SELECT
+        orb.id as flowId,
+        orb.order_id as orderId,
+        orb.source_region as sourceRegion,
+        orb.des_region AS desRegion,
+        orb.admin_user_id as userId,
+        orb.txn_amt - ifnull(ofeh.income_insurance_fee,0) - ifnull(ofeh.income_oil_virtual_fee,0) -
+        ifnull(ofeh.income_oil_fee,0) as txnAmt,
+        orb.pay_confirm as payConfirm,
+        DATE_FORMAT(orb.depend_time,'%Y-%m-%d') as carDependDate,
+        DATE_FORMAT(orb.depend_time,'%Y-%m-%d %H:%i:%s') AS dependTime,
+        ifnull(orb.name,std.name) as name,
+        if(paid > 0,orb.paid - ifnull(ofeh.income_insurance_fee,0) - ifnull(ofeh.income_oil_virtual_fee,0) -
+        ifnull(ofeh.income_oil_fee,0),0) as paid,
+        orb.type as type,
+        DATE_FORMAT(ifnull(opdi.create_time,opdih.create_time),'%Y-%m-%d') as createTime,
+        DATE_FORMAT(orb.create_time,'%Y-%m-%d') as updateTime,
+        ifnull(opdi.balance_type,opdih.balance_type) as balanceType,
+        ifnull(opdi.collection_month,opdih.collection_month) AS collectionMonth,
+        ifnull(opdi.collection_time,opdih.collection_time) AS collectionTime,
+        ifnull(opdi.collection_day,opdih.collection_day) as collectionDay
+        FROM
+        overdue_receivable as orb
+        LEFT JOIN order_info_h oih
+        ON orb.order_id = oih.order_id
+        LEFT JOIN order_payment_days_info opdi
+        ON opdi.order_id = orb.order_id
+        LEFT JOIN order_payment_days_info_h opdih
+        ON orb.order_id = opdih.order_id
+        left join sys_tenant_def std
+        on std.id = orb.tenant_id
+        left join order_fee_ext_h ofeh
+        on ofeh.order_id = orb.order_id and orb.type = 1
+        WHERE
+        orb.tenant_id = #{tenantId}
+        AND
+        (opdi.payment_days_type = 2 or opdih.payment_days_type = 2)
+        <if test="name != null and name != ''">
+            AND orb.name = #{name}
+        </if>
+        <if test="adminUserId != null and adminUserId != ''">
+            AND orb.admin_user_id = #{adminUserId}
+        </if>
+        <if test="type != null">
+            AND orb.type = #{type}
+        </if>
+        <if test="flag != null">
+            and orb.`type` = 1
+            and admin_user_id is not null
+            group by orb.admin_user_id
+        </if>
+
+
+    </select>
+
+
+    <select id="sumOverduePayable" resultType="com.youming.youche.finance.dto.OverdueReceivableDto">
+        select
+            std.admin_user as userId,std.name
+        from
+        payout_intf p left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        left join order_scheduler sc on sc.order_id = p.ORDER_ID
+        left join sys_tenant_def std on p.user_id = std.admin_user
+        where
+        p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and IF(p.busi_id in (21000002, 22000028),
+        DATE_FORMAT(now(),'%Y-%m-%d') >
+        ifnull(
+        DATE_FORMAT(
+        (
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info_h
+        WHERE
+        order_id = p.order_id and payment_days_type = 1 union all
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info
+        WHERE
+        order_id = p.order_id and payment_days_type = 1
+        ), '%Y-%m-%d' ),now())
+        , 1 = 1)
+        and p.busi_id in (22000028, 21000002, 21000003, 22000038)
+        and p.PAY_TENANT_ID = #{tenantId}
+        and p.pay_user_type= 6
+        and sc.appoint_way = 5
+        union
+        select
+        std.admin_user as userId,std.name
+        from
+        payout_intf p left join order_op_record oor on p.ORDER_ID = oor.order_id and oor.op_type = 8
+        left join payout_intf_expansion e on p.id = e.FLOW_ID
+        left join user_data_info u on p.user_id = u.id
+        left join order_scheduler_h sc on sc.order_id = p.ORDER_ID
+        left join sys_tenant_def std on p.user_id = std.admin_user
+        where
+        p.TXN_TYPE=200 AND (p.RESP_CODE!=5 or p.RESP_CODE IS NULL)
+        and (p.IS_AUTOMATIC!=1 or p.VERIFICATION_STATE!=2)
+        and IF(p.busi_id in (21000002, 22000028),
+        DATE_FORMAT(now(),'%Y-%m-%d') >
+        ifnull(
+        DATE_FORMAT(
+        (
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info_h
+        WHERE
+        order_id = p.order_id and payment_days_type = 1 union all
+        SELECT
+        case when balance_type = 1 or balance_type = 2
+        then
+        ADDDATE(oor.create_time, INTERVAL ifnull(collection_time,0) DAY)
+        WHEN balance_type = 3
+        then
+        date_format(ADDDATE(oor.create_time,INTERVAL ifnull(collection_month,0) MONTH), REPLACE('%Y-%m-%d
+        %h:%i:%s','%d',ifnull(collection_day, 1)))
+        end as formatTime
+        FROM
+        order_payment_days_info
+        WHERE
+        order_id = p.order_id and payment_days_type = 1
+        ), '%Y-%m-%d' ),now())
+        , 1 = 1)
+        and p.busi_id in (22000028, 21000002, 21000003, 22000038)
+        and p.PAY_TENANT_ID = #{tenantId}
+        and p.pay_user_type= 6
+        and sc.appoint_way = 5
+    </select>
+
+
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderOilSourceMapper">
+
+    <select id="queryDriverOilByOrderId" resultType="com.youming.youche.order.vo.QueryDriverOilByOrderIdVo">
+        SELECT sum(IFNULL(source_amount,0)) as sourceAmountSum,
+               user_id
+        FROM  order_oil_source
+        where 1=1
+        <if test="orderId != null and orderId &gt; 0">
+            AND order_id!= #{orderId}
+        </if>
+        <if test="userType != null and userType &gt; 0">
+            AND user_type!= #{userType}
+        </if>
+    </select>
+</mapper>

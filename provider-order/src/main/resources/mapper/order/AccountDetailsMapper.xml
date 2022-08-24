@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.AccountDetailsMapper">
+
+    <select id="queryAccountDetailsMerge" resultType="com.youming.youche.order.domain.order.AccountDetails">
+        select
+        a.ACCOUNT_ID,a.CREATE_TIME,NOTE,ETC_NUMBER,IS_OIL_PAY,IS_REPORTED,REPORT_DATE,HAPPEN_DATE,a.update_time,UPDATE_OP_ID,OP_ID,USER_TYPE,
+        a.CURRENT_AMOUNT,sum(ifnull(a.CURRENT_AMOUNT, 0)) as CURRENT_AMOUNT,
+        a.DEBT_AMOUNT,sum(ifnull(a.DEBT_AMOUNT, 0)) as DEBT_AMOUNT,
+        a.TRANSFER_AMOUNT,sum(ifnull(a.TRANSFER_AMOUNT, 0)) as TRANSFER_AMOUNT,
+        a.REPORT_AMOUNT,sum(ifnull(a.REPORT_AMOUNT, 0)) as REPORT_AMOUNT,
+        a.CURRENT_DEBT_AMOUNT,sum(ifnull(a.CURRENT_DEBT_AMOUNT, 0)) as CURRENT_DEBT_AMOUNT,
+        a.ID,a.USER_ID,a.BUSINESS_TYPES,a.BUSINESS_NUMBER,a.SUBJECTS_ID,
+        a.SUBJECTS_NAME,sum(ifnull(a.AMOUNT, 0)) as AMOUNT,a.COST_TYPE,
+        a.SO_NBR,a.ORDER_ID,a.OTHER_USER_ID,a.OTHER_NAME,a.BOOK_TYPE,a.TENANT_ID,a.PLATE_NUMBER,a.PAY_WAY,a.VEHICLE_AFFILIATION
+        from account_details_${appAccountDetailsVo.month} a,sys_static_data b
+        where a.SUBJECTS_ID = b.CODE_VALUE and b.CODE_TYPE = 'APP_ACCOUNT_DETAILS_OUT' and AMOUNT != 0
+        and a.USER_ID = #{appAccountDetailsVo.userId}
+<!--        <if test="userType != null and userType>0">-->
+<!--            and a.user_type = #{userType}-->
+<!--        </if>-->
+        <if test="appAccountDetailsVo.type!=null and appAccountDetailsVo.type!=0">
+            and a.COST_TYPE = #{appAccountDetailsVo.type}
+        </if>
+        group by SO_NBR, SUBJECTS_ID, user_type
+        order by a.CREATE_TIME desc
+    </select>
+    <select id="getAliasName" resultType="java.util.Map">
+        SELECT SERVICE_NAME as name FROM service_info WHERE ID=#{userId}
+        UNION SELECT NAME as name FROM sys_tenant_def WHERE ADMIN_USER=#{userId}
+        UNION SELECT LINKMAN as name FROM user_data_info WHERE ID=#{userId}
+        LIMIT 1
+    </select>
+
+    <select id="tableIsExist" resultType="java.lang.Integer">
+        select count(1) from information_schema.TABLES where table_schema = 'youche' and TABLE_NAME = #{tableName}
+    </select>
+
+    <insert id="createTable">
+        create table ${tableName} like account_details
+    </insert>
+
+    <select id="selectTable" resultType="com.youming.youche.order.domain.order.AccountDetails">
+        select * from ${tableName} where id = #{id}
+    </select>
+
+    <select id="showTableName" resultType="java.lang.String" parameterType="java.lang.String">
+        SHOW TABLES LIKE ${tableName};
+    </select>
+
+    <insert id="insertTable">
+        INSERT INTO ${tableName}
+        (account_id,   amount,   book_type,  business_number, business_types, cost_type, create_time, current_amount,      current_debt_amount, debt_amount, etc_number, happen_date,   is_oil_pay, is_reported, note, op_id,   order_id,    other_name, other_user_id, pay_way, plate_number,        report_amount, report_date, so_nbr, subjects_id,         subjects_name, tenant_id, transfer_amount, update_time, update_op_id,        user_id, user_type, vehicle_affiliation )
+        VALUES
+        (#{details.accountId},#{details.amount},#{details.bookType},#{details.businessNumber},#{details.businessTypes},#{details.costType},#{details.createTime},#{details.currentAmount},#{details.currentDebtAmount},#{details.debtAmount},#{details.etcNumber},#{details.happenDate},#{details.isOilPay},#{details.isReported},#{details.note},#{details.opId},#{details.orderId},#{details.otherName}, #{details.otherUserId}, #{details.payWay}, #{details.plateNumber}, #{details.reportAmount}, #{details.reportDate}, #{details.soNbr}, #{details.subjectsId}, #{details.subjectsName}, #{details.tenantId}, #{details.transferAmount}, #{details.updateTime}, #{details.updateOpId}, #{details.userId}, #{details.userType}, #{details.vehicleAffiliation})
+    </insert>
+
+    <update id="updateTable">
+        update ${tableName}
+        <set>
+            <if test="details.accountId != null">
+                account_id = #{details.accountId}
+            </if>
+            <if test="details.amount != null">
+                amount = #{details.amount}
+            </if>
+            <if test="details.bookType != null">
+                book_type = #{details.bookType}
+            </if>
+            <if test="details.businessNumber != null">
+                business_number = #{details.businessNumber}
+            </if>
+            <if test="details.businessTypes != null">
+                business_types = #{details.businessTypes}
+            </if>
+            <if test="details.costType != null">
+                cost_type = #{details.costType}
+            </if>
+            <if test="details.createTime != null">
+                create_time = #{details.createTime}
+            </if>
+            <if test="details.currentAmount != null">
+                current_amount = #{details.currentAmount}
+            </if>
+            <if test="details.currentDebtAmount != null">
+                current_debt_amount = #{details.currentDebtAmount}
+            </if>
+            <if test="details.debtAmount != null">
+                debt_amount = #{details.debtAmount}
+            </if>
+            <if test="details.etcNumber != null and details.etcNumber != ''">
+                etc_number = #{details.etcNumber}
+            </if>
+            <if test="details.happenDate != null">
+                happen_date = #{details.happenDate}
+            </if>
+            <if test="details.isOilPay != null">
+                is_oil_pay = #{details.isOilPay}
+            </if>
+            <if test="details.isReported != null">
+                is_reported = #{details.isReported}
+            </if>
+            <if test="details.note != null and details.note != ''">
+                note = #{details.note}
+            </if>
+            <if test="details.opId != null">
+                op_id = #{details.opId}
+            </if>
+            <if test="details.orderId != null">
+                order_id = #{details.orderId}
+            </if>
+            <if test="details.otherName != null and details.otherName != ''">
+                other_name = #{details.otherName}
+            </if>
+            <if test="details.otherUserId != null">
+                other_user_id = #{details.otherUserId}
+            </if>
+            <if test="details.payWay != null and details.payWay != ''">
+                pay_way = #{details.payWay}
+            </if>
+            <if test="details.plateNumber != null and details.plateNumber != ''">
+                plate_number = #{details.plateNumber}
+            </if>
+            <if test="details.reportAmount != null">
+                report_amount = #{details.reportAmount}
+            </if>
+            <if test="details.reportDate != null">
+                report_date = #{details.reportDate}
+            </if>
+            <if test="details.soNbr != null">
+                so_nbr = #{details.soNbr}
+            </if>
+            <if test="details.subjectsId != null">
+                subjects_id = #{details.subjectsId}
+            </if>
+            <if test="details.subjectsName != null and details.subjectsName != ''">
+                subjects_name = #{details.subjectsName}
+            </if>
+            <if test="details.tenantId != null">
+                tenant_id = #{details.tenantId}
+            </if>
+            <if test="details.transferAmount != null">
+                transfer_amount = #{details.transferAmount}
+            </if>
+            <if test="details.updateTime != null">
+                update_time = #{details.updateTime}
+            </if>
+            <if test="details.updateOpId != null">
+                update_op_id = #{details.updateOpId}
+            </if>
+            <if test="details.userId != null">
+                user_id = #{details.userId}
+            </if>
+            <if test="details.userType != null">
+                user_type = #{details.userType}
+            </if>
+            <if test="details.vehicleAffiliation != null and details.vehicleAffiliation != ''">
+                vehicle_affiliation = #{details.vehicleAffiliation}
+            </if>
+        </set>
+        where id = #{details.id}
+    </update>
+</mapper>

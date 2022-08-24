@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.ClaimExpenseCategoryMapper">
+    <select id="selectOr" resultType="com.youming.youche.finance.dto.DriverWxDto">
+        SELECT ol.pledgeOilcardFee,base.* FROM (select ORDER_ID,sum(ifnull(PLEDGE_OILCARD_FEE,0)) as pledgeOilcardFee
+        FROM order_limit where 1 = 1
+        <choose>
+            <when test="userId != null">
+                AND USER_ID=#{userId}
+            </when>
+            <otherwise>
+                AND USER_ID=#{tenantUserId}
+            </otherwise>
+        </choose>
+        <if test="userId != null">
+            AND TENANT_ID=#{tenantId}
+        </if>
+        AND PLEDGE_OILCARD_FEE>0 GROUP BY ORDER_ID) ol left join
+        (SELECT driver.*,team.name
+        FROM (SELECT oi.ORDER_ID as orderId,os.DEPEND_TIME as dependTime
+        ,oi.SOURCE_REGION as sourceRegion
+        ,(SELECT Name FROM city WHERE ID=oi.SOURCE_REGION) as sourceRegionName
+        ,oi.DES_REGION as desRegion
+        ,(SELECT Name FROM city WHERE ID=oi.DES_REGION) as desRegionName
+        ,os.CAR_DRIVER_PHONE as carDriverPhone,os.CAR_DRIVER_MAN as carDriverName,os.PLATE_NUMBER as
+        plateNumber,os.CAR_DRIVER_ID
+        FROM order_info oi,order_scheduler os WHERE oi.ORDER_ID=os.ORDER_ID and oi.TENANT_ID in (select TENANT_ID FROM
+        order_limit
+        where
+        1=1
+        <choose>
+            <when test="userId != null">
+                AND USER_ID=#{userId}
+            </when>
+            <otherwise>
+                AND USER_ID=#{tenantUserId}
+            </otherwise>
+        </choose>
+        AND PLEDGE_OILCARD_FEE>0 GROUP BY ORDER_ID)
+        UNION
+        SELECT oi.ORDER_ID as orderId,os.DEPEND_TIME as dependTime
+        ,oi.SOURCE_REGION as sourceRegion
+        ,(SELECT Name FROM city WHERE ID=oi.SOURCE_REGION) as sourceRegionName
+        ,oi.DES_REGION as desRegion
+        ,(SELECT Name FROM city WHERE ID=oi.DES_REGION) as desRegionName
+        ,os.CAR_DRIVER_PHONE as carDriverPhone,os.CAR_DRIVER_MAN as carDriverName,os.PLATE_NUMBER as
+        plateNumber,os.CAR_DRIVER_ID
+        FROM order_info_h oi,order_scheduler_h os WHERE oi.ORDER_ID=os.ORDER_ID and oi.TENANT_ID in (select TENANT_ID
+        FROM order_limit
+        where
+        1=1
+        <choose>
+            <when test="userId != null">
+                AND USER_ID=#{userId}
+            </when>
+            <otherwise>
+                AND USER_ID=#{tenantUserId}
+            </otherwise>
+        </choose>
+        AND PLEDGE_OILCARD_FEE>0 GROUP BY ORDER_ID)
+        ) driver
+        LEFT JOIN (SELECT a.DRIVER_USER_ID,ifnull(b.NAME,'平台合作车') as name FROM vehicle_data_info a LEFT JOIN
+        sys_tenant_def b ON a.TENANT_ID=b.id) team ON driver.CAR_DRIVER_ID=team.DRIVER_USER_ID) base on
+        ol.ORDER_ID=base.orderId
+        WHERE 1=1
+        <if test="orderId != null and orderId != ''">
+            AND ol.ORDER_ID = #{orderId}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND base.dependTime &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND base.dependTime &lt; #{endTime}
+        </if>
+        <if test="sourceRegion != null and sourceRegion != ''">
+            AND base.sourceRegion = #{sourceRegion}
+        </if>
+        <if test="desRegion != null and desRegion != ''">
+            AND base.desRegion = #{desRegion}
+        </if>
+        <if test="name != null and name != ''">
+            AND base.name=#{name}
+        </if>
+        <if test="carDriverPhone != null and carDriverPhone != ''">
+            AND base.carDriverPhone=#{carDriverPhone}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND base.plateNumber=#{plateNumber}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderBillInvoiceMapper">
+
+    <select id="getReceiptNumbersByBillNumbers" resultType="java.util.Map">
+        SELECT
+            BILL_NUMBER AS billNumber,
+            GROUP_CONCAT( CONCAT( '[发票号:', i.RECEIPT_NUMBER, ',金额:', FORMAT( i.AMOUNT / 100, 2 ), ']' ) SEPARATOR ',' ) AS receiptNumbers,
+            COUNT(1) AS receiptNumber,
+            i.tenant_id
+        FROM
+            order_bill_invoice i
+        WHERE
+            BILL_NUMBER IN ( ${billNumbers} )
+        GROUP BY
+            BILL_NUMBER
+    </select>
+
+    <select id="queryBillReceipt" resultType="com.youming.youche.finance.dto.order.OrderBillInvoiceDto">
+        SELECT
+            id AS id,
+            receipt_number AS receiptnumber,
+            amount AS amount,
+            bill_number AS billnumber,
+            oper_id AS operid,
+            oper_date AS operdate,
+            tenant_id AS tenantid,
+            create_receipt_date AS createreceiptdate,
+            create_receipt_name AS createreceiptname
+        FROM
+            order_bill_invoice
+        WHERE
+            bill_number = #{billNumbers}
+            AND tenant_id = #{tenantId}
+    </select>
+
+    <delete id="deleteInvoiceRecordByBillNumber">
+        DELETE
+        FROM
+            order_bill_invoice
+        WHERE
+            bill_number = #{billNumber}
+            AND tenant_id = #{tenantId}
+    </delete>
+
+    <insert id="insertInvoiceRecord">
+        INSERT INTO order_bill_invoice ( receipt_number, amount, bill_number, oper_id,
+        oper_date, tenant_id, create_receipt_date, create_receipt_name )
+        VALUES
+            (#{orderBillInvoice.receiptNumber},#{orderBillInvoice.amount},#{orderBillInvoice.billNumber},
+            #{orderBillInvoice.operId},#{orderBillInvoice.operDate},#{orderBillInvoice.tenantId},
+            #{orderBillInvoice.createReceiptDate},#{orderBillInvoice.createReceiptName})
+    </insert>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.mycenter.BankAccountTranMapper">
+
+    <!--  获取用户支付密码  -->
+    <select id="selectPayPwd" resultType="String">
+        select acc_password from user_data_info where id=#{userId}
+    </select>
+
+    <!--  设置支付密码  -->
+    <update id="updatePayPwd">
+        update user_data_info set acc_password=#{pwd},mod_pwdtime=now() where id=#{userId}
+    </update>
+
+    <select id="getBankFlowDetailsToAppAndWx"
+            resultType="com.youming.youche.system.dto.mycenter.BankFlowDetailsAppOutDto">
+        select b.flow_id as flowId,b.tran_Date as tranDate,b.verification_code as verificationCode,
+               b.acct_name_out as acctNameOut,b.acct_no_out as acctNoOut,b.acct_name_in as acctNameIn,
+               b.acct_no_in as acctNoIn,b.tran_amount_str as tranAmountStr,b.tran_amount as tranAmount,
+               b.tran_state as tranState,b.bank_pre_flow_number as bankPreFlowNumber,b.tran_flow_number as tranFlowNumber,
+               b.flow_type as flowType,b.user_id_out as userIdOut,b.user_id_in as userIdIn,
+               b.acct_name_in_type as acctNameInType,b.acct_name_out_type as acctNameOutType,
+               r.receipt_code as receiptCode,r.receipt_url as receiptUrl
+        from bank_flow_details b
+        left join bank_flow_receipt r on b.flow_id=r.flow_id
+        where 1=1
+        <if test="bankFlowDetailsAppVo.month!=null and bankFlowDetailsAppVo.month!=''">
+            and DATE_FORMAT(b.TRAN_DATE, '%Y%m') =#{bankFlowDetailsAppVo.month}
+        </if>
+        <if test="bankFlowDetailsAppVo.userId!=null and bankFlowDetailsAppVo.userId>0">
+            and (b.USER_ID_OUT = #{bankFlowDetailsAppVo.userId} or b.USER_ID_IN = #{bankFlowDetailsAppVo.userId})
+        </if>
+        <if test="bankFlowDetailsAppVo.pinganAccIdList!=null and bankFlowDetailsAppVo.pinganAccIdList.size()>0">
+            and (b.ACCT_ID_OUT in
+                <foreach collection="bankFlowDetailsAppVo.pinganAccIdList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                or b.ACCT_ID_IN in
+                <foreach collection="bankFlowDetailsAppVo.pinganAccIdList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            )
+        </if>
+        <if test="bankFlowDetailsAppVo.queryType!=null and bankFlowDetailsAppVo.queryType!='' ">
+            <choose>
+                <when test="bankFlowDetailsAppVo.queryType==2">
+                    and (b.flow_type =#{bankFlowDetailsAppVo.flowType} or b.USER_ID_OUT != b.USER_ID_IN)
+                    <if test="bankFlowDetailsAppVo.userId!=null and bankFlowDetailsAppVo.userId>0">
+                        and b.USER_ID_OUT =#{bankFlowDetailsAppVo.userId}
+                    </if>
+                </when>
+                <when test="bankFlowDetailsAppVo.queryType==1">
+                    and (b.flow_type =#{bankFlowDetailsAppVo.flowType} or b.USER_ID_OUT != b.USER_ID_IN)
+                    <if test="bankFlowDetailsAppVo.userId!=null and bankFlowDetailsAppVo.userId>0">
+                        and b.USER_ID_OUT =#{bankFlowDetailsAppVo.userId}
+                    </if>
+                </when>
+            </choose>
+        </if>
+        order by b.TRAN_DATE desc limit 400
+
+    </select>
+</mapper>

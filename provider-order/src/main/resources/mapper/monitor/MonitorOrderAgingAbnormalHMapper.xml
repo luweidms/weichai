@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.monitor.MonitorOrderAgingAbnormalHMapper">
+
+    <select id="getValidityTrailerQuery" resultType="java.util.Map">
+        SELECT
+        a.id AS vehicleCode,
+        a.trailer_number AS plateNumber,
+        '6' AS vehicleClass,
+        ${fieldName} AS ${breifName}
+        FROM
+        trailer_management AS a
+        WHERE
+        a.tenant_id = #{tenantId}
+        AND ( ${fieldName} <![CDATA[ <=  ]]> #{expireDate}
+        OR ${fieldName} IS NULL )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND a.trailer_number = #{plateNumber}
+        </if>
+    </select>
+
+    <select id="getSearchVehicleQuery" resultType="java.util.Map">
+        SELECT
+        d.mobile_phone AS carDriverPhone,
+        a.plate_number AS plateNumber,
+        c.${fieldName} AS ${breifName}
+        FROM
+        vehicle_data_info AS a
+        INNER JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        LEFT JOIN user_data_info AS d ON a.driver_user_id = d.id
+        WHERE
+        (
+        b.vehicle_class = 3
+        AND b.tenant_id = #{tenantId}
+        AND ( c.tenant_id = a.tenant_id OR c.tenant_id IS NULL )
+        OR b.vehicle_class != 3
+        AND b.tenant_id = #{tenantId}
+        AND ( c.tenant_id = #{tenantId} OR c.tenant_id IS NULL ))
+        AND ( c.${fieldName} <![CDATA[ <=  ]]> #{expireDate} OR c.${fieldName} IS NULL )
+        AND b.auth_state = #{state}
+        <if test="plateNumber != null and plateNumber != ''">
+            AND a.plate_number = #{plateNumber}
+        </if>
+        <if test="vehicleClass > 0">
+            AND b.vehicle_class = #{vehicleClass}
+        </if>
+        GROUP BY cardriverphone, platenumber, ${breifName}
+    </select>
+
+    <select id="getSearchTrailerQuery" resultType="java.util.Map">
+        SELECT
+        a.trailer_number AS plateNumber,
+        '6' AS vehicleClass,
+        ${fieldName} AS ${breifName}
+        FROM
+        trailer_management AS c
+        RIGHT JOIN tenant_trailer_rel AS a ON a.trailer_id = c.id
+        WHERE
+        c.tenant_id = #{tenantId}
+        AND (${fieldName} <![CDATA[ <= #{expireDate} ]]> OR ${fieldName} IS NULL )
+        <if test="plateNumber != null and plateNumber != ''">
+            AND a.trailer_number = #{plateNumber}
+        </if>
+    </select>
+
+</mapper>

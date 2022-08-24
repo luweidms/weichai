@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.trailer.TenantTrailerRelMapper">
+
+    <!--根据挂车id查询-->
+    <select id="getTenantTrailerRelByTrailerId" resultType="com.youming.youche.record.domain.trailer.TenantTrailerRel">
+        SELECT * from tenant_trailer_rel where trailer_id = #{trailerId} and tenant_id = #{tenantId} limit 0,1
+    </select>
+
+    <!--根据挂车车牌查询-->
+    <select id="getTenantTrailerRel" resultType="com.youming.youche.record.domain.trailer.TenantTrailerRel">
+        SELECT * from tenant_trailer_rel where trailer_number = #{trailerNumber} and tenant_id = #{tenantId} and is_autit = 1 limit 0,1
+    </select>
+
+    <update id="updtRecordAuditStatus">
+        update trailer_management set IS_AUTIT = #{newStatus},AUTH_DATE = CURRENT_TIME()
+         where ID = #{trailerId} and IS_AUTIT = #{oldStatus}
+    </update>
+
+    <update id="updtTrailerRelAuditStatus">
+        update tenant_trailer_rel set IS_AUTIT = #{newStatus}
+        where TRAILER_ID = #{trailerId} and IS_AUTIT = #{oldStatus} and TENANT_ID = #{tenantId}
+    </update>
+
+    <update id="updtLineRelStatus">
+        update trailer_line_rel set state = #{newStatus} where TRAILER_ID = #{trailerId} and state = #{oldStatus}
+    </update>
+
+    <update id="updtTrailerVerAuditStatus">
+      update trailer_management_ver set IS_AUTIT = #{newStatus}
+      where TRAILER_ID = #{trailerId} and IS_AUTIT = #{oldStatus} and TENANT_ID = #{tenantId}
+    </update>
+
+    <update id="updtTrailerRelVerAuditStatus">
+        update tenant_trailer_rel_ver set IS_AUTIT =#{newStatus} where
+        TRAILER_ID = #{trailerId} and IS_AUTIT = #{oldStatus} and TENANT_ID = #{tenantId}
+    </update>
+
+    <update id="updtLineRelVerStatus">
+        update trailer_line_rel_ver set VER_STATE = #{newStatus},IS_AUTH_SUCC = #{newStatus} where TRAILER_ID = #{trailerId} and VER_STATE = #{oldStatus}
+    </update>
+
+    <select id="getTableTrailerCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count FROM tenant_trailer_rel where annual_veri_expired_time <![CDATA[ <= ]]> #{localDateTime} group by tenant_id
+    </select>
+
+</mapper>

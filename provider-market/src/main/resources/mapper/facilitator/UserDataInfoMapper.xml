@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.UserDataInfoMarketMapper">
+     <sql id="userDataInfo">
+         b.id, b.linkman, b.email, b.contact_number, b.mobile_phone, b.identification, b.login_name, b.user_type,
+b.user_price, b.user_price_url, b.iden_picture_front, b.iden_picture_front_url, b.iden_picture_back, b.iden_picture_back_url,
+b.channel_type, driving_license, b.driving_license_url, b.adriver_license_original, b.adriver_license_original_url,
+b.adriver_license_duplicate, b.adriver_license_duplicate_url, b.op_id, b.op_date, b.id_type, b.notarize_count,
+b.is_perfect_info, b.qr_code_id, b.qr_code_url, b.source_flag, b.qc_certi, b.qc_certi_url, b.tenant_id, b.adriver_license_sn,
+b.auth_state, b.acc_password, b.mod_pwdtime, b.has_ver, b.verif_reason, b.auth_man_id, b.attached_user_id, b.attached_org_id,
+ b.completeness, b.quick_flag, b.driver_license_time, b.driver_license_expired_time, b.qc_certi_time,
+b.qc_certi_expired_time, b.luge_agreement, b.luge_agreement_url, b.create_time, b.update_time
+     </sql>
+    <sql id="commonUserDatainfo">
+        (id, linkman, email, contact_number, mobile_phone, identification, login_name, user_type, user_price, user_price_url, iden_picture_front, iden_picture_front_url, iden_picture_back, iden_picture_back_url, channel_type, driving_license, driving_license_url, adriver_license_original, adriver_license_original_url, adriver_license_duplicate, adriver_license_duplicate_url, op_id, op_date, id_type, notarize_count, is_perfect_info, qr_code_id, qr_code_url, source_flag, qc_certi, qc_certi_url, tenant_id, adriver_license_sn, auth_state, acc_password, mod_pwdtime, has_ver, verif_reason, auth_man_id, attached_user_id, attached_org_id, facilitator_type, completeness, quick_flag, driver_license_time, driver_license_expired_time, qc_certi_time, qc_certi_expired_time, luge_agreement, luge_agreement_url, create_time, update_time)
+    </sql>
+
+    <select id="getUserDataInfoByLoginAcct" resultType="com.youming.youche.market.domain.facilitator.UserDataInfo">
+
+        select
+        <include refid="userDataInfo"></include>
+        from sys_user a,
+             user_data_info b
+        where a.user_info_id  = b.id
+          and a.LOGIN_ACCT = #{loginAcct}
+    </select>
+
+
+</mapper>

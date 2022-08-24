@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.AccountDetailsMapper">
+
+    <select id="getAccountQueryDetailsList" parameterType="com.youming.youche.finance.vo.AccountQueryDetailVo" resultType="com.youming.youche.finance.dto.AccountQueryDetailDto">
+        SELECT
+        A.create_time createDate,
+        A.id accountDatailsId,
+        A.SUBJECTS_ID subjectsId,
+        A.ACCOUNT_ID accountId,
+        A.USER_ID userId,
+        A.BUSINESS_NUMBER businessNumber,
+        A.SUBJECTS_NAME subjectsName,
+        A.AMOUNT amount,
+        A.COST_TYPE costType,
+        A.NOTE note,
+        B.MOBILE_PHONE mobilePhone,
+        B.LINKMAN linkman,
+        B.LOGIN_NAME loginName,
+        A.CREATE_TIME createTime,
+        A.ORDER_ID orderId,
+        A.PLATE_NUMBER plateNumer
+        FROM
+        ACCOUNT_DETAILS_${accountQueryDetailVo.yyyyMonth} A,
+        USER_DATA_INFO B
+        WHERE
+        A.USER_ID = B.id
+        AND A.TENANT_ID = #{accountQueryDetailVo.tenantId}
+
+        <if test="accountQueryDetailVo.startTime != null and accountQueryDetailVo.startTime != ''">
+            AND A.create_time <![CDATA[ >= ]]> #{accountQueryDetailVo.startTime}
+        </if>
+        <if test="accountQueryDetailVo.endTime != null and accountQueryDetailVo.endTime != ''">
+            AND A.create_time <![CDATA[ <= ]]> #{accountQueryDetailVo.endTime}
+        </if>
+        <if test="accountQueryDetailVo.orderId != null and accountQueryDetailVo.orderId > 0">
+            AND A.ORDER_ID = #{accountQueryDetailVo.orderId}
+        </if>
+        <if test="accountQueryDetailVo.userId != null and accountQueryDetailVo.userId > 0">
+            AND A.USER_ID = #{accountQueryDetailVo.userId}
+        </if>
+        <if test="accountQueryDetailVo.userType != null and accountQueryDetailVo.userType > 0">
+            AND A.USER_TYPE = #{accountQueryDetailVo.userType}
+        </if>
+        <choose>
+            <when test="accountQueryDetailVo.businessNumber != null and accountQueryDetailVo.businessNumber >= 0">
+                AND A.BUSINESS_NUMBER = #{accountQueryDetailVo.businessNumber}
+            </when>
+            <otherwise>
+                AND A.BUSINESS_NUMBER in (${businessNumbers})
+            </otherwise>
+        </choose>
+        ORDER BY A.create_time DESC
+        <if test="accountQueryDetailVo.pageNum != null and accountQueryDetailVo.pageSize != null">
+            limit ${accountQueryDetailVo.pageNum * accountQueryDetailVo.pageSize}, #{accountQueryDetailVo.pageSize}
+        </if>
+    </select>
+
+    <select id="getAccountQueryDetailsCount" parameterType="com.youming.youche.finance.vo.AccountQueryDetailVo" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        ACCOUNT_DETAILS_${accountQueryDetailVo.yyyyMonth} A,
+        USER_DATA_INFO B
+        WHERE
+        A.USER_ID = B.id
+        AND A.TENANT_ID = #{accountQueryDetailVo.tenantId}
+        <if test="accountQueryDetailVo.startTime != null and accountQueryDetailVo.startTime != ''">
+            AND A.create_time <![CDATA[ >= ]]> #{accountQueryDetailVo.startTime}
+        </if>
+        <if test="accountQueryDetailVo.endTime != null and accountQueryDetailVo.endTime != ''">
+            AND A.create_time <![CDATA[ <= ]]> #{accountQueryDetailVo.endTime}
+        </if>
+        <if test="accountQueryDetailVo.orderId != null and accountQueryDetailVo.orderId > 0">
+            AND A.ORDER_ID = #{accountQueryDetailVo.orderId}
+        </if>
+        <if test="accountQueryDetailVo.userType != null and accountQueryDetailVo.userType > 0">
+            AND A.USER_TYPE = #{accountQueryDetailVo.userType}
+        </if>
+        <if test="accountQueryDetailVo.userId != null and accountQueryDetailVo.userId > 0">
+            AND A.USER_ID = #{accountQueryDetailVo.userId}
+        </if>
+        <choose>
+            <when test="accountQueryDetailVo.businessNumber != null and accountQueryDetailVo.businessNumber >= 0">
+                AND A.BUSINESS_NUMBER = #{accountQueryDetailVo.businessNumber}
+            </when>
+            <otherwise>
+                AND A.BUSINESS_NUMBER in (${businessNumbers})
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="queryAccountDetailTable" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM ACCOUNT_DETAILS_${tableName} limit 1
+    </select>
+
+    <select id="tableIsExist" resultType="java.lang.Integer">
+        select count(1) from information_schema.TABLES where table_schema = 'youche' and TABLE_NAME = 'account_details_${yyyyMM}'
+    </select>
+
+    <insert id="createTable">
+        create table account_details_${yyyyMM} like account_details
+    </insert>
+
+    <select id="selectTable" resultType="com.youming.youche.finance.domain.AccountDetails">
+        select * from account_details_${yyyyMM} where id = #{id}
+    </select>
+
+    <insert id="insertTable">
+        INSERT INTO account_details_${yyyyMM}
+        ( account_id,   amount,   book_type,  business_number, business_types, cost_type, create_time, current_amount,      current_debt_amount, debt_amount, etc_number, happen_date,   is_oil_pay, is_reported, note, op_id,   order_id,    other_name, other_user_id, pay_way, plate_number,        report_amount, report_date, so_nbr, subjects_id,         subjects_name, tenant_id, transfer_amount, update_time, update_op_id,        user_id, user_type, vehicle_affiliation )
+        VALUES
+        (#{details.accountId},#{details.amount},#{details.bookType},#{details.businessNumber},#{details.businessTypes},#{details.costType},#{details.createTime},#{details.currentAmount},#{details.currentDebtAmount},#{details.debtAmount},#{details.etcNumber},#{details.happenDate},#{details.isOilPay},#{details.isReported},#{details.note},#{details.opId},#{details.orderId},#{details.otherName}, #{details.otherUserId}, #{details.payWay}, #{details.plateNumber}, #{details.reportAmount}, #{details.reportDate}, #{details.soNbr}, #{details.subjectsId}, #{details.subjectsName}, #{details.tenantId}, #{details.transferAmount}, #{details.updateTime}, #{details.updateOpId}, #{details.userId}, #{details.userType}, #{details.vehicleAffiliation})
+    </insert>
+
+    <update id="updateTable">
+        update account_details_${yyyyMM}
+        <set>
+            <if test="details.accountId != null">
+                account_id = #{details.accountId}
+            </if>
+            <if test="details.amount != null">
+                amount = #{details.amount}
+            </if>
+            <if test="details.bookType != null">
+                book_type = #{details.bookType}
+            </if>
+            <if test="details.businessNumber != null">
+                business_number = #{details.businessNumber}
+            </if>
+            <if test="details.businessTypes != null">
+                business_types = #{details.businessTypes}
+            </if>
+            <if test="details.costType != null">
+                cost_type = #{details.costType}
+            </if>
+            <if test="details.createTime != null">
+                create_time = #{details.createTime}
+            </if>
+            <if test="details.currentAmount != null">
+                current_amount = #{details.currentAmount}
+            </if>
+            <if test="details.currentDebtAmount != null">
+                current_debt_amount = #{details.currentDebtAmount}
+            </if>
+            <if test="details.debtAmount != null">
+                debt_amount = #{details.debtAmount}
+            </if>
+            <if test="details.etcNumber != null and details.etcNumber != ''">
+                etc_number = #{details.etcNumber}
+            </if>
+            <if test="details.happenDate != null">
+                happen_date = #{details.happenDate}
+            </if>
+            <if test="details.isOilPay != null">
+                is_oil_pay = #{details.isOilPay}
+            </if>
+            <if test="details.isReported != null">
+                is_reported = #{details.isReported}
+            </if>
+            <if test="details.note != null and details.note != ''">
+                note = #{details.note}
+            </if>
+            <if test="details.opId != null">
+                op_id = #{details.opId}
+            </if>
+            <if test="details.orderId != null">
+                order_id = #{details.orderId}
+            </if>
+            <if test="details.otherName != null and details.otherName != ''">
+                other_name = #{details.otherName}
+            </if>
+            <if test="details.otherUserId != null">
+                other_user_id = #{details.otherUserId}
+            </if>
+            <if test="details.payWay != null and details.payWay != ''">
+                pay_way = #{details.payWay}
+            </if>
+            <if test="details.plateNumber != null and details.plateNumber != ''">
+                plate_number = #{details.plateNumber}
+            </if>
+            <if test="details.reportAmount != null">
+                report_amount = #{details.reportAmount}
+            </if>
+            <if test="details.reportDate != null">
+                report_date = #{details.reportDate}
+            </if>
+            <if test="details.soNbr != null">
+                so_nbr = #{details.soNbr}
+            </if>
+            <if test="details.subjectsId != null">
+                subjects_id = #{details.subjectsId}
+            </if>
+            <if test="details.subjectsName != null and details.subjectsName != ''">
+                subjects_name = #{details.subjectsName}
+            </if>
+            <if test="details.tenantId != null">
+                tenant_id = #{details.tenantId}
+            </if>
+            <if test="details.transferAmount != null">
+                transfer_amount = #{details.transferAmount}
+            </if>
+            <if test="details.updateTime != null">
+                update_time = #{details.updateTime}
+            </if>
+            <if test="details.updateOpId != null">
+                update_op_id = #{details.updateOpId}
+            </if>
+            <if test="details.userId != null">
+                user_id = #{details.userId}
+            </if>
+            <if test="details.userType != null">
+                user_type = #{details.userType}
+            </if>
+            <if test="details.vehicleAffiliation != null and details.vehicleAffiliation != ''">
+                vehicle_affiliation = #{details.vehicleAffiliation}
+            </if>
+        </set>
+        where id = #{details.id}
+    </update>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.service.ServiceRepairPartsVerMapper">
+
+    <select id="getRepairOrderPartsVer" resultType="com.youming.youche.record.domain.service.ServiceRepairPartsVer">
+        SELECT
+        HIS_ID AS hisId,
+        PARTS_ID AS partsId,
+        ORDER_ITEM_ID AS orderItemId,
+        REPAIR_ORDER_ID AS repairOrderId,
+        PARTS_NAME AS partsName,
+        PARTS_NUMBER AS partsNumber,
+        PARTS_PRICE AS partsPrice,
+        TOTAL_PARTS_PRICE AS totalPartsPrice,
+        TENANT_ID AS tenantId,
+        REPAIR_HIS_ID AS repairHisId
+        FROM
+        service_repair_parts_ver
+        WHERE
+        REPAIR_ORDER_ID = #{repairOrderId}
+        AND REPAIR_HIS_ID = #{repairHisId}
+        <if test="orderItemId != null">
+            ORDER_ITEM_ID = #{orderItemId}
+        </if>
+        ORDER BY
+        HIS_ID DESC
+    </select>
+
+    <update id="updateRepairPartsVer">
+        update service_repair_parts_ver set id = #{pid} where his_id = #{id}
+    </update>
+
+</mapper>

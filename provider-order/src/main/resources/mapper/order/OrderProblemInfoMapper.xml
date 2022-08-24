@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderProblemInfoMapper">
+
+    <select id="queryOrderProblemInfoQuery" resultType="com.youming.youche.order.domain.order.OrderProblemInfo">
+        SELECT p.*  FROM order_problem_info as  p,`sys_static_data` s
+        WHERE s.code_type = 'RECRIVE_ORDER_PROBLEM_TYPE@COST' AND p.problem_type = s.code_value
+        <if test="vo.orderId != null and vo.orderId > 0">
+            AND  p.ordeR_id = #{vo.orderId}
+        </if>
+        <if test="vo.problemId != null and vo.problemId > 0">
+            AND  p.problem_Id = #{vo.problemId}
+        </if>
+        <if test="vo.state != null and vo.state != ''">
+            AND  p.state in
+            <foreach collection="vo.statesArr" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="vo.codeId != null and vo.codeId != ''">
+            AND  s.CODE_ID = #{vo.codeId}
+        </if>
+        <if test="vo.problemType != null and vo.problemType != ''">
+            AND  s.problem_Type = #{vo.problemType}
+        </if>
+        <if test="vo.problemCondition != null and vo.problemCondition > 0">
+            AND  p.problem_Condition = #{vo.problemCondition}
+        </if>
+    </select>
+
+</mapper>

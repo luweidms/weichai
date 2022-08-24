@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.ac.CmSalaryComplainNewMapper">
+
+    <select id="getCmSalaryComplainNew" resultType="com.youming.youche.finance.domain.ac.CmSalaryComplainNew">
+        SELECT * FROM cm_salary_complain_new WHERE sid = #{salaryId}
+    </select>
+
+    <select id="getCmSalaryComplainNewCount" resultType="java.lang.Long">
+        SELECT count(1) FROM cm_salary_complain_new WHERE sid = #{salaryId}
+    </select>
+    <select id="queryCmSalaryInfo" resultType="com.youming.youche.finance.vo.CmSalaryInfoVo">
+        SELECT
+            c.id salaryId,
+            c.settle_month settleMonth,
+            c.real_salary_fee relPayFee,
+            c.paid_salary_fee paidSalaryFee,
+            c.tenant_id tenantId,
+            c.state state,
+            d. NAME sourceName
+        FROM
+            cm_salary_info_new c
+                LEFT JOIN sys_tenant_def d ON c.tenant_id = d.id
+        WHERE
+            c.state IS NOT NULL
+          AND c.state > 0  AND c.car_driver_id =#{cmSalaryInfoDto.userId}
+        <if test="cmSalaryInfoDto.settleMonth != null and cmSalaryInfoDto.settleMonth != ''">
+            and c.settle_month = #{cmSalaryInfoDto.settleMonth}
+        </if>
+        <if test="cmSalaryInfoDto.fleetName != null and cmSalaryInfoDto.fleetName != ''">
+            and d.name like CONCAT('%',#{cmSalaryInfoDto.fleetName},'%')
+        </if>
+        <if test="cmSalaryInfoDto.states != null and  cmSalaryInfoDto.states.size() != 0">
+            and c.state in
+            <foreach collection="cmSalaryInfoDto.states" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="cmSalaryInfoDto.userType != null and cmSalaryInfoDto.userType &gt; -1">
+            and c.user_type =#{cmSalaryInfoDto.userType}
+        </if>
+    </select>
+</mapper>

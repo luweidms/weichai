@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleOrderPositionInfoMapper">
+    <!--查询数量-->
+    <select id="countOrderPositionInfo" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM vehicle_order_position_info WHERE VEHICLE_CODE  = #{vehicleCode}
+    </select>
+</mapper>

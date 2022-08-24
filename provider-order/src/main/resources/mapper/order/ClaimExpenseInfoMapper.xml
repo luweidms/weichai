@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.ClaimExpenseInfoMapper">
+
+    <select id="queryClaimExpenseCount" resultType="int">
+        select count(1) from claim_expense_info  where order_Id=#{orderId}
+        <if test="null !=userId">
+            and user_id = #{userId}
+        </if>
+    </select>
+    <select id="selectOr" resultType="com.youming.youche.order.domain.order.ClaimExpenseInfo">
+        SELECT e.* FROM claim_expense_info e WHERE 1=1
+
+        <if test="infoIn.stairCategory != null and infoIn.stairCategory>0">
+            AND e.STAIR_CATEGORY = #{infoIn.stairCategory}
+        </if>
+        <if test="infoIn.secondLevelCategory != null and infoIn.secondLevelCategory != '' and infoIn.secondLevelCategory>0">
+            AND e.SECOND_LEVEL_CATEGORY = #{infoIn.secondLevelCategory}
+        </if>
+        <if test="infoIn.userName != null and infoIn.userName != ''">
+            AND e.USER_NAME like #{infoIn.userName}
+        </if>
+        <choose>
+            <when test="infoIn.userId != null and infoIn.userId != ''">
+                AND e.user_info_id = #{infoIn.userId}
+            </when>
+            <otherwise>
+                AND e.TENANT_ID =#{infoIn.tenantId}
+            </otherwise>
+        </choose>
+        <if test="infoIn.userPhone != null and infoIn.userPhone != ''">
+            AND e.USER_PHONE like #{infoIn.userPhone}
+        </if>
+        <if test="infoIn.plateNumber != null and infoIn.plateNumber != ''">
+            AND e.PLATE_NUMBER like #{infoIn.plateNumber}
+        </if>
+        <if test="infoIn.specialExpenseNum != null and infoIn.specialExpenseNum != ''">
+            AND e.SPECIAL_EXPENSE_NUM like #{infoIn.specialExpenseNum}
+        </if>
+<!--        <if test="infoIn.startTime != null and infoIn.startTime != ''">-->
+<!--            AND e.APP_DATE &gt; #{infoIn.startTime}-->
+<!--        </if>-->
+<!--        <if test="infoIn.endTime != null and infoIn.endTime != ''">-->
+<!--            AND e.APP_DATE &lt; #{infoIn.endTime}-->
+<!--        </if>-->
+        <if test="infoIn.queryMonth != null and infoIn.queryMonth !='' ">
+            AND DATE_FORMAT( e.APP_DATE,'%Y-%m') = #{infoIn.queryMonth}
+        </if>
+        <if test="infoIn.orderId != null and infoIn.orderId != ''">
+            AND e.ORDER_ID = #{infoIn.orderId}
+        </if>
+        <if test="infoIn.flowId != null and infoIn.flowId != ''">
+            AND e.FLOW_ID = #{infoIn.flowId}
+        </if>
+<!--        <if test="infoIn.expenseType == 2 or infoIn.expenseType == 1 ">-->
+<!--            AND e.EXPENSE_TYPE = #{infoIn.expenseType}-->
+<!--        </if>-->
+        <if test="infoIn.stairCategoryList != null and infoIn.stairCategoryList != ''">
+            AND e.STAIR_CATEGORY in
+            <foreach collection="split"  item="stairCategory" separator="," open="(" close=")">
+            #{stairCategory}
+            </foreach>
+        </if>
+<!--        <if test="infoIn.stairCategoryList != null and infoIn.stairCategoryList != '' and infoIn.expenseType == 1">-->
+<!--            AND e.STAIR_CATEGORY = ${infoIn.stairCategoryList}-->
+<!--            <if test="infoIn.secondLevelCategoryList != null and infoIn.secondLevelCategoryList != ''">-->
+<!--                AND e.SECOND_LEVEL_CATEGORY in-->
+<!--                <foreach collection="infoIn.secondLevelCategoryList.split(',')"  item="secondLevelCategory" separator="," open="(" close=")">-->
+<!--                #{infoIn.secondLevelCategory}-->
+<!--                </foreach>-->
+<!--            </if>-->
+<!--        </if>-->
+<!--        <if test="infoIn.expenseStsList != null and infoIn.expenseStsList != ''">-->
+<!--            AND e.STS in-->
+<!--            <foreach collection="infoIn.expenseStsList.split(',')"  item="expenseSts" separator="," open="(" close=")">-->
+<!--            #{infoIn.expenseSts}-->
+<!--            </foreach>-->
+<!--        </if>-->
+        <if test="infoIn.expenseSts != null and infoIn.expenseSts >0">
+            AND e.STS = #{infoIn.expenseSts}
+        </if>
+        <if test="!hasAllDataPermission and infoIn.expenseType==1 and infoIn.orgIds != null">
+            AND e.ORG_ID in
+            <foreach collection="infoIn.orgIds"  item="orgId" separator="," open="(" close=")">
+            #{orgId}
+            </foreach>
+        </if>
+        <if test="infoIn.waitDeal != null and infoIn.waitDeal">
+        <choose>
+            <when test="lids != null and lids.size>0">
+                and e.EXPENSE_ID in #{lids} and e.STS in(1,2)
+            </when>
+            <otherwise>
+                and e.EXPENSE_ID = ''
+            </otherwise>
+        </choose>
+        </if>
+        ORDER BY APP_DATE DESC
+    </select>
+</mapper>

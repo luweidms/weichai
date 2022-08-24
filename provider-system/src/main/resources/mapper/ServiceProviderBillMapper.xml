@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.ServiceProviderBillMapper">
+
+    <select id="getServiceProviderBillRecords"
+            resultType="com.youming.youche.system.dto.BillRecordsDto">
+        SELECT
+            u.repair_code AS repairCode,
+            u.service_name AS businessName,
+            u.user_bill AS userBill,
+            u.plate_number AS plateNumber,
+            u.user_name AS userName,
+            s.service_provider_type AS serviceProviderType,
+            round( u.total_fee / 100, 2 ) AS totalFee,
+            u.delivery_date
+        from service_provider_bill s,user_repair_info u
+        WHERE s.bill_records_no=u.repair_code
+          AND bill_no=#{billNo}
+          and s.tenant_id=#{tenantId}
+    </select>
+    <select id="getServiceProviderBillLog" resultType="com.youming.youche.system.dto.BillRecordsDto">
+        SELECT
+            p.id AS repairCode,
+            p.IS_DRIVER AS businessName,
+            p.OUT_BILL_ID AS userBill,
+            e.plate_number AS plateNumber,
+            p.PAY_ACC_NAME AS userName,
+            s.service_provider_type AS serviceProviderType,
+            round( p.TXN_AMT / 100, 2 ) AS totalFee,
+            p.CREATE_TIME AS deliveryDate
+        FROM payout_intf p,service_provider_bill s,payout_intf_expansion e
+        where p.id=s.bill_records_no
+          and e.flow_id=s.bill_records_no
+          AND bill_no=#{billNo}
+          and s.tenant_id=#{tenantId}
+    </select>
+    <select id="getServiceProviderBillInfo" resultType="com.youming.youche.system.dto.BillRecordsDto">
+        SELECT
+            p.PAY_ACC_NAME AS userName,
+            p.OUT_BILL_ID AS userBill,
+            round( s.reality_bill_amout / 100, 2 ) AS realityBillAmout,
+            round( s.bill_amount / 100, 2 ) AS totalFee
+        FROM payout_intf p,service_provider_bill s
+        where p.id=s.bill_records_no
+          AND service_provider_type
+          AND `bill_no`=#{billNo}
+          and s.`tenant_id`=#{tenantId}
+    </select>
+    <select id="getServiceProviderBillInfoLog" resultType="com.youming.youche.system.dto.BillRecordsDto">
+        SELECT
+            u.user_name AS userName,
+            u.user_bill AS userBill,
+            round( s.reality_bill_amout / 100, 2 ) AS realityBillAmout,
+            round( s.bill_amount / 100, 2 ) AS totalFee
+        from service_provider_bill s,user_repair_info u
+        WHERE s.bill_records_no=u.repair_code
+          AND bill_no=#{billNo}
+          and s.tenant_id=#{tenantId}
+    </select>
+
+    <update id="ServiceProviderBillBalance">
+        UPDATE `service_provider_bill`
+        SET payment_status=2, `reality_bill_amout`=#{realityBillAmout}
+        WHERE (`bill_no`=#{billNo})
+          AND ((`tenant_id`=#{tenantId}))
+    </update>
+
+    <select id="getServiceBillInfo" resultType="com.youming.youche.system.dto.ServiceBillDto">
+        SELECT
+            s.LOGIN_ACCT AS loginAcct,
+            b.bill_amount AS billAmount,
+            b.service_provider_name AS serviceProviderName
+        FROM service_provider_bill b,sys_user s,service_info i
+        WHERE i.service_user_id=b.service_user_id
+          AND i.service_USER_ID=s.user_info_id
+          AND b.bill_no=#{billNo}
+    </select>
+</mapper>

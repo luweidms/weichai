@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.OilCardManagementMapper">
+
+    <select id="updateOilCarNum" resultType="com.youming.youche.order.domain.service.ServiceInfo">
+        select s.* from oil_card_management o , service_info s
+        where o.user_id = s.service_user_id
+        and o.oil_car_num = #{cardNum}
+        and o.tenant_id = #{tenantId}
+        and o.oil_card_status != 3
+        and o.oil_card_status != 4
+        limit 0,1
+    </select>
+
+    <select id="doQuery" resultType="com.youming.youche.order.dto.order.GetOilCardByCardNumDto">
+        SELECT
+        o.id AS cardId,
+        o.OIL_CAR_NUM AS oilCarNum,
+        u.service_name AS companyName,
+        u.service_user_id AS serviceUserId,
+        o.oil_Card_Status AS oilCardStatus,
+        o.pledge_Order_Id AS pledgeOrderId,
+        rel.product_id AS productId,
+        u.service_type serviceType,
+        o.oil_card_type oilCardType,
+        rel.state AS servState,
+        u.service_user_id AS userId,
+        o.card_type AS cardType,
+        o.card_balance AS cardBalance,
+        ov.plateNumber
+        FROM
+        oil_card_management o
+        LEFT JOIN service_info u ON u.service_user_id = o.User_id
+        LEFT JOIN ( SELECT CARD_ID, GROUP_CONCAT( VEHICLE_NUMBER SEPARATOR ',' ) AS plateNumber FROM Oil_Card_Vehicle_Rel GROUP BY CARD_ID ) AS ov ON o.id = ov.CARD_ID
+        LEFT JOIN apply_card_rel rel ON rel.oil_card_num = o.OIL_CAR_NUM
+        AND rel.oil_card_type = o.oil_card_type
+        AND rel.is_recoveryed = 0
+        WHERE
+        1 = 1
+        AND o.TENANT_ID = #{vo.tenantId}
+        <if test="vo.oilCarNum != null and vo.oilCarNum != ''">
+            AND o.oil_Car_Num like CONCAT("%", #{vo.oilCarNum}, "%")
+        </if>
+        <if test="vo.companyName != null and vo.companyName != ''">
+            AND u.service_name like CONCAT("%", #{vo.companyName}, "%")
+        </if>
+        <if test="vo.oilCardStatus != null and vo.oilCardStatus > -1">
+            AND o.OIL_CARD_STATUS = #{vo.oilCardStatus}
+        </if>
+        <if test="vo.cardType != null and vo.cardType > 0">
+            AND o.card_Type = #{vo.cardType}
+        </if>
+        <if test="vo.oilCardType != null and vo.oilCardType > -1">
+            AND o.oil_card_type = #{vo.selectOilCardStatus}
+        </if>
+        <if test="vo.bindVehicle != null and vo.bindVehicle != ''">
+            AND ov.plateNumber like CONCAT("%", #{vo.bindVehicle}, "%")
+        </if>
+        <choose>
+            <when test="vo.orderByOilCardNum != null and vo.orderByOilCardNum == 1">
+                ORDER BY o.oil_Car_Num
+            </when>
+            <otherwise>
+                ORDER BY o.create_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <sql id="queryOilCardPledgeOrderInfoHeader">
+        SELECT
+        ocm.`OIL_CAR_NUM` oilCardNum,
+        s.`ORDER_ID` orderId,
+        s.`PLATE_NUMBER` plateNumber,
+        s.`CAR_DRIVER_ID` carDriverId,
+        s.`CAR_DRIVER_MAN` carDriverMan,
+        s.`CAR_DRIVER_PHONE` carDriverPhone,
+        s.`DEPEND_TIME` dependTime,
+        g.CUSTOM_ORDER_ID customOrderId
+    </sql>
+    <sql id="queryOilCardPledgeOrderInfoWhere">
+        WHERE `PLEDGE_ORDER_ID` > 0 AND s.`ORDER_ID` =  OCM.PLEDGE_ORDER_ID  AND s.`ORDER_ID` =  g.ORDER_ID
+        <if test="vo.carDriverMan != null and vo.carDriverMan != ''">
+            AND s.`CAR_DRIVER_MAN` LIKE CONCAT("%", #{vo.carDriverMan}, "%")
+        </if>
+        <if test="vo.carDriverPhone != null and vo.carDriverPhone != ''">
+            AND s.`CAR_DRIVER_PHONE` LIKE CONCAT("%", #{vo.carDriverPhone}, "%")
+        </if>
+        <if test="vo.customOrderId != null and vo.customOrderId != ''">
+            AND g.`CUSTOM_ORDER_ID` LIKE CONCAT("%", #{vo.customOrderId}, "%")
+        </if>
+        <if test="vo.plateNumber != null and vo.plateNumber != ''">
+            AND s.`PLATE_NUMBER` LIKE CONCAT("%", #{vo.plateNumber}, "%")
+        </if>
+        <if test="vo.oilCarNum != null and vo.oilCarNum != ''">
+            AND ocm.`OIL_CAR_NUM` LIKE CONCAT("%", #{vo.oilCarNum}, "%")
+        </if>
+        <if test="vo.orderId != null and vo.orderId > 0">
+            AND s.ORDER_ID = #{vo.orderId}
+        </if>
+        <if test="vo.orderIds != null and vo.orderIds.size() > 0">
+            AND s.ORDER_ID in
+            <foreach collection="vo.orderIds" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="queryOilCardPledgeOrderInfo" resultType="com.youming.youche.order.dto.order.OilCardPledgeOrderListDto">
+        select tmp.* from (
+            <include refid="queryOilCardPledgeOrderInfoHeader" />
+        FROM `oil_card_management` ocm,`order_scheduler` s ,`order_goods` g
+            <include refid="queryOilCardPledgeOrderInfoWhere" />
+        UNION ALL
+            <include refid="queryOilCardPledgeOrderInfoHeader" />
+         FROM `oil_card_management` ocm,`order_scheduler_h` s ,`order_goods_h` g
+            <include refid="queryOilCardPledgeOrderInfoWhere" />
+        ) tmp order by tmp.dependTime
+    </select>
+</mapper>

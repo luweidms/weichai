@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.ac.CmTemplateFieldMapper">
+
+    <select id="getCmTemplateFiel" resultType="com.youming.youche.finance.domain.ac.CmTemplateField">
+        SELECT * FROM cm_template_field WHERE template_id = #{templateId}
+        <if test="tableName != null and tableName != ''">
+            AND table_name = #{tableName}
+        </if>
+        <if test="isCancel != null and isCancel > -1">
+            AND is_cancel = -1
+        </if>
+        <if test="isDefault != null and isDefault > -1">
+            AND is_default = -1
+        </if>
+        ORDER BY field_index asc
+    </select>
+
+    <insert id="addTemplateNew">
+        INSERT INTO `cm_salary_template` (`id`, `channel_type`, `create_time`, `op_id`, `op_name`, `state`, `template_month`, `tenant_id`, `update_time`, `update_op_id`, `ver`)
+        VALUES (#{cmSalaryTemplate.id}, #{cmSalaryTemplate.channelType}, #{cmSalaryTemplate.createTime}, #{cmSalaryTemplate.opId}, #{cmSalaryTemplate.opName}, #{cmSalaryTemplate.state},
+                #{cmSalaryTemplate.templateMonth},#{cmSalaryTemplate.tenantId}, #{cmSalaryTemplate.updateTime}, #{cmSalaryTemplate.updateOpId}, #{cmSalaryTemplate.ver});
+    </insert>
+    <insert id="addTemplateField">
+        INSERT INTO cm_template_field  ( channel_type, create_date, field_code, field_desc, field_index, is_cancel, is_default, is_select, remark, table_name, template_id, tenant_id, update_date, update_op_id)
+        VALUES  ( #{cmTemplateField.channelType}, #{cmTemplateField.createDate}, #{cmTemplateField.fieldCode}, #{cmTemplateField.fieldDesc}, #{cmTemplateField.fieldIndex},#{cmTemplateField.isCancel}, #{cmTemplateField.isDefault},
+                 #{cmTemplateField.isSelect}, #{cmTemplateField.remark}, #{cmTemplateField.tableName},  #{cmTemplateField.templateId}, #{cmTemplateField.tenantId},#{cmTemplateField.updateDate}, #{cmTemplateField.updateOpId})
+    </insert>
+    <select id="getCmSalaryTemplateByTmpId" resultType="com.youming.youche.finance.domain.ac.CmTemplateField">
+
+        select * from cm_template_field where template_id = (select id from cm_salary_template where  id = 2 limit 0,1 ) and is_select = 1 order by field_index
+    </select>
+    <select id="getCmSalaryTemplateByMon" resultType="com.youming.youche.finance.domain.ac.CmTemplateField">
+        select * from cm_template_field where template_id = (select id from cm_salary_template where (tenant_id = #{tenantId} or tenant_id = -1 or tenant_id is null) and template_month <![CDATA[ <= ]]> #{month} order by template_month desc,id desc  limit 0,1 )
+        and is_select = 1 order by field_index
+    </select>
+</mapper>

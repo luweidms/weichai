@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.user.UserRepairInfoMapper">
+
+    <select id="queryUserRepairAuth" resultType="com.youming.youche.market.dto.user.UserRepairInfoDto">
+        SELECT
+        uri.repair_code AS repairCode,
+        uri.create_time AS createTime,
+        uri.service_name AS businessName,
+        uri.product_name AS oilNum,
+        uri.plate_number AS plateNumber,
+        uri.user_name AS userName,
+        uri.user_bill AS userBill,
+        uri.repair_date AS repairDate,
+        uri.delivery_date AS deliveryDate,
+        round( uri.total_fee / 100, 2 ) AS totalFee,
+        uri.oil_rate_invoice AS oilRateInvoice,
+        uri.app_repair_state AS repairState,
+        uri.id AS repairId,
+        uri.state AS state
+        FROM user_repair_info uri
+        WHERE 1 = 1
+        AND uri.tenant_id = #{vo.tenantId}
+        AND uri.app_repair_state IN ( '3', '4', '5', '6' )
+        <if test="vo.todo">
+            <choose>
+                <when test="busiIdStr != null">
+                    AND uri.id IN (${busiIdStr})
+                </when>
+                <otherwise>
+                    AND uri.id IN (- 1 )
+                </otherwise>
+            </choose>
+        </if>
+        <if test="vo.repairCode != null and vo.repairCode != ''">
+            AND uri.repair_code = #{vo.repairCode}
+        </if>
+        <if test="vo.serviceName != null and vo.serviceName != ''">
+            AND uri.service_name LIKE concat( '%',#{vo.serviceName}, "%" )
+        </if>
+        <if test="vo.productName != null and vo.productName != ''">
+            AND uri.product_name LIKE concat( '%',#{vo.productName}, "%" )
+        </if>
+        <if test="vo.plateNumber != null and vo.plateNumber != ''">
+            AND uri.plate_number LIKE concat( '%',#{vo.plateNumber}, "%" )
+        </if>
+        <if test="vo.driverName != null and vo.driverName != ''">
+            AND uri.user_name LIKE concat( '%',#{vo.driverName}, "%" )
+        </if>
+        <if test="vo.driverBill != null and vo.driverBill != ''">
+            AND uri.user_bill LIKE concat( '%',#{vo.driverBill}, "%" )
+        </if>
+        <if test="vo.repairDateBegin != null and vo.repairDateBegin != ''">
+            AND uri.repair_date <![CDATA[ >= ]]> #{vo.repairDateBegin}
+        </if>
+        <if test="vo.repairDateEnd != null and vo.repairDateEnd != ''">
+            AND uri.repair_date <![CDATA[ <= ]]> #{vo.repairDateEnd}
+        </if>
+        <if test="vo.state != null and vo.state &gt; 0">
+            AND uri.app_repair_state = #{vo.state}
+        </if>
+        <if test="vo.maintenanceType != null">
+            AND uri.state = #{vo.maintenanceType}
+        </if>
+    </select>
+    <select id="queryRepairInfo" resultType="com.youming.youche.market.vo.facilitator.RepairInfoVo">
+        select
+        <choose>
+            <when test="!isSum">
+                r.repair_code as repairCode,
+                r.total_fee as totalFee,
+                r.SERVICE_CHARGE as serviceCharge ,
+                r.repair_Date as repairDate,
+                r.repair_state as repairState ,
+                s.name as name,
+                r.PRODUCT_NAME as productName,
+                r.Id as repairId,
+                r.delivery_date AS deliveryDate,
+                r.plate_number as plateNumber
+            </when>
+            <otherwise>
+                sum(if(r.repair_state = 6,r.total_fee,0)) as unexpired ,
+                sum(if(r.repair_state = 7,r.total_fee,0)) as beExpired ,
+                sum((r.SERVICE_CHARGE / 100) * (r.total_fee / 100)) as serviceCharge
+            </otherwise>
+        </choose>
+        from user_repair_info r left join sys_tenant_def s ON s.id = r.tenant_id
+        <where>
+            <choose>
+                <when test="baseUser.userType == 4">
+                    <if test="productId != null and productId.size() &gt; 0">
+                        and r.PRODUCT_ID in
+                        <foreach collection="productId" item="item" open="(" separator="," close=")">
+                             #{item}
+                        </foreach>
+                    </if>
+                </when>
+                <otherwise>
+                    and r.SERVICE_USER_ID = #{serviceUserId}
+                </otherwise>
+            </choose>
+           <if test="inParam.repairCode != null and inParam.repairCode != ''">
+               and r.repair_code like CONCAT ('%',#{inParam.repairCode},'%')
+           </if>
+           <if test="inParam.repairDate != null and inParam.repairDate != ''">
+               and r.repair_Date  <![CDATA[>= ]]> CONCAT(#{inParam.repairDate},' 00:00:00')
+               and r.repair_Date <![CDATA[<= ]]> CONCAT(#{inParam.repairDate},' 23:59:59')
+           </if>
+           <if test="inParam.states != null and inParam.states.size() &gt; 0">
+               <if test="baseUser.userType == 2">
+                        and r.repair_state in
+                   <foreach collection="inParam.states" item="item" open="(" separator="," close=")">
+                       #{item}
+                   </foreach>
+               </if>
+               <if test="baseUser.userType == 3">
+                       and r.app_repair_state in
+                   <foreach collection="inParam.states" item="item" open="(" separator="," close=")">
+                       #{item}
+                   </foreach>
+               </if>
+           </if>
+           <if test="inParam.productId != null and inParam.productId &gt; 0">
+               and r.PRODUCT_ID = #{inParam.productId}
+           </if>
+        </where>
+        order by r.id desc
+    </select>
+
+    <select id="getUserRepairByProductIds" resultType="com.youming.youche.market.vo.user.UserRepairInfoVo">
+        SELECT
+        PRODUCT_ID as productId
+        ,ROUND((SUM(QUALITY_STAR) / count(1)),0) as qualityStar
+        ,ROUND((SUM(PRICE_STAR) / count(1)),0) as priceStar
+        ,ROUND((SUM(SERVICE_STAR) / count(1)),0) as serviceStar
+        from user_repair_info where
+        <if test="productIds!=null and productIds.size() &gt; 0">
+            product_id in
+            <foreach collection="productIds" item="ids" open="(" separator="," close=")">
+                #{ids}
+            </foreach>
+        </if>
+        group by product_id
+    </select>
+
+    <select id="getVehicleAfterServingByMonth" resultType="com.youming.youche.market.dto.user.VehicleAfterServingDto">
+        SELECT
+            uri.state AS type,
+            sum(
+            round( uri.total_fee / 100, 2 )) AS totalfee
+        FROM
+            user_repair_info uri
+        WHERE
+            uri.tenant_id = #{tenantId}
+            AND uri.app_repair_state = 5
+            AND uri.plate_number = #{plateNumber}
+            AND date_format( uri.repair_date, '%Y-%m' ) = #{month}
+        GROUP BY
+            uri.state
+    </select>
+    <select id="getUserRepairInfo" resultType="com.youming.youche.market.domain.user.UserRepairInfo">
+        select
+                 uri.*
+        from user_repair_info uri
+                 inner join
+             user_repair_margin urm
+             on
+                 uri.id = urm.repair_Id where  1=1 and uri.service_user_id =#{serviceUserId}
+                                          and urm.CREATE_TIME <![CDATA[ <= ]]> #{endTime} and urm.CREATE_TIME <![CDATA[ >= ]]> #{startTime} ORDER BY urm.CREATE_TIME DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.sys.SysOperLogMapper">
+
+
+    <insert id="insertSysOperLog">
+        insert into  ${table}
+        (
+        <if test="sysOperLog.opId!=null and sysOperLog.opId!=''">
+            OP_ID,
+        </if>
+        <if test="sysOperLog.opName!=null and sysOperLog.opName!=''">
+            OP_NAME,
+        </if>
+        <if test="sysOperLog.busiCode!=null and sysOperLog.busiCode!=''">
+            BUSI_CODE,
+        </if>
+        <if test="sysOperLog.busiName!=null and sysOperLog.busiName!=''">
+            BUSI_NAME,
+        </if>
+        <if test="sysOperLog.operTypeName!=null and sysOperLog.operTypeName!=''">
+            OPER_TYPE_NAME,
+        </if>
+        <if test="sysOperLog.operType!=null and sysOperLog.operType!=''">
+            OPER_TYPE,
+        </if>
+        <if test="sysOperLog.busiId!=null and sysOperLog.busiId!=''">
+            BUSI_ID,
+        </if>
+        <if test="sysOperLog.operComment!=null and sysOperLog.operComment!=''">
+            OPER_COMMENT,
+        </if>
+        <if test="sysOperLog.channelType!=null and sysOperLog.channelType!=''">
+            CHANNEL_TYPE,
+        </if>
+        <if test="sysOperLog.tenantId!=null and sysOperLog.tenantId!=''">
+            TENANT_ID,
+        </if>
+        create_time,
+        update_time
+        )
+        values (
+        <if test="sysOperLog.opId!=null and sysOperLog.opId!=''">
+            #{sysOperLog.opId},
+        </if>
+        <if test="sysOperLog.opName!=null and sysOperLog.opName!=''">
+            #{sysOperLog.opName},
+        </if>
+        <if test="sysOperLog.busiCode!=null and sysOperLog.busiCode!=''">
+            #{sysOperLog.busiCode},
+        </if>
+        <if test="sysOperLog.busiName!=null and sysOperLog.busiName!=''">
+            #{sysOperLog.busiName},
+        </if>
+        <if test="sysOperLog.operTypeName!=null and sysOperLog.operTypeName!=''">
+            #{sysOperLog.operTypeName},
+        </if>
+        <if test="sysOperLog.operType!=null and sysOperLog.operType!=''">
+            #{sysOperLog.operType},
+        </if>
+        <if test="sysOperLog.busiId!=null and sysOperLog.busiId!=''">
+            #{sysOperLog.busiId},
+        </if>
+        <if test="sysOperLog.operComment!=null and sysOperLog.operComment!=''">
+            #{sysOperLog.operComment},
+        </if>
+        <if test="sysOperLog.channelType!=null and sysOperLog.channelType!=''">
+            #{sysOperLog.channelType},
+        </if>
+        <if test="sysOperLog.tenantId!=null and sysOperLog.tenantId!=''">
+            #{sysOperLog.tenantId},
+        </if>
+            now(),
+            now()
+        )
+    </insert>
+
+    <!--查询日志列表-->
+    <select id="querySysOperLogOrderByCreateDate" resultType="com.youming.youche.record.domain.sys.SysOperLog">
+        select * from ${tableName}
+        <where>
+            <if test="busiCode != null">
+                busi_code = #{busiCode}
+            </if>
+            <if test="busiId != null">
+                and busi_id = #{busiId}
+            </if>
+            <if test="tenantId">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

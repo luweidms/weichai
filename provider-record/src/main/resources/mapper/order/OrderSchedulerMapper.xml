@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.order.OrderSchedulerMapper">
+
+
+    <select id="queryOrderInfo" resultType="java.util.Map">
+        SELECT o.order_id,s.plate_number,s.VEHICLE_CLASS as vehicleClass FROM `order_info` o,order_scheduler s
+        WHERE o.order_id = s.order_id AND o.order_state <![CDATA[ <> ]]> #{orderState}
+        <if test="userId != null and  userId > 0">
+            AND (s.`CAR_DRIVER_ID` =#{userId} or s.COPILOT_USER_ID =#{userId})
+        </if>
+        <if test="tenantId  != null and  tenantId  > 0">
+            AND o.`tenant_Id` =#{tenantId}
+        </if>
+        <if test="startDate!=null and startDate!=''">
+            AND date_format( o.`create_time`, '%Y-%m-%d %H:%i:%s' )  <![CDATA[ >= ]]> #{startDate}
+        </if>
+        <if test="endDate!=null and endDate!=''">
+            AND date_format( o.`create_time`, '%Y-%m-%d %H:%i:%s' )  <![CDATA[ <= ]]> #{endDate }
+        </if>
+    </select>
+
+    <select id="queryOrderInfoH" resultType="java.util.Map">
+        SELECT o.order_id,s.plate_number,s.VEHICLE_CLASS as vehicleClass FROM `order_info_h` o,`order_scheduler_h` s
+        WHERE o.order_id = s.order_id AND o.order_state <![CDATA[ <> ]]> #{orderState}
+        <if test="userId != null and  userId > 0">
+            AND (s.`CAR_DRIVER_ID` =#{userId} or s.COPILOT_USER_ID =#{userId})
+        </if>
+        <if test="tenantId  != null and  tenantId  > 0">
+            AND o.`tenant_Id` =#{tenantId}
+        </if>
+        <if test="startDate!=null and startDate!=''">
+            AND date_format( o.`create_time`, '%Y-%m-%d %H:%i:%s' )  <![CDATA[ >= ]]> #{startDate}
+        </if>
+        <if test="endDate!=null and endDate!=''">
+            AND date_format( o.`create_time`, '%Y-%m-%d %H:%i:%s' )  <![CDATA[ <= ]]> #{endDate }
+        </if>
+    </select>
+
+    <select id="queryOrderdriverInfo" resultType="java.lang.Integer">
+        SELECT count(1) FROM order_info o,order_scheduler s
+        WHERE o.order_id = s.order_id AND o.order_state <![CDATA[ <= ]]> #{orderState}
+        <if test="userId != null and  userId > 0">
+            AND (s.CAR_DRIVER_ID =#{userId} or s.COPILOT_USER_ID =#{userId})
+        </if>
+    </select>
+
+    <select id="queryDriverViolationInfo" resultType="java.util.Map">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        o.order_id AS orderId,
+        IFNULL(
+        CAR_ARRIVE_DATE,
+        DATE_ADD( IFNULL( CAR_START_DATE, DATE_ADD( IFNULL( CAR_DEPEND_DATE, IFNULL( DEPEND_TIME, NULL )), INTERVAL
+        #{estStartTime} HOUR )), INTERVAL ARRIVE_TIME * 3600 SECOND )) AS arriveDate,
+        s.CAR_DRIVER_PHONE AS carDriverPhone,
+        s.CAR_DRIVER_ID AS carDriverId,
+        s.CAR_DRIVER_MAN AS carDriverMan
+        FROM
+        order_scheduler s,
+        order_info o
+        WHERE
+        o.ORDER_ID = s.ORDER_ID
+        AND PLATE_NUMBER = #{plateNumber}
+        AND IFNULL(
+        CAR_ARRIVE_DATE,
+        DATE_ADD( IFNULL( CAR_START_DATE, DATE_ADD( IFNULL( CAR_DEPEND_DATE, IFNULL( DEPEND_TIME, NULL )), INTERVAL
+        #{estStartTime} HOUR )), INTERVAL ARRIVE_TIME * 3600 SECOND ))
+        <if test="isGt == true">
+            <![CDATA[ >= ]]> #{violationDate}
+        </if>
+        <if test="isGt == false">
+            <![CDATA[ <= ]]> #{violationDate}
+        </if>
+        AND (
+        s.VEHICLE_CLASS = 1
+        OR ( s.VEHICLE_CLASS IN ( '2', '3', '4' ) AND ( o.TO_TENANT_ID IS NULL OR o.TO_TENANT_ID <![CDATA[ <= ]]> 0 ) ))
+        UNION
+        SELECT
+        o.order_id AS orderId,
+        IFNULL( s.CAR_ARRIVE_DATE, o.END_DATE ) AS arriveDate,
+        s.CAR_DRIVER_PHONE AS carDriverPhone,
+        s.CAR_DRIVER_ID AS carDriverId,
+        s.CAR_DRIVER_MAN AS carDriverMan
+        FROM
+        order_scheduler_h s,
+        order_info_h o
+        WHERE
+        o.ORDER_ID = s.ORDER_ID
+        AND PLATE_NUMBER = #{plateNumber}
+        AND IFNULL( s.CAR_ARRIVE_DATE, o.END_DATE )
+        <if test="isGt == true">
+            <![CDATA[ >= ]]> #{violationDate}
+        </if>
+        <if test="isGt == false">
+            <![CDATA[ <= ]]> #{violationDate}
+        </if>
+        AND s.CAR_DEPEND_DATE IS NOT NULL
+        AND (
+        s.VEHICLE_CLASS = 1
+        OR ( s.VEHICLE_CLASS IN ( '2', '3', '4' ) AND ( o.TO_TENANT_ID IS NULL OR o.TO_TENANT_ID <![CDATA[ <= ]]> 0 ) ))
+        ) tab
+        ORDER BY
+        tab.arriveDate
+        <if test="isGt == false">
+            DESC
+        </if>
+    </select>
+
+
+    <select id="queryOrderInfoByCar" resultType="com.youming.youche.record.dto.order.OrderSchedulerDto">
+        select o.order_id AS orderId,
+        s.vehicle_code AS vehicleCode,
+        s.car_driver_id AS carDriverId,
+        s.car_depend_date AS carDependDate,
+        s.car_arrive_date AS carArriveDate,
+        s.vehicle_class as vehicleClass,
+        f.vehicle_affiliation AS vehicleAffiliation,
+        o.to_order_id as toOrderId,
+        o.to_tenant_id as toTenantId,
+        s.depend_time as dependTime
+        FROM order_info o,order_scheduler s,order_fee f
+        WHERE o.order_id = f.order_id
+        AND o.order_id = s.order_id
+        <if test="vehicleCode!=null and vehicleCode &gt; 0">
+            and s.vehicle_code =#{vehicleCode}
+        </if>
+        <if test="tenantId!=null and tenantId &gt; 0">
+            and o.tenant_id=#{tenantId}
+        </if>
+        <if test="fromOrderId!=null and fromOrderId &gt; 0">
+            and o.from_order_id =#{fromOrderId}
+        </if>
+        <if test="fromTenantId!=null and fromTenantId &gt; 0">
+            and o.from_tenant_id =#{fromTenantId}
+        </if>
+        <if test="orderId!=null and orderId &gt; 0">
+            and o.order_id = #{orderId}
+        </if>
+        <if test="plateNumber!=null and plateNumber!=''">
+            and s.plate_number = #{plateNumber}
+        </if>
+        and o.order_state !=#{orderState}
+         and s.depend_time is not null
+        order by s.car_depend_date ASC
+    </select>
+    <select id="queryOrderInfoByCarH" resultType="com.youming.youche.record.dto.order.OrderSchedulerDto">
+        select o.order_id AS orderId,
+        s.vehicle_code AS vehicleCode,
+        s.car_driver_id AS carDriverId,
+        s.car_depend_date AS carDependDate,
+        s.car_arrive_date AS carArriveDate,
+        f.vehicle_affiliation AS vehicleAffiliation,
+        o.to_order_id as toOrderId,
+        o.to_tenant_id as toTenantId,
+        s.depend_time as dependTime
+        FROM order_info_h o,order_scheduler_h s,order_fee_h f
+        WHERE o.order_id = f.order_id
+        AND o.order_id = s.order_id
+        <if test="vehicleCode!=null and vehicleCode &gt; 0">
+            and s.vehicle_code =#{vehicleCode}
+        </if>
+        <if test="tenantId!=null and tenantId &gt; 0">
+            and o.tenant_id=#{tenantId}
+        </if>
+        <if test="fromOrderId!=null and fromOrderId &gt; 0">
+            and o.from_order_id =#{fromOrderId}
+        </if>
+        <if test="fromTenantId!=null and fromTenantId &gt; 0">
+            and o.from_tenant_id =#{fromTenantId}
+        </if>
+        <if test="orderId!=null and orderId &gt; 0">
+            and o.order_id = #{orderId}
+        </if>
+        <if test="plateNumber!=null and plateNumber!=''">
+            and s.plate_number = #{plateNumber}
+        </if>
+        and o.order_state !=#{orderState}
+        and s.depend_time is not null
+        order by s.car_depend_date ASC
+    </select>
+</mapper>

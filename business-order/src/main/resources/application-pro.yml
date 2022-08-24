@@ -1,0 +1,99 @@
+base:
+  config:
+    oauth:
+      hostname: 10.17.80.19
+      port: 9002
+    nacos:
+      hostname: 10.17.80.14
+      port: 8848
+    redis:
+      hostname: 10.17.80.15
+      port: 6379
+      password: youche123
+
+spring:
+  application:
+    name: business-order
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${base.config.nacos.hostname}:${base.config.nacos.port}
+        group: YOUCHE_GROUP
+    alibaba:
+      seata:
+        tx-service-group: tx_group
+  redis:
+    # Redis数据库索引（默认为0)
+    database: 0
+    # Redis服务器地址
+    host: ${base.config.redis.hostname}
+    # Redis服务器连接端口
+    port: ${base.config.redis.port}
+    # Redis服务器连接密码（默认为空）
+    password: ${base.config.redis.password}
+    jedis:
+      pool:
+        #连接池最大连接数（使用负值表示没有限制）
+        max-active: 200
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 0
+        # 连接超时时间（毫秒）
+    timeout: 50000
+
+server:
+  port: 9006
+
+logging:
+  level:
+    com.youming.youche.order.business.controller: info
+  #将日志输出到文件
+  config: classpath:business-order-log.xml
+
+
+
+dubbo:
+  scan:
+    base-packages: com.youming.youche.order.business.controller
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+    group: YOUCHE_GROUP
+    register: true
+    subscribe: true
+  metadata-report:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+  provider:
+    loadbalance: roundrobin
+    timeout: 5000
+    retries: 0
+  consumer:
+    timeout: 50000
+    retries: 0
+
+seata:
+  config:
+    type: nacos
+    nacos:
+      server-addr: ${base.config.nacos.hostname}:8848
+      group: "SEATA_GROUP"
+      namespace: "c86e0f15-2904-4c2a-a7a2-f9c3a58b6973"
+      username: "nacos"
+      password: "nacos"
+  registry:
+    type: nacos
+    nacos:
+      application: seata-server
+      server-addr: ${base.config.nacos.hostname}:8848
+      group: "SEATA_GROUP"
+      namespace: "c86e0f15-2904-4c2a-a7a2-f9c3a58b6973"
+      username: "nacos"
+      password: "nacos"
+

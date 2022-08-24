@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleAnnualReviewMapper">
+
+    <insert id="customInsert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO vehicle_annual_review (id, request_no, vehicle_id, vehicle_code, annualreview_type,
+                                           annualreview_data, annualreview_cost, effective_date, service_provider,
+                                           tenant_id, org_id, user_data_id, create_time)
+        VALUES (null,
+                #{vehicleAnnualReview.requestNo},
+                #{vehicleAnnualReview.vehicleId},
+                #{vehicleAnnualReview.vehicleCode},
+                #{vehicleAnnualReview.annualreviewType},
+                #{vehicleAnnualReview.annualreviewData},
+                #{vehicleAnnualReview.annualreviewCost},
+                #{vehicleAnnualReview.effectiveDate},
+                #{vehicleAnnualReview.serviceProvider},
+                #{vehicleAnnualReview.tenantId},
+                #{vehicleAnnualReview.orgId},
+                #{vehicleAnnualReview.userDataId},
+                #{vehicleAnnualReview.createTime})
+    </insert>
+
+    <update id="customUpdate">
+        UPDATE vehicle_annual_review
+        SET annualreview_data = #{vehicleAnnualReview.annualreviewData},
+            annualreview_type = #{vehicleAnnualReview.annualreviewType},
+            annualreview_cost = #{vehicleAnnualReview.annualreviewCost},
+            effective_date    = #{vehicleAnnualReview.effectiveDate},
+            service_provider  = #{vehicleAnnualReview.serviceProvider},
+            update_time       = #{vehicleAnnualReview.updateTime}
+        WHERE id = #{vehicleAnnualReview.id}
+    </update>
+
+    <sql id="query">
+        SELECT
+        va.id AS id,
+        va.request_no AS requestno,
+        va.vehicle_id AS vehicleid,
+        va.vehicle_code AS vehiclecode,
+        va.annualreview_type AS annualreviewtype,
+        va.annualreview_data AS annualreviewdata,
+        va.annualreview_cost AS annualreviewcost,
+        va.effective_date AS effectivedate,
+        va.service_provider AS serviceprovider,
+        ( SELECT di.licence_type FROM vehicle_data_info di WHERE va.vehicle_id = di.id ) AS licencetype,
+        ( SELECT std.`name` FROM sys_tenant_def std WHERE std.id = va.tenant_id ) AS vehicleascriptiondep
+        FROM
+        vehicle_annual_review va
+        <where>
+            1= 1 AND va.tenant_id = #{tenantId}
+            <if test="vehicleAnnualReview.startTime != null and vehicleAnnualReview.startTime != ''">
+                AND va.annualreview_data <![CDATA[ >= ]]> #{vehicleAnnualReview.startTime}
+            </if>
+            <if test="vehicleAnnualReview.endTime != null and vehicleAnnualReview.endTime != ''">
+                AND va.effective_date <![CDATA[ <= ]]> #{vehicleAnnualReview.endTime}
+            </if>
+            <if test="vehicleAnnualReview.annualreviewType != null and vehicleAnnualReview.annualreviewType != -1">
+                AND va.annualreview_type = #{vehicleAnnualReview.annualreviewType}
+            </if>
+            <if test="vehicleAnnualReview.vehicleCode != null and vehicleAnnualReview.vehicleCode != ''">
+                AND va.vehicle_code like CONCAT('%',#{vehicleAnnualReview.vehicleCode},'%')
+            </if>
+            <if test="vehicleAnnualReview.serviceProvider != null and vehicleAnnualReview.serviceProvider != ''">
+                AND va.service_provider = #{vehicleAnnualReview.serviceProvider}
+            </if>
+            <if test="vehicleAnnualReview.requestNo != null and vehicleAnnualReview.requestNo != ''">
+                AND va.request_no = #{vehicleAnnualReview.requestNo}
+            </if>
+        </where>
+        ORDER BY
+        va.create_time DESC
+    </sql>
+
+    <select id="getVehicleAnnualReviewList" resultType="com.youming.youche.record.domain.vehicle.VehicleAnnualReview">
+        <include refid="query"/>
+    </select>
+
+    <select id="getVehicleAnnualReviewListExport"
+            resultType="com.youming.youche.record.domain.vehicle.VehicleAnnualReview">
+        <include refid="query"/>
+    </select>
+
+    <select id="exitsVehicleCode" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM vehicle_data_info
+        WHERE plate_number = #{vehicleCode}
+    </select>
+
+    <select id="selectAnnualReviewById" resultType="com.youming.youche.record.domain.vehicle.VehicleAnnualReview">
+        SELECT va.id                AS id,
+               va.request_no        AS requestNo,
+               va.vehicle_code      AS vehicleCode,
+               va.annualreview_type AS annualreviewType,
+               va.annualreview_data AS annualreviewData,
+               va.annualreview_cost AS annualreviewCost,
+               va.effective_date    AS effectiveDate,
+               va.service_provider  AS serviceProvider
+        FROM vehicle_annual_review va
+        WHERE id = #{id}
+    </select>
+
+    <select id="getTableVehicleCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, s.tenant_code) as tenant_id,
+        (
+        SELECT
+        count(1)
+        FROM (
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.annualreview_data, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.effective_date, '%Y-%m-%d' ) AS effectiveDate,
+        c.annualreview_type AS annualreviewType,
+        c.annualreview_cost AS annualreviewCost,
+        c.service_provider AS NAME
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN vehicle_annual_review AS c ON a.id = c.vehicle_id
+        WHERE
+        b.tenant_id = ifnull(std.id, s.tenant_code)
+        AND b.vehicle_class = 1
+        and c.annualreview_data IS NOT NULL
+        AND c.effective_date IS NOT NULL
+        having 1 order by c.effective_date DESC) as f GROUP BY plateNumber,annualreviewType UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        3 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = ifnull(std.id, s.tenant_code)
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.busi_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.busi_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        4 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = ifnull(std.id, s.tenant_code)
+        AND b.vehicle_class = 1 UNION ALL
+        SELECT
+        a.plate_number AS plateNumber,
+        a.licence_type AS licenceType,
+        a.vehicle_status AS vehicleStatus,
+        a.vehicle_length AS vehicleLength,
+        DATE_FORMAT( c.other_insurance_time, '%Y-%m-%d' ) AS annualreviewData,
+        DATE_FORMAT( c.other_insurance_time_end, '%Y-%m-%d' ) AS effectiveDate,
+        5 AS annualreviewType,
+        NULL AS annualreviewCost,
+        NULL AS name
+        FROM
+        vehicle_data_info AS a
+        LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+        LEFT JOIN tenant_vehicle_cert_rel AS c ON a.id = c.vehicle_code
+        WHERE
+        b.tenant_id = ifnull(std.id, s.tenant_code)
+        AND b.vehicle_class = 1 )AS t
+        WHERE t.annualreviewData IS NOT NULL
+        AND t.effectiveDate IS NOT NULL
+        and t.effectiveDate <![CDATA[ <= ]]> #{localDateTime}
+        and annualreviewType in (1,2)
+        ORDER BY
+        plateNumber,annualreviewType,effectiveDate
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="judgeDataExist" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM vehicle_annual_review WHERE vehicle_id = #{vehicleId} AND effective_date = #{effectiveDate} AND annualreview_type = #{annualreviewType}
+    </select>
+
+    <select id="queryVehicleFromAnnualReview"
+            resultType="com.youming.youche.record.domain.vehicle.VehicleDataInfo">
+        SELECT
+            v.plate_number AS plateNumber
+        FROM
+            vehicle_data_info v
+            LEFT JOIN tenant_vehicle_rel t ON v.id = t.vehicle_code
+        WHERE
+            v.plate_number LIKE CONCAT( '%', ${plateNumber}, '%' )
+            AND v.tenant_id = #{tenantId}
+            AND t.vehicle_class = #{vehicleClass}
+    </select>
+
+    <select id="judgeRequestNoExist" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM vehicle_annual_review WHERE tenant_id = #{tenantId} AND request_no = #{requestNo}
+    </select>
+
+    <select id="getVehicleAnnualreviewCostByMonth" resultType="java.lang.Long">
+        SELECT
+            SUM( annualreview_cost )
+        FROM
+            vehicle_annual_review
+        WHERE
+            vehicle_id = #{vehicleCode}
+            AND tenant_id = #{tenantId}
+            AND DATE_FORMAT( annualreview_data, '%Y-%m' ) = #{month}
+    </select>
+
+</mapper>

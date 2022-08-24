@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderFeeExtMapper">
+
+    <select id="selectFee" resultType="com.youming.youche.finance.domain.order.OrderFeeExt">
+        select o.*
+        from order_fee_ext o
+        left join order_scheduler o1
+        on o.order_id = o1.order_id
+        left join order_scheduler_h o2
+        on o.order_id = o2.order_id
+        where
+        o.tenant_id = #{tenantId}
+        and (o1.vehicle_code = #{id} or o2.vehicle_code = #{id})
+--         and c.state = 5
+        <if test="beginDate != null">
+            and o.update_time <![CDATA[ >= ]]> #{beginDate}
+        </if>
+        <if test="endDate != null">
+            and o.update_time <![CDATA[ <= ]]> #{endDate}
+        </if>
+--         group by c.type_name
+    </select>
+</mapper>

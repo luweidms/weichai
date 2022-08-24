@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.ConsumeOilFlowMapper">
+
+    <select id="getUserOilFlow" resultType="com.youming.youche.market.dto.facilitator.ConsumeOilFlowDto">
+        select ORDER_ID as orderId,
+        SUM(AMOUNT) as amount,
+        OIL_PRICE as oilPrice,
+        SUM(AMOUNT) / 100 as amountStr,
+        OIL_PRICE as oilPriceStr,
+        SUM(OIL_RISE) as oilRise,
+        OTHER_NAME as otherName,
+        OTHER_USER_BILL as otherUserBill,
+        PLATE_NUMBER as plateNumber,
+        ADDRESS as address,
+        GET_DATE as getDate,
+        MAX(CREATE_TIME) as createDate,
+        `STATE` as state
+        From (
+        SELECT o.* FROM
+        consume_oil_flow o
+        WHERE o.COST_TYPE = 2 AND o.tenant_id = #{tenantId}
+        ) tmp
+        <where>
+            <if test="oilTransaction.productId &gt; 0">
+                and tmp.PRODUCT_ID= #{oilTransaction.productId}
+            </if>
+            <if test="oilTransaction.orderId != null and oilTransaction.orderId != ''">
+                and tmp.order_id= #{oilTransaction.orderId}
+            </if>
+            <if test="oilTransaction.tradeTimeStart != null and oilTransaction.tradeTimeStart !=''">
+                and tmp.CREATE_TIME <![CDATA[>= ]]> #{oilTransaction.tradeTimeStart}
+            </if>
+            <if test="oilTransaction.tradeTimeEnd !=null and oilTransaction.tradeTimeEnd != ''">
+                and tmp.CREATE_TIME <![CDATA[<=]]> #{oilTransaction.tradeTimeEnd}
+            </if>
+            <if test="oilTransaction.consumerName != null and oilTransaction.consumerName != ''">
+                and tmp.OTHER_NAME= #{oilTransaction.consumerName}
+            </if>
+            <if test="oilTransaction.consumerBill != null and oilTransaction.consumerBill != ''">
+                and tmp.OTHER_USER_BILL= #{oilTransaction.consumerBill}
+            </if>
+            <if test="oilTransaction.settlTimeStart != null and oilTransaction.settlTimeStart != ''">
+                and tmp.GET_DATE <![CDATA[>=]]> #{oilTransaction.settlTimeStart}
+            </if>
+            <if test="oilTransaction.settlTimeEnd != null and oilTransaction.settlTimeEnd != ''">
+                and tmp.GET_DATE <![CDATA[<=]]> #{oilTransaction.settlTimeEnd}
+            </if>
+            <if test="oilTransaction.state != null">
+                and tmp.state= #{oilTransaction.state}
+            </if>
+            <if test="userType != null and userType &gt; 0">
+                and tmp.user_type= #{userType}
+            </if>
+            <if test="payUserType != null and payUserType &gt; 0">
+                and pay_user_type= #{payUserType}
+            </if>
+        </where>
+        GROUP BY ORDER_ID,OIL_AFFILIATION,VEHICLE_AFFILIATION,user_type,pay_user_type,user_id
+        ORDER BY createDate DESC,id DESC
+    </select>
+
+<!--    <select id="getUserRepairList" resultType="com.youming.youche.market.dto.facilitator.UserRepairInfoDto">-->
+<!--        select-->
+<!--        <if test="isTotal == 1">-->
+<!--            round(sum(if(urm.STATE = 0,urm.amount,0))/100,2) as amountAll,-->
+<!--            round(sum(if(urm.STATE = 1,urm.amount,0))/100,2) as amountUse-->
+<!--        </if>-->
+<!--        <if test="isTotal == 0">-->
+<!--            urm.order_id as orderId,-->
+<!--            urm.CREATE_TIME as createTime,-->
+<!--            round(urm.AMOUNT / 100,2) as amount,-->
+<!--            uri.user_name as otherName,-->
+<!--            uri.user_bill as otherUserBill,-->
+<!--            uri.PROVINCE_ID as provinceId,-->
+<!--            uri.CITY_ID as cityId,-->
+<!--            uri.COUNTY_ID as countyId,-->
+<!--            uri.ADDRESS as address,-->
+<!--            urm.get_date as getDate,-->
+<!--            urm.repair_id as repairId,-->
+<!--            urm.STATE as state,-->
+<!--            uri.repair_code as repairCode,-->
+<!--            uri.PLATE_NUMBER as plateNumber-->
+<!--        </if>-->
+<!--        from user_repair_info uri-->
+<!--        inner join-->
+<!--        user_repair_margin urm-->
+<!--        on-->
+<!--        uri.id = urm.repair_Id-->
+<!--        <where>-->
+<!--            <if test="oilTransaction.productId &gt; 0">-->
+<!--                and uri.PRODUCT_ID = #{oilTransaction.productId}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.orderId != null and oilTransaction.orderId != ''">-->
+<!--                and uri.repair_code= #{oilTransaction.orderId}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.tradeTimeStart != null and oilTransaction.tradeTimeStart != ''">-->
+<!--                and urm.CREATE_TIME  <![CDATA[>=]]> #{oilTransaction.tradeTimeStart}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.tradeTimeEnd != null and oilTransaction.tradeTimeEnd != ''">-->
+<!--                and urm.CREATE_TIME <![CDATA[<=]]> #{oilTransaction.tradeTimeEnd}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.consumerName != null and oilTransaction.consumerName != ''">-->
+<!--                and urm.user_Name like CONCAT('%',#{oilTransaction.consumerName},'%')-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.consumerBill != null and oilTransaction.consumerBill != ''">-->
+<!--                and urm.user_Bill like CONCAT('%',#{oilTransaction.consumerBill},'%')-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.settlTimeStart != null and oilTransaction.settlTimeStart != ''">-->
+<!--                and urm.get_Date <![CDATA[>=]]> #{oilTransaction.settlTimeStart}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.settlTimeEnd != null and oilTransaction.settlTimeEnd != ''">-->
+<!--                and urm.get_Date <![CDATA[<=]]>  #{oilTransaction.settlTimeEnd}-->
+<!--            </if>-->
+<!--            <if test="oilTransaction.state != nul and oilTransaction.state &gt;= 0">-->
+<!--                and urm.STATE = #{oilTransaction.state}-->
+<!--            </if>-->
+
+<!--            <choose>-->
+<!--                <when test="tenantId &gt; -1">-->
+<!--                    and urm.tenant_id = #{tenantId}-->
+<!--                </when>-->
+<!--                <otherwise>-->
+<!--                    and urm.tenant_id = #{tenantId}-->
+<!--                </otherwise>-->
+<!--            </choose>-->
+<!--            ORDER BY urm.CREATE_TIME DESC-->
+<!--        </where>-->
+<!--    </select>-->
+
+
+    <select id="getUserOilFlowExport" resultType="com.youming.youche.market.dto.facilitator.ConsumeOilFlowDto">
+        <include refid="userOilFlow"/>
+    </select>
+
+    <select id="getUserRepairListExport" resultType="com.youming.youche.market.dto.facilitator.UserRepairInfoDto">
+        <include refid="getUserRepair"/>
+    </select>
+
+    <sql id="userOilFlow">
+
+        select ORDER_ID as orderId,
+        SUM(AMOUNT) as amount,
+        OIL_PRICE as oilPrice,
+        SUM(AMOUNT) / 100 as amountStr,
+        OIL_PRICE as oilPriceStr,
+        SUM(OIL_RISE) as oilRise,
+        OTHER_NAME as otherName,
+        OTHER_USER_BILL as otherUserBill,
+        PLATE_NUMBER as plateNumber,
+        ADDRESS as address,
+        GET_DATE as getDate,
+        MAX(CREATE_TIME) as createDate,
+        `STATE` as state
+        From (
+        SELECT o.* FROM
+        consume_oil_flow o
+        WHERE o.COST_TYPE = 2 AND o.tenant_id = #{tenantId}
+        ) tmp
+        <where>
+            <if test="productId &gt; 0">
+                and tmp.PRODUCT_ID=#{productId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and tmp.order_id= #{orderId}
+            </if>
+            <if test="tradeTimeStart != null and tradeTimeStart !=''">
+                and tmp.CREATE_TIME <![CDATA[>= ]]> #{tradeTimeStart}
+            </if>
+            <if test="tradeTimeEnd !=null and tradeTimeEnd != ''">
+                and tmp.CREATE_TIME <![CDATA[<=]]> #{tradeTimeEnd}
+            </if>
+            <if test="consumerName != null and consumerName != ''">
+                and tmp.OTHER_NAME=#{consumerName}
+            </if>
+            <if test="consumerBill != null and consumerBill != ''">
+                and tmp.OTHER_USER_BILL= #{consumerBill}
+            </if>
+            <if test="settlTimeStart != null and settlTimeStart != ''">
+                and tmp.GET_DATE <![CDATA[>=]]> #{settlTimeStart}
+            </if>
+            <if test="settlTimeEnd != null and settlTimeEnd != ''">
+                and tmp.GET_DATE <![CDATA[<=]]> #{settlTimeEnd}
+            </if>
+            <if test="state != null and state &gt; 0">
+                and tmp.state=#{state}
+            </if>
+            <if test="userType != null and userType &gt; 0">
+                and tmp.user_type=#{userType}
+            </if>
+            <if test="payUserType != null and payUserType &gt; 0">
+                and pay_user_type=#{payUserType}
+            </if>
+            GROUP BY ORDER_ID,OIL_AFFILIATION,VEHICLE_AFFILIATION,user_type,pay_user_type,user_id
+            ORDER BY createDate DESC,id DESC
+        </where>
+    </sql>
+
+    <sql id="getUserRepair">
+        select
+        <if test="isTotal == 1">
+            round(sum(if(urm.STATE = 0,urm.amount,0))/100,2) as amountAll,
+            round(sum(if(urm.STATE = 1,urm.amount,0))/100,2) as amountUse
+        </if>
+        <if test="isTotal == 0">
+            urm.order_id as orderId,
+            urm.CREATE_TIME as createTime,
+            round(urm.AMOUNT / 100,2) as amount,
+            uri.user_name as otherName,
+            uri.user_bill as otherUserBill,
+            uri.PROVINCE_ID as provinceId,
+            uri.CITY_ID as cityId,
+            uri.COUNTY_ID as countyId,
+            uri.ADDRESS as address,
+            urm.get_date as getDate,
+            urm.repair_id as repairId,
+            urm.STATE as state,
+            uri.repair_code as repairCode,
+            uri.PLATE_NUMBER as plateNumber
+        </if>
+        from user_repair_info uri
+        inner join
+        user_repair_margin urm
+        on
+        uri.id = urm.repair_Id
+        <where>
+            <if test="productId &gt; 0">
+                and uri.PRODUCT_ID = #{productId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and uri.repair_code= #{orderId}
+            </if>
+            <if test="tradeTimeStart != null and tradeTimeStart != ''">
+                and urm.CREATE_TIME  <![CDATA[>=]]> #{tradeTimeStart}
+            </if>
+            <if test="tradeTimeEnd != null and tradeTimeEnd != ''">
+                and urm.CREATE_TIME <![CDATA[<=]]> #{tradeTimeEnd}
+            </if>
+            <if test="consumerName != null and consumerName != ''">
+                and urm.user_Name like concat(concat("%",#{consumerName}),"%")
+            </if>
+            <if test="consumerBill != null and consumerBill != ''">
+                and urm.user_Bill like concat(concat("%",#{consumerBill}),"%")
+            </if>
+            <if test="settlTimeStart != null and settlTimeStart != ''">
+                and urm.get_Date <![CDATA[>=]]> #{settlTimeStart}
+            </if>
+            <if test="settlTimeEnd != null and settlTimeEnd != ''">
+                and urm.get_Date <![CDATA[<=]]>  #{settlTimeEnd}
+            </if>
+            <if test="state != null and state &gt;= 0">
+                and urm.STATE = #{state}
+            </if>
+
+            <choose>
+                <when test="tenantId &gt; -1">
+                    and urm.tenant_id = #{tenantId}
+                </when>
+                <otherwise>
+                    and urm.tenant_id = #{tenantId}
+                </otherwise>
+            </choose>
+            ORDER BY urm.CREATE_TIME DESC
+        </where>
+    </sql>
+
+    <select id="totalUserOilFlow" resultType="com.youming.youche.market.dto.facilitator.ConsumeOilFlowDto">
+        select sum(round((if(tmp.state = 0,tmp.amount,0))/100,2)) as amountAll,
+        sum(round((if(tmp.state = 1,tmp.amount,0))/100,2)) as amountUse
+        from( SELECT o.* FROM consume_oil_flow o WHERE o.COST_TYPE=2 AND o.tenant_id= #{tenantId} ) tmp
+        <where>
+            <if test="oilTransaction.productId &gt; 0">
+                and tmp.PRODUCT_ID = #{oilTransaction.productId}
+            </if>
+            <if test="oilTransaction.orderId != null and oilTransaction.orderId != ''">
+                and tmp.order_id = #{oilTransaction.orderId}
+            </if>
+            <if test="oilTransaction.tradeTimeStart != null and oilTransaction.tradeTimeStart !=''">
+                and tmp.CREATE_TIME <![CDATA[>= ]]> #{oilTransaction.tradeTimeStart}
+            </if>
+            <if test="oilTransaction.tradeTimeEnd !=null and oilTransaction.tradeTimeEnd != ''">
+                and tmp.CREATE_TIME <![CDATA[<=]]> #{oilTransaction.tradeTimeEnd}
+            </if>
+            <if test="oilTransaction.consumerName != null and oilTransaction.consumerName != ''">
+                and tmp.OTHER_NAME = #{oilTransaction.consumerName}
+            </if>
+            <if test="oilTransaction.consumerBill != null and oilTransaction.consumerBill != ''">
+                and tmp.OTHER_USER_BILL = #{oilTransaction.consumerBill}
+            </if>
+            <if test="oilTransaction.settlTimeStart != null and oilTransaction.settlTimeStart != ''">
+                and tmp.GET_DATE <![CDATA[>=]]> #{oilTransaction.settlTimeStart}
+            </if>
+            <if test="oilTransaction.settlTimeEnd != null and oilTransaction.settlTimeEnd != ''">
+                and tmp.GET_DATE <![CDATA[<=]]> #{oilTransaction.settlTimeEnd}
+            </if>
+            <if test="oilTransaction.state != null">
+                and tmp.state = #{oilTransaction.state}
+            </if>
+            <if test="userType != null and userType &gt; 0">
+                and tmp.user_type = #{userType}
+            </if>
+            <if test="payUserType != null and  payUserType &gt; 0">
+                and pay_user_type = #{payUserType}
+            </if>
+        </where>
+
+    </select>
+    <select id="queryTenantId" resultType="java.lang.Long">
+        SELECT
+            id AS flowId
+        FROM
+            consume_oil_flow c
+        WHERE
+            1 = 1
+          AND c.tenant_id = #{tenantId} UNION ALL
+        SELECT
+            id AS flowId
+        FROM
+            consume_oil_flow_ext e
+        WHERE
+            1 = 1
+          AND e.tenant_id = #{tenantId}
+    </select>
+    <select id="queryAll" resultType="com.youming.youche.market.dto.youca.ConsumeOilFlowDto">
+        SELECT
+            c.*,
+            s.service_name,
+            sp.is_share
+        FROM
+            consume_oil_flow c,
+            service_info s,
+            service_product sp
+        WHERE
+            1 = 1
+          AND sp.id = c.product_id
+          AND s.service_user_id = c.user_id
+          AND cost_type =2
+          AND c.id IN (
+            SELECT
+                id
+            FROM
+                consume_oil_flow
+            WHERE
+                tenant_id =#{tenantId} UNION ALL
+            SELECT
+                flow_id
+            FROM
+                consume_oil_flow_ext
+            WHERE
+                tenant_id =#{tenantId})
+
+            <if test="consumeOilFlowVo.oilStationType!=null and consumeOilFlowVo.oilStationType>-1">
+                AND sp.is_share=#{consumeOilFlowVo.oilStationType}
+            </if>
+            <if test="consumeOilFlowVo.orderId!=null and consumeOilFlowVo.orderId!=''">
+                AND c.order_id=#{consumeOilFlowVo.orderId}
+            </if>
+            <if test="consumeOilFlowVo.tradeTimeStart!=null and consumeOilFlowVo.tradeTimeStart!=''">
+                AND c.create_time>=#{consumeOilFlowVo.tradeTimeStart}
+            </if>
+            <if test="consumeOilFlowVo.tradeTimeEnd!=null and consumeOilFlowVo.tradeTimeEnd!=''">
+                AND c.create_time &lt; =#{consumeOilFlowVo.tradeTimeEnd + " 23:59:59"}
+            </if>
+            <if test="consumeOilFlowVo.consumerName!=null and consumeOilFlowVo.consumerName!=''">
+                AND c.other_name like  CONCAT ('%', #{consumeOilFlowVo.consumerName},'%')
+            </if>
+            <if test="consumeOilFlowVo.consumerBill!=null and consumeOilFlowVo.consumerBill!=''">
+                AND c.other_user_bill=#{consumeOilFlowVo.consumerBill}
+            </if>
+            <if test="consumeOilFlowVo.settlStartTime!=null and consumeOilFlowVo.settlStartTime!=''">
+                AND  c.get_date >=#{consumeOilFlowVo.settlStartTime}
+            </if>
+            <if test="consumeOilFlowVo.settlEndTime!=null and consumeOilFlowVo.settlEndTime!=''">
+                AND  c.get_date &lt;=#{consumeOilFlowVo.settlEndTime+ " 23:59:59"}
+            </if>
+            <if test="consumeOilFlowVo.extFlowIds!=null and consumeOilFlowVo.size()>0">
+                AND c.id in(#{consumeOilFlowVo.extFlowIds})
+            </if>
+            <if test="consumeOilFlowVo.productName!=null and consumeOilFlowVo.productName!=''">
+                AND  c.product_name like CONCAT ('%', #{consumeOilFlowVo.productName},'%')
+            </if>
+            <if test="consumeOilFlowVo.plateNumber!=null and consumeOilFlowVo.plateNumber!=''">
+                AND  c.plate_number like CONCAT ('%', #{consumeOilFlowVo.plateNumber},'%')
+            </if>
+            <if test="consumeOilFlowVo.cardNum!=null and consumeOilFlowVo.cardNum!=''">
+                AND  c.other_User_Bill=#{consumeOilFlowVo.cardNum}
+            </if>
+            <if test="consumeOilFlowVo.expire!=null and consumeOilFlowVo.expire>-1">
+                AND  c.state=#{consumeOilFlowVo.expire}
+            </if>
+            <if test="consumeOilFlowVo.serviceName!=null and consumeOilFlowVo.serviceName!=''">
+                AND  s.service_name like CONCAT ('%', #{consumeOilFlowVo.serviceName},'%')
+            </if>
+            <if test="consumeOilFlowVo.address!=null and consumeOilFlowVo.address!=''">
+                AND  c.address like CONCAT ('%', #{consumeOilFlowVo.address},'%')
+            </if>
+
+        order by c.create_time desc,id desc
+
+    </select>
+    <select id="queryAllListExport" resultType="com.youming.youche.market.dto.youca.ConsumeOilFlowDto">
+        SELECT
+        c.*,
+        s.service_name,
+        sp.is_share
+        FROM
+        consume_oil_flow c,
+        service_info s,
+        service_product sp
+        WHERE
+        1 = 1
+        AND sp.id = c.product_id
+        AND s.service_user_id = c.user_id
+        AND cost_type =2
+        AND c.id IN (
+        SELECT
+        id
+        FROM
+        consume_oil_flow
+        WHERE
+        tenant_id =#{tenantId} UNION ALL
+        SELECT
+        flow_id
+        FROM
+        consume_oil_flow_ext
+        WHERE
+        tenant_id =#{tenantId})
+
+        order by c.create_time desc,id desc
+    </select>
+    <select id="queryAllSum" resultType="com.youming.youche.market.dto.youca.ConsumeOilFlowDtos">
+        SELECT
+            IFNULL( SUM( c.amount ), 0 ) amount,
+            IFNULL( SUM( e.rebate ), 0 ) fleetRebateAmount,
+            IFNULL( SUM( c.OIL_RISE ), 0 )* 1000 oilRise
+        FROM
+            service_info s,
+            service_product sp,
+            consume_oil_flow c
+            LEFT JOIN consume_oil_flow_ext e ON e.flow_id = c.id
+        WHERE
+            1 = 1
+          AND sp.id = c.product_id
+          AND s.service_user_id = c.user_id
+          AND cost_type =2
+          AND c.id IN (
+            SELECT
+                id
+            FROM
+                consume_oil_flow
+                  where  tenant_id =#{tenantId}
+            UNION ALL
+            SELECT
+                flow_id
+            FROM
+                consume_oil_flow_ext
+            where  tenant_id =#{tenantId}
+        )
+
+            <if test="consumeOilFlowVo.oilStationType!=null and consumeOilFlowVo.oilStationType>-1">
+                AND sp.is_share=#{consumeOilFlowVo.oilStationType}
+            </if>
+            <if test="consumeOilFlowVo.orderId!=null and consumeOilFlowVo.orderId!=''">
+                AND c.order_id=#{consumeOilFlowVo.orderId}
+            </if>
+            <if test="consumeOilFlowVo.tradeTimeStart!=null and consumeOilFlowVo.tradeTimeStart!=''">
+                AND c.create_time>=#{consumeOilFlowVo.tradeTimeStart}
+            </if>
+            <if test="consumeOilFlowVo.tradeTimeEnd!=null and consumeOilFlowVo.tradeTimeEnd!=''">
+                AND c.create_time &lt; =#{consumeOilFlowVo.tradeTimeEnd + " 23:59:59"}
+            </if>
+            <if test="consumeOilFlowVo.consumerName!=null and consumeOilFlowVo.consumerName!=''">
+                AND c.other_name like  CONCAT ('%', #{consumeOilFlowVo.consumerName},'%')
+            </if>
+            <if test="consumeOilFlowVo.consumerBill!=null and consumeOilFlowVo.consumerBill!=''">
+                AND c.other_user_bill=#{consumeOilFlowVo.consumerBill}
+            </if>
+            <if test="consumeOilFlowVo.settlStartTime!=null and consumeOilFlowVo.settlStartTime!=''">
+                AND  c.get_date >=#{consumeOilFlowVo.settlStartTime}
+            </if>
+            <if test="consumeOilFlowVo.settlEndTime!=null and consumeOilFlowVo.settlEndTime!=''">
+                AND  c.get_date &lt;=#{consumeOilFlowVo.settlEndTime+ " 23:59:59"}
+            </if>
+            <if test="consumeOilFlowVo.extFlowIds!=null and consumeOilFlowVo.size()>0">
+                AND c.id in(#{consumeOilFlowVo.extFlowIds})
+            </if>
+            <if test="consumeOilFlowVo.productName!=null and consumeOilFlowVo.productName!=''">
+                AND  s.product_name like CONCAT ('%', #{consumeOilFlowVo.productName},'%')
+            </if>
+            <if test="consumeOilFlowVo.plateNumber!=null and consumeOilFlowVo.plateNumber!=''">
+                AND  c.plate_number like CONCAT ('%', #{consumeOilFlowVo.plateNumber},'%')
+            </if>
+            <if test="consumeOilFlowVo.cardNum!=null and consumeOilFlowVo.cardNum!=''">
+                AND  c.other_User_Bill=#{consumeOilFlowVo.cardNum}
+            </if>
+            <if test="consumeOilFlowVo.expire!=null and consumeOilFlowVo.expire>-1">
+                AND  c.state=#{consumeOilFlowVo.expire}
+            </if>
+            <if test="consumeOilFlowVo.serviceName!=null and consumeOilFlowVo.serviceName!=''">
+                AND  s.service_name like CONCAT ('%', #{consumeOilFlowVo.serviceName},'%')
+            </if>
+            <if test="consumeOilFlowVo.address!=null and consumeOilFlowVo.address!=''">
+                AND  c.address like CONCAT ('%', #{consumeOilFlowVo.address},'%')
+            </if>
+
+    </select>
+
+    <select id="getServiceUnexpiredDetail" resultType="com.youming.youche.market.dto.facilitator.ServiceUnexpiredDetailDto">
+        SELECT
+        *
+        FROM
+        (
+            SELECT
+            a.ORDER_ID AS orderId,
+            ifnull( a.AMOUNT, 0 ) AS amount,
+            ifnull( a.UNDUE_AMOUNT, 0 ) AS undueAmount,
+            a.create_time AS createTime,
+            a.GET_DATE AS getDate,
+            b.NAME AS NAME,
+            a.MARGIN_BALANCE AS marginBalance
+            FROM
+        <choose>
+            <when test="serviceType != null and serviceType == 2">
+                user_repair_margin
+            </when>
+            <otherwise>
+                consume_oil_flow
+            </otherwise>
+        </choose>
+        a LEFT JOIN sys_tenant_def b ON a.TENANT_ID = b.id
+        LEFT JOIN service_product sp on a.product_id = sp.id
+        WHERE
+        sp.service_user_id = #{userId}
+        AND ( a.STATE = '0' OR a.STATE = '2' )
+        AND a.COST_TYPE = '2'
+        <if test="orderId != null and orderId != ''">
+            and a.ORDER_ID = #{orderId}
+        </if>
+        <if test="sourceTenantId != null and sourceTenantId != ''">
+            and a.TENANT_ID= #{sourceTenantId}
+        </if>
+        ORDER BY a.GET_DATE DESC)c where 1=1
+        <if test="name != null and name != ''">
+            AND c.name like  CONCAT ('%', #{name},'%')
+        </if>
+    </select>
+    <select id="getConsumeOilFlowProductIds" resultType="com.youming.youche.market.vo.youca.ConsumeOilFlowVo">
+    SELECT
+	 PRODUCT_ID as productId
+		,ROUND((SUM(EVALUATE_QUALITY) / count(1)),0) as qualityStar
+		 ,ROUND((SUM(EVALUATE_PRICE)  / count(1)),0) as priceStar
+		,ROUND((SUM(EVALUATE_SERVICE)  / count(1)),0) as serviceStar
+	 from consume_oil_flow where
+        <if test="productIds!=null and productIds.size() &gt; 0">
+            product_id in
+            <foreach collection="productIds" item="ids" open="(" separator="," close=")">
+                #{ids}
+            </foreach>
+        </if>
+	 and COST_TYPE = 1 group by product_id
+
+    </select>
+    <select id="getUserRepairList" resultType="com.youming.youche.market.dto.facilitator.UserRepairInfoDto">
+        select
+                <if test="isTotal == 1">
+                    round(sum(if(urm.STATE = 0,urm.amount,0))/100,2) as amountAll,
+                    round(sum(if(urm.STATE = 1,urm.amount,0))/100,2) as amountUse
+                </if>
+                <if test="isTotal == 0">
+                    urm.order_id as orderId,
+                    urm.CREATE_TIME as createTime,
+                    round(urm.AMOUNT / 100,2) as amount,
+                    uri.user_name as otherName,
+                    uri.user_bill as otherUserBill,
+                    uri.PROVINCE_ID as provinceId,
+                    uri.CITY_ID as cityId,
+                    uri.COUNTY_ID as countyId,
+                    uri.ADDRESS as address,
+                    urm.get_date as getDate,
+                    urm.repair_id as repairId,
+                    urm.STATE as state,
+                    uri.repair_code as repairCode,
+                    uri.PLATE_NUMBER as plateNumber
+                </if>
+                from user_repair_info uri
+                inner join
+                user_repair_margin urm
+                on
+                uri.id = urm.repair_Id
+                <where>
+                    <if test="oilTransaction.productId &gt; 0">
+                        and uri.PRODUCT_ID = #{oilTransaction.productId}
+                    </if>
+                    <if test="oilTransaction.orderId != null and oilTransaction.orderId != ''">
+                        and uri.repair_code= #{oilTransaction.orderId}
+                    </if>
+                    <if test="oilTransaction.tradeTimeStart != null and oilTransaction.tradeTimeStart != ''">
+                        and urm.CREATE_TIME  <![CDATA[>=]]> #{oilTransaction.tradeTimeStart}
+                    </if>
+                    <if test="oilTransaction.tradeTimeEnd != null and oilTransaction.tradeTimeEnd != ''">
+                        and urm.CREATE_TIME <![CDATA[<=]]> #{oilTransaction.tradeTimeEnd}
+                    </if>
+                    <if test="oilTransaction.consumerName != null and oilTransaction.consumerName != ''">
+                        and uri.user_Name like CONCAT('%',#{oilTransaction.consumerName},'%')
+                    </if>
+                    <if test="oilTransaction.consumerBill != null and oilTransaction.consumerBill != ''">
+                        and uri.user_Bill like CONCAT('%',#{oilTransaction.consumerBill},'%')
+                    </if>
+                    <if test="oilTransaction.settlTimeStart != null and oilTransaction.settlTimeStart != ''">
+                        and urm.get_Date <![CDATA[>=]]> #{oilTransaction.settlTimeStart}
+                    </if>
+                    <if test="oilTransaction.settlTimeEnd != null and oilTransaction.settlTimeEnd != ''">
+                        and urm.get_Date <![CDATA[<=]]>  #{oilTransaction.settlTimeEnd}
+                    </if>
+                    <if test="oilTransaction.state != null and oilTransaction.state &gt;= 0">
+                        and urm.STATE = #{oilTransaction.state}
+                    </if>
+
+                    <choose>
+                        <when test="tenantId &gt; -1">
+                            and urm.tenant_id = #{tenantId}
+                        </when>
+                        <otherwise>
+                            and urm.tenant_id = #{tenantId}
+                        </otherwise>
+                    </choose>
+                    ORDER BY urm.CREATE_TIME DESC
+                </where>
+    </select>
+    <select id="getUserRepairListCount"
+            resultType="com.youming.youche.market.dto.facilitator.UserRepairInfoDto">
+        select
+        <if test="isTotal == 1">
+            ifnull(round( sum( IF ( urm.STATE = 0, urm.amount, 0 ) ) / 100, 2 ),0) AS amountAll,
+            ifnull(round( sum( IF ( urm.STATE = 1, urm.amount, 0 ) ) / 100, 2 ),0) AS amountUse
+        </if>
+        <if test="isTotal == 0">
+            urm.order_id as orderId,
+            urm.CREATE_TIME as createTime,
+            round(urm.AMOUNT / 100,2) as amount,
+            uri.user_name as otherName,
+            uri.user_bill as otherUserBill,
+            uri.PROVINCE_ID as provinceId,
+            uri.CITY_ID as cityId,
+            uri.COUNTY_ID as countyId,
+            uri.ADDRESS as address,
+            urm.get_date as getDate,
+            urm.repair_id as repairId,
+            urm.STATE as state,
+            uri.repair_code as repairCode,
+            uri.PLATE_NUMBER as plateNumber
+        </if>
+        from user_repair_info uri
+        inner join
+        user_repair_margin urm
+        on
+        uri.id = urm.repair_Id
+        <where>
+            <if test="oilTransaction.productId &gt; 0">
+                and uri.PRODUCT_ID = #{oilTransaction.productId}
+            </if>
+            <if test="oilTransaction.orderId != null and oilTransaction.orderId != ''">
+                and uri.repair_code= #{oilTransaction.orderId}
+            </if>
+            <if test="oilTransaction.tradeTimeStart != null and oilTransaction.tradeTimeStart != ''">
+                and urm.CREATE_TIME  <![CDATA[>=]]> #{oilTransaction.tradeTimeStart}
+            </if>
+            <if test="oilTransaction.tradeTimeEnd != null and oilTransaction.tradeTimeEnd != ''">
+                and urm.CREATE_TIME <![CDATA[<=]]> #{oilTransaction.tradeTimeEnd}
+            </if>
+            <if test="oilTransaction.consumerName != null and oilTransaction.consumerName != ''">
+                and uri.user_Name like CONCAT('%',#{oilTransaction.consumerName},'%')
+            </if>
+            <if test="oilTransaction.consumerBill != null and oilTransaction.consumerBill != ''">
+                and uri.user_Bill like CONCAT('%',#{oilTransaction.consumerBill},'%')
+            </if>
+            <if test="oilTransaction.settlTimeStart != null and oilTransaction.settlTimeStart != ''">
+                and urm.get_Date <![CDATA[>=]]> #{oilTransaction.settlTimeStart}
+            </if>
+            <if test="oilTransaction.settlTimeEnd != null and oilTransaction.settlTimeEnd != ''">
+                and urm.get_Date <![CDATA[<=]]>  #{oilTransaction.settlTimeEnd}
+            </if>
+            <if test="oilTransaction.state != null and oilTransaction.state &gt;= 0">
+                and urm.STATE = #{oilTransaction.state}
+            </if>
+
+            <choose>
+                <when test="tenantId &gt; -1">
+                    and urm.tenant_id = #{tenantId}
+                </when>
+                <otherwise>
+                    and urm.tenant_id = #{tenantId}
+                </otherwise>
+            </choose>
+            ORDER BY urm.CREATE_TIME DESC
+        </where>
+    </select>
+    <select id="getUserOilFlowByUserId"
+            resultType="com.youming.youche.market.dto.facilitator.ConsumeOilFlowDto">
+        select ORDER_ID as orderId,
+        id as id,
+        SUM(AMOUNT) as amount,
+        OIL_PRICE as oilPrice,
+        SUM(AMOUNT) / 100 as amountStr,
+        OIL_PRICE as oilPriceStr,
+        SUM(OIL_RISE) as oilRise,
+        OTHER_NAME as otherName,
+        OTHER_USER_BILL as otherUserBill,
+        PLATE_NUMBER as plateNumber,
+        ADDRESS as address,
+        GET_DATE as getDate,
+        MAX(CREATE_TIME) as createDate,
+        `STATE` as state
+        From (
+        SELECT o.* FROM
+        consume_oil_flow o
+        WHERE o.COST_TYPE = 2 and tenant_Id=#{tenantId}
+        ) tmp
+        where 1=1 and
+            tmp.user_id= #{serviceUserId} and tmp.CREATE_TIME <![CDATA[ <= ]]> #{endTime} and tmp.CREATE_TIME <![CDATA[ >= ]]> #{statrtTime}
+            GROUP BY ORDER_ID,OIL_AFFILIATION,VEHICLE_AFFILIATION,user_type,pay_user_type,user_id
+            ORDER BY createDate DESC,id DESC
+    </select>
+    <select id="getUserRepairListByUserId"
+            resultType="com.youming.youche.market.dto.facilitator.UserRepairInfoDto">
+        select
+            urm.id as id,
+            urm.order_id as orderId,
+            urm.CREATE_TIME as createTime,
+            round(urm.AMOUNT / 100,2) as amount,
+            uri.user_name as otherName,
+            uri.user_bill as otherUserBill,
+            uri.PROVINCE_ID as provinceId,
+            uri.CITY_ID as cityId,
+            uri.COUNTY_ID as countyId,
+            uri.ADDRESS as address,
+            urm.get_date as getDate,
+            urm.repair_id as repairId,
+            urm.STATE as state,
+            uri.repair_code as repairCode,
+            uri.PLATE_NUMBER as plateNumber,
+            uri.state as stateInfo
+        from user_repair_info uri
+                 inner join
+             user_repair_margin urm
+             on
+                 uri.id = urm.repair_Id where 1=1 and uri.service_user_id =#{serviceUserId}  and uri.tenant_id=#{tenantId}
+        and urm.CREATE_TIME <![CDATA[ <= ]]> #{endTime} and urm.CREATE_TIME <![CDATA[ >= ]]> #{statrtTime} ORDER BY urm.CREATE_TIME DESC
+    </select>
+
+    <select id="getTotalMarginBalance" resultType="java.lang.Long">
+        SELECT
+        sum( ( IF ( tmp.state = 0, tmp.amount, 0 ) )) AS amountAll
+        FROM
+        ( SELECT o.* FROM consume_oil_flow o, service_product sp WHERE o.product_id = sp.id and o.COST_TYPE = 2 AND o.tenant_id = #{tenantId} and sp.SERVICE_USER_ID = #{serviceUserId}) tmp
+    </select>
+
+    <select id="getTotalMarginBalanceTwo" resultType="java.lang.Long">
+        SELECT
+        ifnull(sum( IF ( urm.STATE = 0, urm.amount, 0 ) ),0) AS amountAll
+        FROM
+        user_repair_info uri
+        INNER JOIN user_repair_margin urm ON uri.id = urm.repair_Id
+        inner join service_product sp on uri.product_id = sp.id
+        WHERE
+        sp.SERVICE_USER_ID = #{serviceUserId}
+        AND urm.tenant_id = #{tenantId}
+        ORDER BY
+        urm.CREATE_TIME DESC
+    </select>
+
+    <select id="queryAllExport" resultType="com.youming.youche.market.dto.youca.ConsumeOilFlowDto">
+        SELECT
+        c.*,
+        s.service_name,
+        sp.is_share
+        FROM
+        consume_oil_flow c,
+        service_info s,
+        service_product sp
+        WHERE
+        1 = 1
+        AND sp.id = c.product_id
+        AND s.service_user_id = c.user_id
+        AND cost_type =2
+        AND c.id IN (
+        SELECT
+        id
+        FROM
+        consume_oil_flow
+        WHERE
+        tenant_id =#{tenantId} UNION ALL
+        SELECT
+        flow_id
+        FROM
+        consume_oil_flow_ext
+        WHERE
+        tenant_id =#{tenantId})
+
+        <if test="consumeOilFlowVo.oilStationType!=null and consumeOilFlowVo.oilStationType>-1">
+            AND sp.is_share=#{consumeOilFlowVo.oilStationType}
+        </if>
+        <if test="consumeOilFlowVo.orderId!=null and consumeOilFlowVo.orderId!=''">
+            AND c.order_id=#{consumeOilFlowVo.orderId}
+        </if>
+        <if test="consumeOilFlowVo.tradeTimeStart!=null and consumeOilFlowVo.tradeTimeStart!=''">
+            AND c.create_time>=#{consumeOilFlowVo.tradeTimeStart}
+        </if>
+        <if test="consumeOilFlowVo.tradeTimeEnd!=null and consumeOilFlowVo.tradeTimeEnd!=''">
+            AND c.create_time &lt; =#{consumeOilFlowVo.tradeTimeEnd + " 23:59:59"}
+        </if>
+        <if test="consumeOilFlowVo.consumerName!=null and consumeOilFlowVo.consumerName!=''">
+            AND c.other_name like  CONCAT ('%', #{consumeOilFlowVo.consumerName},'%')
+        </if>
+        <if test="consumeOilFlowVo.consumerBill!=null and consumeOilFlowVo.consumerBill!=''">
+            AND c.other_user_bill=#{consumeOilFlowVo.consumerBill}
+        </if>
+        <if test="consumeOilFlowVo.settlStartTime!=null and consumeOilFlowVo.settlStartTime!=''">
+            AND  c.get_date >=#{consumeOilFlowVo.settlStartTime}
+        </if>
+        <if test="consumeOilFlowVo.settlEndTime!=null and consumeOilFlowVo.settlEndTime!=''">
+            AND  c.get_date &lt;=#{consumeOilFlowVo.settlEndTime+ " 23:59:59"}
+        </if>
+        <if test="consumeOilFlowVo.extFlowIds!=null and consumeOilFlowVo.size()>0">
+            AND c.id in(#{consumeOilFlowVo.extFlowIds})
+        </if>
+        <if test="consumeOilFlowVo.productName!=null and consumeOilFlowVo.productName!=''">
+            AND  c.product_name like CONCAT ('%', #{consumeOilFlowVo.productName},'%')
+        </if>
+        <if test="consumeOilFlowVo.plateNumber!=null and consumeOilFlowVo.plateNumber!=''">
+            AND  c.plate_number like CONCAT ('%', #{consumeOilFlowVo.plateNumber},'%')
+        </if>
+        <if test="consumeOilFlowVo.cardNum!=null and consumeOilFlowVo.cardNum!=''">
+            AND  c.other_User_Bill=#{consumeOilFlowVo.cardNum}
+        </if>
+        <if test="consumeOilFlowVo.expire!=null and consumeOilFlowVo.expire>-1">
+            AND  c.state=#{consumeOilFlowVo.expire}
+        </if>
+        <if test="consumeOilFlowVo.serviceName!=null and consumeOilFlowVo.serviceName!=''">
+            AND  s.service_name like CONCAT ('%', #{consumeOilFlowVo.serviceName},'%')
+        </if>
+        <if test="consumeOilFlowVo.address!=null and consumeOilFlowVo.address!=''">
+            AND  c.address like CONCAT ('%', #{consumeOilFlowVo.address},'%')
+        </if>
+
+        order by c.create_time desc,id desc
+    </select>
+</mapper>

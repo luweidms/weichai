@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.OaLoadVerificationMapper">
+
+    <select id="queryOaLoadVerificationsById"  resultType="com.youming.youche.finance.domain.OaLoadVerification">
+	select a.*
+	from
+	oa_load_verification a
+	where a.l_id=#{Lid}
+	and
+	a.op_date=(select max(op_date)
+	from
+	oa_load_verification
+	where l_id=#{Lid})
+    </select>
+</mapper>

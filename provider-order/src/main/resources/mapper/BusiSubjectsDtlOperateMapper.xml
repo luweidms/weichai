@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.BusiSubjectsDtlOperateMapper">
+
+    <select id="queryBusiSubjectsDtlOperate" resultType="com.youming.youche.order.domain.BusiSubjectsDtlOperate">
+        select * from busi_subjects_dtl_operate where dtl_id = #{dtlId}
+        order by sort_id asc
+    </select>
+</mapper>

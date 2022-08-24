@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantVehicleRelMapper">
+    <!--分页查询我的车库-->
+    <select id="doQueryVehicleAll" resultType="com.youming.youche.record.vo.TenantVehicleRelVo">
+        SELECT
+        ownVer.create_time as createTime,
+        vdi.idle,
+        vdi.id AS vehicleCode,
+        vdi.plate_number AS plateNumber,
+        vdi.licence_type AS licenceType,
+        vdi.vehicle_length AS vehicleLength,
+        vdi.vehicle_status AS vehicleStatus,
+        vdi.location_serv AS locationServ,
+        vdi.maintenance_dis AS maintenanceDis,
+        vdi.last_maintenance_date AS lastMaintenanceDate,
+        ownVer.vehicle_class AS vehicleClass,
+        ownVer.id AS relId,
+        ownVer.id AS eid,
+        ownVer.share_flg AS shareFlg,
+        ownVer.auth_state AS authState,
+        ownVer.is_auth AS isAuth,
+        ownVer.audit_content auditContent,
+        ( SELECT count( 1 ) FROM tenant_vehicle_rel l WHERE l.vehicle_code = ownVer.vehicle_code AND l.tenant_id !=
+        ${tenantId}) AS cooperationCount,
+        ownVer.driver_user_id AS driverUserId,
+        user_data_info.linkman AS linkman,
+        user_data_info.mobile_phone AS mobilePhone,
+        sys_tenant_def.id AS tenantId,
+        sys_tenant_def.NAME AS tenantName,
+        sys_tenant_def.link_phone AS linkPhone
+        FROM
+        tenant_vehicle_rel ownVer
+        LEFT JOIN vehicle_data_info vdi ON vdi.id = ownVer.vehicle_code
+        LEFT JOIN user_data_info ON user_data_info.id = ownVer.DRIVER_USER_ID
+        LEFT JOIN ( SELECT * FROM tenant_vehicle_rel WHERE vehicle_class = 1 ) ascriptionVer ON ownVer.plate_number =
+        ascriptionVer.plate_number
+        LEFT JOIN sys_tenant_def ON sys_tenant_def.id = ascriptionVer.tenant_id
+        <where>
+            ownVer.tenant_id= #{tenantId}
+            and ownVer.plate_number IS NOT NULL
+            <if test="plateNumber !=null and plateNumber !=''">
+                and vdi.plate_number LIKE concat('%',#{plateNumber},'%')
+            </if>
+            <if test="linkManName !=null and linkManName !=''">
+                and sys_tenant_def.link_man LIKE concat('%',#{linkManName},'%')
+            </if>
+            <if test="linkPhone !=null and linkPhone !=''">
+                and sys_tenant_def.link_phone LIKE concat('%',#{linkPhone},'%')
+            </if>
+            <if test="billReceiverMobile !=null and billReceiverMobile !=''">
+                and ownVer.BILL_RECEIVER_MOBILE = #{billReceiverMobile}
+            </if>
+            <if test="linkman !=null and linkman!=''">
+                and user_data_info.linkman LIKE concat('%',#{linkman},'%')
+            </if>
+            <if test="tenantName !=null and tenantName !=''">
+                and sys_tenant_def.name LIKE concat('%',#{tenantName},'%')
+            </if>
+            <if test="mobilePhone !=null and mobilePhone !=''">
+                and user_data_info.mobile_phone LIKE concat('%',#{mobilePhone},'%')
+            </if>
+            <if test="authStateIn !=null and authStateIn &gt; -1">
+                and ownVer.auth_state = #{authStateIn}
+            </if>
+            <if test="vehicleLength != null and  vehicleLength != -1 and vehicleLength != ''">
+                and vdi.vehicle_length =#{vehicleLength}
+            </if>
+            <if test="vehicleStatus !=null and vehicleStatus &gt; -1">
+                and vdi.vehicle_status = #{vehicleStatus}
+            </if>
+            <if test="shareFlgIn != null and shareFlgIn &gt; -1">
+                and ownVer.share_flg = #{shareFlgIn}
+            </if>
+            <if test="vehicleClass !=null and vehicleClass &gt; -1">
+                and ownVer.vehicle_class = #{vehicleClass}
+            </if>
+            <if test="isAuth !=null and isAuth &gt; -1">
+                and ownVer.is_auth = #{isAuth}
+            </if>
+            <if test="vehicleGps !=null and vehicleGps &gt; 0 and vehicleGps == 2">
+                and vdi.LOCATION_SERV IS NULL
+            </if>
+            <if test="vehicleGps !=null and vehicleGps !=2">
+                and vdi.LOCATION_SERV = #{vehicleGps}
+            </if>
+        </where>
+        ORDER BY
+        ownVer.create_time DESC
+    </select>
+
+    <!--分页查询我的车库-->
+    <select id="doQueryVehicleAllIsOrder" resultType="com.youming.youche.record.vo.TenantVehicleRelVo">
+        SELECT
+        vdi.idle,
+        vdi.id AS vehicleCode,
+        vdi.plate_number AS plateNumber,
+        vdi.licence_type AS licenceType,
+        vdi.vehicle_length AS vehicleLength,
+        vdi.vehicle_status AS vehicleStatus,
+        vdi.location_serv AS locationServ,
+        vdi.maintenance_dis AS maintenanceDis,
+        vdi.last_maintenance_date AS lastMaintenanceDate,
+        ownVer.vehicle_class AS vehicleClass,
+        ownVer.id AS relId,
+        ownVer.id AS eid,
+        ownVer.share_flg AS shareFlg,
+        ownVer.auth_state AS authState,
+        ownVer.is_auth AS isAuth,
+        ownVer.is_working AS isWorking,
+        ownVer.audit_content auditContent,
+        ( SELECT count( 1 ) FROM tenant_vehicle_rel l WHERE l.vehicle_code = ownVer.vehicle_code AND l.tenant_id !=
+        ownVer.tenant_id= ${tenantId}) AS cooperationCount,
+        ownVer.driver_user_id AS driverUserId,
+        user_data_info.linkman AS linkman,
+        user_data_info.mobile_phone AS mobilePhone,
+        sys_tenant_def.id AS tenantId,
+        sys_tenant_def.NAME AS tenantName,
+        sys_tenant_def.link_phone AS linkPhone
+        FROM
+        tenant_vehicle_rel ownVer
+        LEFT JOIN vehicle_data_info vdi ON vdi.id = ownVer.vehicle_code
+        LEFT JOIN user_data_info ON user_data_info.id = ownVer.DRIVER_USER_ID
+        LEFT JOIN ( SELECT * FROM tenant_vehicle_rel WHERE vehicle_class = 1 ) ascriptionVer ON ownVer.plate_number =
+        ascriptionVer.plate_number
+        LEFT JOIN sys_tenant_def ON sys_tenant_def.id = ascriptionVer.tenant_id
+        <where>
+            ownVer.tenant_id= #{tenantId}
+            and ownVer.plate_number IS NOT NULL
+            <if test="plateNumber !=null and plateNumber !=''">
+                and vdi.plate_number LIKE concat('%',#{plateNumber},'%')
+            </if>
+            <if test="linkManName !=null and linkManName !=''">
+                and sys_tenant_def.link_man LIKE concat('%',#{linkManName},'%')
+            </if>
+            <if test="linkPhone !=null and linkPhone !=''">
+                and sys_tenant_def.link_phone LIKE concat('%',#{linkPhone},'%')
+            </if>
+            <if test="billReceiverMobile !=null and billReceiverMobile !=''">
+                and ownVer.BILL_RECEIVER_MOBILE = #{billReceiverMobile}
+            </if>
+            <if test="linkman !=null and linkman!=''">
+                and user_data_info.linkman LIKE concat('%',#{linkman},'%')
+            </if>
+            <if test="tenantName !=null and tenantName !=''">
+                and sys_tenant_def.name LIKE concat('%',#{tenantName},'%')
+            </if>
+            <if test="mobilePhone !=null and mobilePhone !=''">
+                and user_data_info.mobile_phone LIKE concat('%',#{mobilePhone},'%')
+            </if>
+            <if test="authStateIn !=null and authStateIn &gt; -1">
+                and ownVer.auth_state = #{authStateIn}
+            </if>
+            <if test="vehicleLength != null and  vehicleLength != -1 and vehicleLength != ''">
+                and vdi.vehicle_length =#{vehicleLength}
+            </if>
+            <if test="vehicleStatus !=null and vehicleStatus &gt; -1">
+                and vdi.vehicle_status = #{vehicleStatus}
+            </if>
+            <if test="shareFlgIn != null and shareFlgIn &gt; -1">
+                and ownVer.share_flg = #{shareFlgIn}
+            </if>
+            <if test="vehicleClass !=null and vehicleClass &gt; -1">
+                and ownVer.vehicle_class = #{vehicleClass}
+            </if>
+            <if test="isAuth !=null and isAuth &gt; -1">
+                and ownVer.is_auth = #{isAuth}
+            </if>
+            <if test="vehicleGps !=null and vehicleGps &gt; 0 and vehicleGps == 2">
+                and vdi.LOCATION_SERV IS NULL
+            </if>
+            <if test="vehicleGps !=null and vehicleGps !=2">
+                and vdi.LOCATION_SERV = #{vehicleGps}
+            </if>
+            <if test="orgId !=null and orgId !=''">
+                and ownVer.org_id = #{orgId}
+            </if>
+        </where>
+        ORDER BY
+        ownVer.create_time DESC
+    </select>
+
+    <!--条件查询车辆信息-->
+    <select id="getZYVehicleByVehicleCode" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where VEHICLE_CODE = #{vehicleCode}
+          and VEHICLE_CLASS = #{vehicleClass}
+          ORDER BY id DESC limit 0,1
+    </select>
+
+    <!--条件查询车辆信息-->
+    <select id="getTenantVehicleRel" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where vehicle_code = #{vehicleCode}
+          and tenant_id = 1;
+    </select>
+
+    <!--条件查询车辆信息-->
+    <select id="getTenantVehicleRelList" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where vehicle_code = #{vehicleCode}
+        order by DRIVER_C_TIME asc
+    </select>
+
+    <select id="getTenantVehicleRelListByPlateNumber"
+            resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where plate_Number = #{plateNumber}
+          and VEHICLE_CLASS = #{vehicleClass}
+    </select>
+
+    <select id="tenantVehicleRel" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where vehicle_code = #{vehicleCode}
+          and tenant_Id = #{tenantId}
+        limit 0,1
+    </select>
+
+    <select id="getTenantVehicleRelListByDriverUserId"
+            resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where DRIVER_USER_ID = #{driverUserId}
+          and tenant_id = #{tenantId}
+    </select>
+
+    <select id="checkVehicleClass" resultType="java.lang.Integer">
+        select f.vehicle_class vehicleClass
+        from tenant_vehicle_rel f
+        where f.plate_Number = #{plateNumer}
+          and f.tenant_id = #{tenantId}
+    </select>
+
+    <!--查询最大id-->
+    <select id="maxId" resultType="java.lang.Long">
+        SELECT max(id)
+        from tenant_vehicle_rel
+    </select>
+
+    <select id="queryTenantVehicleRel" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        SELECT *
+        FROM tenant_vehicle_rel
+        WHERE vehicle_code = #{vehicleCode}
+          AND tenant_id = #{tenantId}
+    </select>
+
+    <!--查询车队数量-->
+    <select id="getZYCount" resultType="java.lang.Long">
+        SELECT
+        count( 1 )
+        FROM
+        tenant_vehicle_rel
+        <where>
+            <if test="vehicleCode != null">
+                vehicle_code = #{vehicleCode}
+            </if>
+            <if test="tenantId != null">
+                AND tenant_id = #{tenantId}
+            </if>
+            <if test="vehicleClass != null and vehicleClass !=1">
+                and vehicle_class = #{vehicleClass}
+            </if>
+            <if test="vehicleClass != null">
+                and (vehicle_class = #{vehicleClass}
+            </if>
+            <if test="vehicleClass != 1">
+                or vehicle_class = 1)
+            </if>
+            <if test="vehicleClass == 1">
+                )
+            </if>
+        </where>
+    </select>
+
+    <!--查询车队司机-->
+    <select id="queryTenantVehicleRelDriver" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRel">
+        select *
+        from tenant_vehicle_rel
+        where vehicle_code = #{vehicleCode}
+          and driver_user_id is not null
+    </select>
+
+    <!--运营端分页查询车辆信息-->
+    <select id="doQueryVehicleAllDis" resultType="com.youming.youche.record.vo.VehicleDataVo">
+        SELECT
+        vehicle_data_info.id vehicleCode,
+        vehicle_data_info.plate_number plateNumber,
+        vehicle_data_info.licence_type licenceType,
+        vehicle_data_info.vehicle_length vehicleLength,
+        vehicle_data_info.vehicle_status vehicleStatus,
+        vehicle_data_info.create_time createDate,
+        vehicle_data_info.auth_state authState,
+        vehicle_data_info.is_auth isAuth,
+        vehicle_data_info.location_serv locationServ,
+        vehicle_data_info.driver_user_id driverUserId,
+        driver.linkman linkman,
+        driver.mobile_phone mobilePhone,
+        ascriptionVer.share_flg shareFlg,
+        sys_tenant_def.id tenantId,
+        sys_tenant_def.NAME tenantName,
+        sys_tenant_def.link_phone linkPhone,
+        sys_tenant_def.link_man linkManName,
+        ifnull( tvr.driverNum, 0 ) driverNum
+        FROM
+        vehicle_data_info
+        LEFT JOIN ( SELECT count( DRIVER_USER_ID ) driverNum, plate_number FROM tenant_vehicle_rel WHERE PLATE_NUMBER IS NOT NULL GROUP BY plate_number ) tvr ON vehicle_data_info.plate_number = tvr.plate_number
+        LEFT JOIN tenant_vehicle_rel ascriptionVer ON vehicle_data_info.id = ascriptionVer.vehicle_code
+        AND vehicle_data_info.plate_number = ascriptionVer.plate_number
+        AND ascriptionVer.vehicle_Class = 1
+        LEFT JOIN sys_tenant_def ON ascriptionVer.tenant_id = sys_tenant_def.id
+        LEFT JOIN (
+        SELECT
+        kk.PLATE_NUMBER,
+        u.ID,
+        u.LINKMAN,
+        u.MOBILE_PHONE
+        FROM
+        (
+        SELECT
+        tvr.PLATE_NUMBER,
+        SUBSTRING_INDEX( GROUP_CONCAT( tvr.DRIVER_USER_ID ORDER BY tvr.DRIVER_C_TIME DESC ), ',', 1 ) AS driverUserId
+        FROM
+        tenant_vehicle_rel tvr
+        WHERE
+        tvr.DRIVER_USER_ID IS NOT NULL
+        GROUP BY
+        tvr.PLATE_NUMBER
+        ) AS kk
+        LEFT JOIN user_data_info u ON u.ID = kk.driverUserId
+        WHERE
+        u.ID IS NOT NULL
+        ) AS driver ON vehicle_data_info.PLATE_NUMBER = driver.PLATE_NUMBER
+        <where>
+            1=1
+            <if test="authStateIn != null  and authStateIn &gt; -1">
+               and vehicle_data_info.auth_state = #{authStateIn}
+            </if>
+           <if test="shareFlgIn != null and shareFlgIn == 0">
+                and ascriptionVer.share_flg= #{shareFlgIn}
+            </if>
+            <if test="shareFlgIn != null and shareFlgIn ==1">
+                and (ascriptionVer.vehicle_code is null or (ascriptionVer.share_flg= #{shareFlgIn} and ascriptionVer.VEHICLE_CLASS= 1) )
+            </if>
+           <if test="isAuth != null and isAuth &gt; -1">
+                and vehicle_data_info.is_auth = #{isAuth}
+            </if>
+            <if test="startTime != null and startTime !=''">
+                and vehicle_data_info.create_time <![CDATA[>= ]]> #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and vehicle_data_info.create_time <![CDATA[<= ]]>  #{endTime}
+            </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            and vehicle_data_info.plate_number like concat('%',#{plateNumber},'%')
+        </if>
+        <if test="linkManName != null and linkManName != ''">
+            and sys_tenant_def.link_man like concat('%',#{linkManName},'%')
+        </if>
+        <if test="linkPhone != null and linkPhone != ''">
+            and sys_tenant_def.link_phone like concat('%',#{linkPhone},'%')
+        </if>
+        <if test="linkman != null and linkman != ''">
+            and driver.linkman  like concat('%',#{linkman},'%')
+        </if>
+        <if test="mobilePhone != null and mobilePhone != ''">
+            and driver.mobile_phone like concat('%',#{mobilePhone},'%')
+        </if>
+        <if test="tenantName != null and tenantName != ''">
+            and sys_tenant_def.name like concat('%',#{tenantName},'%')
+        </if>
+        <if test="vehicleLength != null and vehicleLength != ''">
+            and vehicle_data_info.vehicle_length = #{vehicleLength}
+        </if>
+        <if test="vehicleStatus != null and vehicleStatus > -1">
+            and vehicle_data_info.vehicle_status = #{vehicleStatus}
+        </if>
+        </where>
+        order by vehicle_data_info.id desc
+    </select>
+    <select id="getVehicleAll" resultType="com.youming.youche.record.vo.TenantVehicleRelVo">
+        SELECT
+        vdi.id AS vehicleCode,
+        vdi.plate_number AS plateNumber,
+        vdi.licence_type AS licenceType,
+        vdi.vehicle_length AS vehicleLength,
+        vdi.vehicle_status AS vehicleStatus,
+        vdi.location_serv AS locationServ,
+        vdi.maintenance_dis AS maintenanceDis,
+        vdi.last_maintenance_date AS lastMaintenanceDate,
+        ownVer.vehicle_class AS vehicleClass,
+        ownVer.id AS relId,
+        ownVer.id AS eid,
+        ownVer.share_flg AS shareFlg,
+        ownVer.auth_state AS authState,
+        ownVer.is_auth AS isAuth,
+        ownVer.audit_content auditContent,
+        ( SELECT count( 1 ) FROM tenant_vehicle_rel l WHERE l.vehicle_code = ownVer.vehicle_code AND l.tenant_id != ${tenantId}) AS cooperationCount,
+        ownVer.driver_user_id AS driverUserId,
+        user_data_info.linkman AS linkman,
+        user_data_info.mobile_phone AS mobilePhone,
+        sys_tenant_def.id AS tenantId,
+        sys_tenant_def.NAME AS tenantName,
+        sys_tenant_def.link_phone AS linkPhone
+        FROM
+        tenant_vehicle_rel ownVer
+        LEFT JOIN vehicle_data_info vdi ON vdi.id = ownVer.vehicle_code
+        LEFT JOIN user_data_info ON user_data_info.id = ownVer.DRIVER_USER_ID
+        LEFT JOIN ( SELECT * FROM tenant_vehicle_rel WHERE vehicle_class = 1 ) ascriptionVer ON ownVer.plate_number =
+        ascriptionVer.plate_number
+        LEFT JOIN sys_tenant_def ON sys_tenant_def.id = ascriptionVer.tenant_id
+        <where>
+            ownVer.tenant_id= #{tenantId}
+            and ownVer.plate_number IS NOT NULL
+            <if test="plateNumber !=null and plateNumber !=''">
+                and vdi.plate_number LIKE concat('%',#{plateNumber},'%')
+            </if>
+            <if test="linkManName !=null and linkManName !=''">
+                and sys_tenant_def.link_man LIKE concat('%',#{linkManName},'%')
+            </if>
+            <if test="linkPhone !=null and linkPhone !=''">
+                and sys_tenant_def.link_phone LIKE concat('%',#{linkPhone},'%')
+            </if>
+            <if test="billReceiverMobile !=null and billReceiverMobile !=''">
+                and ownVer.BILL_RECEIVER_MOBILE = #{billReceiverMobile}
+            </if>
+            <if test="linkman !=null and linkman!=''">
+                and user_data_info.linkman LIKE concat('%',#{linkman},'%')
+            </if>
+            <if test="tenantName !=null and tenantName !=''">
+                and sys_tenant_def.name LIKE concat('%',#{tenantName},'%')
+            </if>
+            <if test="mobilePhone !=null and mobilePhone !=''">
+                and user_data_info.mobile_phone LIKE concat('%',#{mobilePhone},'%')
+            </if>
+            <if test="authStateIn !=null and authStateIn &gt; -1">
+                and ownVer.auth_state = #{authStateIn}
+            </if>
+            <if test="vehicleLength != null and  vehicleLength != -1 and vehicleLength != ''">
+                and vdi.vehicle_length =#{vehicleLength}
+            </if>
+            <if test="vehicleStatus !=null and vehicleStatus &gt; -1">
+                and vdi.vehicle_status = #{vehicleStatus}
+            </if>
+            <if test="shareFlgIn != null and shareFlgIn &gt; -1">
+                and ownVer.share_flg = #{shareFlgIn}
+            </if>
+            <if test="vehicleClass !=null and vehicleClass &gt; -1">
+                and ownVer.vehicle_class = #{vehicleClass}
+            </if>
+            <if test="isAuth !=null and isAuth &gt; -1">
+                and ownVer.is_auth = #{isAuth}
+            </if>
+            <if test="vehicleGps !=null and vehicleGps &gt; 0 and vehicleGps == 2">
+                and vdi.LOCATION_SERV IS NULL
+            </if>
+            <if test="vehicleGps !=null and vehicleGps !=2">
+                and vdi.LOCATION_SERV = #{vehicleGps}
+            </if>
+        </where>
+        ORDER BY
+        ownVer.create_time DESC
+    </select>
+    <select id="queryVehicleList" resultType="java.util.Map">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        tvr.PLATE_NUMBER AS vehicleNum,
+        tvr.org_id AS orgId,
+        tvr.VEHICLE_CLASS AS vehicleClass,
+        udi.id AS userId,
+        udi.LINKMAN AS linkMan,
+        udi.MOBILE_PHONE AS linkPhone,
+        tvr.CREATE_DATE AS createDate
+        FROM
+        tenant_vehicle_rel tvr
+        LEFT JOIN user_data_info udi ON tvr.DRIVER_USER_ID = udi.id
+        WHERE
+        tvr.TENANT_ID = #{tenantId}
+        AND tvr.AUTH_STATE = 2 UNION ALL
+        SELECT
+        ttr.TRAILER_NUMBER AS vehicleNum,
+        ttr.attached_root_org_two_id AS orgId,
+        6 AS vehicleClass,
+        0 AS userId,
+        '' AS linkMan,
+        '' AS linkPhone,
+        ttr.CREATE_DATE AS createDate
+        FROM
+        tenant_trailer_rel ttr
+        WHERE
+        ttr.TENANT_ID = #{tenantId}
+        AND ttr.IS_AUTIT = 1
+        ) AS allVehicle
+        <where>
+            1 =1
+            <if test="vehicleNum != null and vehicleNum != ''">
+                AND vehicleNum LIKE CONCAT('%',#{vehicleNum},'%')
+            </if>
+            <if test="orgId > 0">
+                AND orgId = #{orgId}
+            </if>
+            <if test="type > 0">
+                AND vehicleClass = #{type}
+            </if>
+        </where>
+    </select>
+    <select id="queryNoneOrderVehicle" resultType="java.util.Map">
+        <choose>
+            <when test="isCount == 'true'">
+                SELECT count(t.plate_number) AS count
+            </when>
+            <otherwise>
+                SELECT
+                t.plate_number AS platenumber,
+                t.vehicle_code AS vehiclecode,
+                car_driver_phone cardriverphone,
+                t.create_date AS createdate,
+                ifnull( tmp.vehicle_code, 0 ) AS ordervehiclecode
+            </otherwise>
+        </choose>
+        FROM
+        tenant_vehicle_rel t
+        LEFT JOIN (
+        SELECT
+        max( arrivedate ),
+        vehicle_code,
+        plate_number,
+        leisuredate,
+        car_driver_phone
+        FROM
+        (
+        SELECT
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))) AS arrivedate,
+        timestampdiff(
+        HOUR,
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))),
+        sysdate()) AS leisuredate,
+        s.vehicle_code,
+        s.plate_number,
+        s.car_driver_phone
+        FROM
+        order_scheduler s, order_info o
+        <where>
+            o.order_id=s.order_id AND o.order_state>=7 AND o.order_state !=15
+            <if test="tenantId != null and tenantId > 0 ">
+                AND s.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND s.vehicle_class = #{vehicleClass}
+                </when>
+                <otherwise>
+                    AND s.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY vehicle_code,plate_number
+        UNION ALL
+        SELECT
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))) AS arrivedate,
+        timestampdiff(
+        HOUR,
+        max(
+        ifnull(
+        car_arrive_date,
+        date_add( depend_time, INTERVAL arrive_time HOUR ))),
+        sysdate()) AS leisuredate,
+        s.vehicle_code,
+        s.plate_number,
+        s.car_driver_phone
+        FROM
+        order_scheduler_h s, order_info_h o
+        <where>
+            o.order_id=s.order_id AND o.order_state>=7 AND o.order_state !=15
+            <if test="tenantId != null and tenantId > 0 ">
+                AND s.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND s.vehicle_class = #{vehicleClass}
+                </when>
+                <otherwise>
+                    AND s.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY vehicle_code,plate_number
+        ) tmp
+        WHERE 1 = 1
+        GROUP BY vehicle_code, plate_number
+        ) tmp ON t.vehicle_code = tmp.vehicle_code
+        <where>
+            1=1
+            <if test="tenantId != null and tenantId > 0">
+                AND t.tenant_id = #{tenantId}
+            </if>
+            <choose>
+                <when test="vehicleClass != null and vehicleClass > 0">
+                    AND t.vehicle_class = #{vehicleClass} and t.auth_state = 2
+                </when>
+                <otherwise>
+                    AND t.vehicle_class IN ('1','3','2','4')
+                </otherwise>
+            </choose>
+        </where>
+        <if test="orgId != null and orgId > 0 ">
+            AND t.org_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND t.plate_number = #{plateNumber}
+        </if>
+        <choose>
+            <when test="hourEnd > 0">
+                AND ((
+                tmp.leisuredate <![CDATA[ > ]]> #{hour} and tmp.leisuredate <![CDATA[ < ]]> #{hourEnd}) or
+                (
+                tmp.vehicle_code IS NULL
+                AND TIMESTAMPDIFF(
+                HOUR,
+                t.create_date,
+                SYSDATE()) <![CDATA[ > ]]> #{hour}) and TIMESTAMPDIFF(hour,t.create_date,sysdate()) <![CDATA[ < ]]>
+                #{hourEnd} )
+            </when>
+            <otherwise>
+                AND (
+                tmp.leisuredate <![CDATA[ > ]]> #{hour} or
+                (
+                tmp.vehicle_code IS NULL
+                AND TIMESTAMPDIFF(
+                HOUR,
+                t.create_date,
+                SYSDATE()) <![CDATA[ > ]]> #{hour}))
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="upDriverUserIdNull">
+        update tenant_vehicle_rel set driver_User_Id=null where id=#{id}
+    </update>
+
+    <select id="getTableCompulsoryInsuranceCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tvr.tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_vehicle_rel tvr, tenant_vehicle_cert_rel tvcr
+        where tvr.vehicle_class = 1 and tvr.id = tvcr.rel_id and tvcr.insurance_time_end <![CDATA[ <= ]]> #{localDateTime} group by tvr.tenant_id
+    </select>
+
+    <select id="getTableCommercialInsuranceCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tvr.tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_vehicle_rel tvr, tenant_vehicle_cert_rel tvcr
+        where tvr.vehicle_class = 1 and tvr.id = tvcr.rel_id and tvcr.busi_insurance_time_end <![CDATA[ <= ]]> #{localDateTime} group by tvr.tenant_id
+    </select>
+
+    <select id="getTableOwnerCarCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_vehicle_rel
+        where vehicle_class = 1  group by tenant_id
+    </select>
+
+    <select id="getTableTemporaryCarCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_vehicle_rel
+        where vehicle_class = 3  group by tenant_id
+    </select>
+
+    <select id="getTableAttractCarCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_vehicle_rel
+        where vehicle_class = 2  group by tenant_id
+    </select>
+    <select id="getZYVehicleByVehicleCodeVer"
+            resultType="com.youming.youche.record.domain.tenant.TenantVehicleRelVer">
+        select *
+        from tenant_vehicle_rel_ver
+        where VEHICLE_CODE = #{vehicleCode}
+          and VEHICLE_CLASS = #{vehicleClass}
+        ORDER BY id DESC limit 0,1
+    </select>
+</mapper>

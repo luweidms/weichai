@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.violation.ViolationRecordMapper">
+
+    <sql id="query">
+        SELECT
+        a.id recordId,
+        a.VIOLATION_TIME violationTime,
+        a.VIOLATION_CODE violationCode,
+        a.LOCATION_NAME locationName,
+        a.VIOLATION_ADDRESS violationAddress,
+        a.VIOLATION_FINE violationFine,
+        a.OVERDUE_FINE overdueFine,
+        a.VIOLATION_POINT violationPoint,
+        a.CATEGORY category,
+        a.VIOLATION_WRIT_NO violationWritNo,
+        a.TYPE type,
+        a.USER_ID userId,
+        a.PLATE_NUMBER plateNumber,
+        a.LINK_MAN linkMan,
+        a.MOBILE_PHONE mobilePhone,
+        a.RECORD_STATE recordState,
+        a.VIOLATION_REASON violationReason,
+        b.VIOLATION_ORDER_ID violationOrderId,
+        b.VIOLATION_ORDER_NUM violationOrderNum,
+        b.ORDER_STATE orderState
+        FROM
+        violation_record a
+        LEFT JOIN (
+        SELECT
+        VIOLATION_ORDER_ID,
+        RECORD_ID,
+        VIOLATION_ORDER_NUM,
+        ORDER_STATE
+        FROM
+        violation_order
+        WHERE
+        VIOLATION_ORDER_ID IN ( SELECT MAX( VIOLATION_ORDER_ID ) FROM violation_order GROUP BY RECORD_ID )) b ON
+        a.id = b.RECORD_ID
+        INNER JOIN tenant_vehicle_rel v ON a.VEHICLE_CODE = v.VEHICLE_CODE
+        AND v.VEHICLE_CLASS != 3
+        WHERE
+        1 = 1
+        AND IF(a.RECORD_STATE = 2 AND (b.VIOLATION_ORDER_ID IS NULL OR b.VIOLATION_ORDER_ID = '' ),FALSE,TRUE)
+        AND v.TENANT_ID = #{tenantId}
+        <if test="param.categoryId != null and param.categoryId > 0">
+            AND CATEGORY_ID = #{param.categoryId}
+        </if>
+        <if test="param.plateNumber != null and param.plateNumber != ''">
+            AND a.PLATE_NUMBER like CONCAT('%',#{param.plateNumber},'%')
+        </if>
+        <if test="param.linkMan != null and param.linkMan != ''">
+            AND a.LINK_MAN like CONCAT('%',#{param.linkMan},'%')
+        </if>
+        <if test="param.linkmanPhone != null and param.linkmanPhone != ''">
+            AND a.MOBILE_PHONE like CONCAT('%',#{param.linkmanPhone},'%')
+        </if>
+        <if test="param.startTime != null and param.startTime != ''">
+            AND date(a.VIOLATION_TIME) <![CDATA[ >= ]]> #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            AND date(a.VIOLATION_TIME) <![CDATA[ <= ]]> #{param.endTime}
+        </if>
+        <if test="param.violationCity != null and param.violationCity != ''">
+            AND a.LOCATION_NAME like CONCAT('%',#{param.violationCity},'%')
+        </if>
+        <if test="param.peccancyCode != null and param.peccancyCode != ''">
+            AND a.VIOLATION_CODE = #{param.peccancyCode}
+        </if>
+        <if test="param.publicAndPrivateType != null and param.publicAndPrivateType != -1">
+            AND a.TYPE = #{param.publicAndPrivateType}
+        </if>
+        <if test="param.recordId != null and param.recordId != ''">
+            AND a.id = #{param.recordId}
+        </if>
+        <if test="param.violationWritNo != null and param.violationWritNo != ''">
+            AND a.VIOLATION_WRIT_NO = #{param.violationWritNo}
+        </if>
+        ORDER BY a.VIOLATION_TIME DESC,a.id DESC
+    </sql>
+
+    <select id="doQuery" resultType="com.youming.youche.record.dto.violation.ViolationDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="doQueryExport" resultType="com.youming.youche.record.dto.violation.ViolationDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="queryCountByViolationWritNo" resultType="java.lang.Long">
+        SELECT COUNT(RECORD_ID) FROM violation_record WHERE VIOLATION_WRIT_NO = #{violationWritNo}
+    </select>
+
+    <sql id="details">
+        SELECT
+        vr.id,
+        vdi.plate_number as plateNumber,
+        vdi.vehicle_status as vehicleStatus,
+        vdi.licence_type as licenceType,
+        vdi.vehicle_length as vehicleLength,
+        vr.violation_time as violationTime,
+        vr.renfa_time as renfaTime,
+        vr.category_id as categoryId,
+        vr.violation_fine as violationFine,
+        vr.violation_point as violationPoint,
+        vr.location_name as locationName,
+        vr.violation_address as violationAddress,
+        vr.violation_reason as violationReason,
+        vr.record_state as recordState,
+        tvr.vehicle_class as vehicleClass
+        FROM
+        violation_record vr
+        LEFT JOIN vehicle_data_info vdi ON vr.vehicle_code = vdi.id
+        Left join tenant_vehicle_rel tvr on vr.vehicle_code = tvr.vehicle_code
+        <where>
+            1 = 1
+            AND vr.tenant_id = #{tenantId}
+            <if test="monthTimeStart != null and monthTimeStart !=''">
+                and date(vr.violation_time) &gt;= #{monthTimeStart}
+            </if>
+            <if test="monthTimeEnd != null and monthTimeEnd !=''">
+                and date(vr.violation_time) &lt;= #{monthTimeEnd}
+            </if>
+            <if test="licenceType != null">
+                and vdi.licence_type = #{licenceType}
+            </if>
+            <if test="recordState != null">
+                and vr.record_state = #{recordState}
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询违章明细-->
+    <select id="getViolationDetails" resultType="com.youming.youche.record.vo.violation.ViolationRecordVo">
+        <include refid="details"/>
+    </select>
+
+    <select id="getViolationDetailsExport" resultType="com.youming.youche.record.vo.violation.ViolationRecordVo">
+        <include refid="details"/>
+    </select>
+
+    <select id="getVehicleViolationAmountByMonth" resultType="java.lang.Long">
+        SELECT
+            sum( a.violation_fine )
+        FROM
+            violation_record a
+            INNER JOIN tenant_vehicle_rel v ON a.vehicle_code = v.vehicle_code
+            AND v.vehicle_class != 3
+        WHERE
+            a.record_state = 2
+            AND v.tenant_id = #{tenantId}
+            AND a.vehicle_code = #{vehicleCode}
+            AND date_format( a.violation_time, '%Y-%m' ) = #{month}
+    </select>
+
+</mapper>

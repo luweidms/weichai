@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.OrderDriverSubsidyMapper">
+
+    <select id="findDriverSubsidys" resultType="com.youming.youche.order.domain.OrderDriverSubsidy">
+        select *
+        from  ${tableName}
+        <where>
+            TENANT_ID= #{tenantId}
+        </where>
+       <if test="orderId != null and orderId &gt; 0">
+           and ORDER_ID = #{orderId}
+       </if>
+       <if test="excludeOrderId != null and excludeOrderId &gt; 0">
+           and ORDER_ID <![CDATA[!= ]]> #{excludeOrderId}
+       </if>
+       <if test="userId != null and userId &gt; 0">
+           and USER_ID =#{userId}
+       </if>
+       <if test="startDate != null">
+            <choose>
+                <when test="endDate == null">
+                    and SUBSIDY_DATE= #{startDate}
+                </when>
+                <otherwise>
+                    and SUBSIDY_DATE  <![CDATA[>= ]]> #{startDate}
+                </otherwise>
+            </choose>
+       </if>
+      <if test="endDate != null">
+          and SUBSIDY_DATE  <![CDATA[<= ]]>  #{endDate}
+      </if>
+      <if test="isHis">
+          and IS_CANCLE= 0
+      </if>
+    </select>
+<!--    查找司机未付补贴 聂杰伟-->
+    <select id="findDriverNoPaySubsidys" resultType="com.youming.youche.order.dto.OrderDriverSubsidyDto">
+        select order_id as orderId,
+        u.id as userId,
+        u.mobile_phone as userPhone,
+        u.linkman as userName,
+        IFNULL(SUM(subsidy), 0) AS subsidy
+        from
+        <!--1 是查询历史 2 是不查历史-->
+        <if test="tableName==1 and tableName!=null">
+            order_driver_subsidy_h ods
+        </if>
+
+        <if test="tableName==2 and tableName!=null">
+            order_driver_subsidy ods
+        </if>
+        LEFT JOIN user_data_info u ON u.id = ods.user_id
+        where ods.tenant_id = #{tenantId}
+        <if test="orderId!=null and orderId>0">
+            and order_id =#{orderId}
+        </if>
+        <if test="userId!=null and userId>0">
+            and ods.user_id =#{userId}
+        </if>
+        <if test="carDriverId!=null and carDriverId>0">
+            and ods.user_id =#{userId}
+        </if>
+
+        <if test="carDriverId!=null and carDriverId>0">
+            and ods.user_id != #{carDriverId}
+        </if>
+        <if test="copilotUserId!=null and copilotUserId>0">
+            and ods.user_id != #{copilotUserId}
+        </if>
+        and ods.is_payed= 0
+        group by ods.user_id
+    </select>
+
+    <select id="queryOrderDriverSubsidyDay" resultType="java.util.Map">
+        SELECT
+        order_id AS orderId,
+        u.id AS userId,
+        u.linkman AS userName,
+        group_concat( subsidy_date SEPARATOR ',' ) AS subsidyDay,
+        ifnull( sum( subsidy ), 0 ) AS subsidy
+        FROM
+        <choose>
+            <when test="isHis">
+                order_driver_subsidy_h
+            </when>
+            <otherwise>
+                order_driver_subsidy
+            </otherwise>
+        </choose>
+        ods
+        LEFT JOIN user_data_info u ON u.id = ods.user_id
+        WHERE
+        1 = 1
+        AND order_id = #{orderId}
+        GROUP BY
+        ods.order_id
+    </select>
+
+</mapper>

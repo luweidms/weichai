@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantStaffRelMapper">
+    <select id="queryStaffInfo" resultType="java.lang.String">
+        SELECT udi.id as userId
+        FROM user_data_info udi
+                 INNER JOIN sys_user su ON udi.id = su.user_info_id
+                 INNER JOIN tenant_staff_rel tsr ON udi.id = tsr.user_info_id
+        WHERE 1 = 1
+          AND su.login_acct LIKE CONCAT('%', #{phone}, '%')
+        ORDER BY tsr.create_time desc
+    </select>
+    <select id="selectPeople" resultType="com.youming.youche.record.dto.StaffDataInfoDto">
+        SELECT udi.id as userId, udi.LINKMAN as linkman, udi.MOBILE_PHONE as mobilePhone, udi.IDENTIFICATION as identification,
+        so.OPERATOR_ID as operatorId, so.LOGIN_ACCT as loginAcct, so.PASSWORD as password,
+        tsr.ID as staffId, tsr.EMPLOYEE_NUMBER as employeeNumber, tsr.STAFF_POSITION as staffPosition, tsr.LOCK_FLAG as lockFlag,
+        (SELECT GROUP_CONCAT(o.ROLE_ID) FROM sys_role_oper_rel o WHERE o.state=1 AND o.OPERATOR_ID = so.OPERATOR_ID  AND o.TENANT_ID = tsr.TENANT_ID GROUP BY o.OPERATOR_ID) AS roleIds,
+        (SELECT GROUP_CONCAT(u.ORG_ID) FROM sys_user_org_rel u WHERE u.STATE = 1 AND u.id = udi.id AND u.TENANT_ID = tsr.TENANT_ID GROUP BY u.id) AS orgIds
+        FROM user_data_info udi
+        INNER JOIN sys_operator so ON udi.id = so.USER_ID
+        INNER JOIN tenant_staff_rel tsr ON udi.id = tsr.USER_ID
+        WHERE tsr.STATE=1
+        <if test="staffDataInfoDto.userId != null and staffDataInfoDto.userId > 0">
+            AND udi.id = #{staffDataInfoDto.userId}
+        </if>
+        <if test="staffDataInfoDto.loginAcct != null and staffDataInfoDto.userId != ''">
+            AND so.LOGIN_ACCT LIKE = #{staffDataInfoDto.loginAcct}
+        </if>
+        <if test="staffDataInfoDto.mobilePhone != null and staffDataInfoDto.mobilePhone !=''">
+            AND udi.MOBILE_PHONE LIKE = #{staffDataInfoDto.mobilePhone}
+        </if>
+        <if test="staffDataInfoDto.linkman != null and staffDataInfoDto.linkman != ''">
+            AND udi.LINKMAN LIKE = #{staffDataInfoDto.linkman}
+        </if>
+        <if test="staffDataInfoDto.employeeNumber != null and staffDataInfoDto.employeeNumber != ''">
+            AND tsr.EMPLOYEE_NUMBER LIKE = #{staffDataInfoDto.employeeNumber}
+        </if>
+        <if test="staffDataInfoDto.staffPosition != null and staffDataInfoDto.staffPosition != ''">
+            AND tsr.STAFF_POSITION LIKE = #{staffDataInfoDto.staffPosition}
+        </if>
+        <if test="staffDataInfoDto.lockFlag != null and staffDataInfoDto.lockFlag != ''">
+            AND tsr.LOCK_FLAG = #{staffDataInfoDto.userId}
+        </if>
+        <if test="staffDataInfoDto.tenantId != null and staffDataInfoDto.tenantId > 0">
+            AND tsr.TENANT_ID = #{staffDataInfoDto.userId}
+        </if>
+        <if test="staffDataInfoDto.orgId != null and staffDataInfoDto.orgId > 0 ">
+            AND exists(SELECT * FROM sys_user_org_rel suor WHERE suor.TENANT_ID = tsr.TENANT_ID AND suor.USER_ID=udi.id AND suor.ORG_ID = #{staffDataInfoDto.orgId}
+        </if>
+    </select>
+
+    <select id="getTenantStaffRelByUserId" resultType="com.youming.youche.record.domain.tenant.TenantStaffRel">
+        SELECT
+            a.*
+        FROM
+            tenant_staff_rel a
+            LEFT JOIN sys_tenant_def std ON a.tenant_id = std.id
+        WHERE
+            a.user_info_id = #{userId}
+            AND a.state = 1
+            AND a.lock_flag = 1
+            AND std.state = 1
+    </select>
+
+</mapper>

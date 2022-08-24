@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantUserRelMapper">
+    <!--查询租户会员关系-->
+    <select id="getTenantUserRels" resultType="com.youming.youche.record.domain.tenant.TenantUserRel">
+        select * from tenant_user_rel where USER_ID = #{userId} and TENANT_ID = #{tenantId} order by id  limit 0,1
+    </select>
+
+    <select id="getTenantUserRelList" resultType="com.youming.youche.record.domain.tenant.TenantUserRel">
+        select * from tenant_user_rel
+        <where>
+            <if test="userId != null">
+                USER_ID = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and TENANT_ID = #{tenantId}
+            </if>
+            <if test="carUserType != null">
+                and CAR_USER_TYPE = #{carUserType}
+            </if>
+        </where>
+
+    </select>
+</mapper>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.cm.CmAddressMapper">
+    <!--查询地址列表-->
+    <select id="queryAllAddress" resultType="com.youming.youche.record.dto.cm.CmAddressDto">
+        select
+        a.id id,
+        address_name addressName,
+        a.tenant_id tenantId,
+        a.province_id provinceId,
+        a.province_name provinceName,
+        a.city_id cityId,
+        a.city_name cityName,
+        a.district_id districtId,
+        a.district_name districtName,
+        a.address_detail addressDetail,
+        a.address_show addressShow,
+        `lng` lng,
+        `lat` lat,
+        a.create_time createTime,
+        a.update_time updateTime,
+        cci.company_name companyName
+        from address a
+        left join cm_customer_info cci on cci.id = a.customer_id
+        where a.tenant_id = #{addressVo.tenantId}
+        <if test="addressVo.addressName != null and addressVo.addressName != ''">
+            and a.address_name like concat('%',#{addressVo.addressName},'%')
+        </if>
+        <if test="addressVo.addressDetail != null and addressVo.addressDetail != ''">
+            and a.address_detail like concat('%',#{addressVo.addressDetail},'%')
+        </if>
+        <if test="addressVo.addressShow != null and addressVo.addressShow != ''">
+            and a.address_show like concat('%',#{addressVo.addressShow},'%')
+        </if>
+        <if test="addressVo.customerId != null">
+            and cci.id = #{addressVo.customerId}
+        </if>
+        order by a.id DESC
+    </select>
+    <!--添加地址档案-->
+    <insert id="insertAddress" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        address
+        (id,
+        address_name,
+        tenant_id,
+        province_id,
+        province_name,
+        city_id,
+        city_name,
+        district_id,
+        district_name,
+        address_detail,
+        address_show,
+        lng,
+        lat,
+        create_time,
+        update_time,
+        customer_id
+        )
+        values(
+        null,
+        #{addressVo.addressName},
+        #{addressVo.tenantId},
+        #{addressVo.provinceId},
+        #{addressVo.provinceName},
+        #{addressVo.cityId},
+        #{addressVo.cityName},
+        #{addressVo.districtId},
+        #{addressVo.districtName},
+        #{addressVo.addressDetail},
+        #{addressVo.addressShow},
+        #{addressVo.lng},
+        #{addressVo.lat},
+        NOW(),
+        NOW(),
+        #{addressVo.customerId}
+        )
+    </insert>
+    <select id="queryAddressById" resultType="com.youming.youche.record.dto.cm.CmAddressDto">
+        select
+        a.id id,
+        address_name addressName,
+        a.tenant_id tenantId,
+        a.province_id provinceId,
+        a.province_name provinceName,
+        a.city_id cityId,
+        a.city_name cityName,
+        a.district_id districtId,
+        a.district_name districtName,
+        a.address_detail addressDetail,
+        a.address_show addressShow,
+        `lng` lng,
+        `lat` lat,
+        a.create_time createTime,
+        a.update_time updateTime,
+        cci.customer_name customerName,
+        cci.id customerId
+        from address a
+        left join cm_customer_info cci on cci.id = a.customer_id
+        where a.tenant_id = #{addressVo.tenantId}
+        and a.id = #{addressVo.id}
+    </select>
+    <select id="checkIsExist" resultType="java.lang.Integer">
+        select
+        1
+        from address a
+        left join cm_customer_info cci on cci.id = a.customer_id
+        where a.tenant_id = #{tenantId}
+        and address_name = #{addressName}
+    </select>
+    <!--修改地址信息-->
+    <update id="updateAddress">
+        update
+        address
+        set
+        address_name = #{addressVo.addressName},
+        province_id = #{addressVo.provinceId},
+        province_name = #{addressVo.provinceName},
+        city_id = #{addressVo.cityId},
+        city_name = #{addressVo.cityName},
+        district_id = #{addressVo.districtId},
+        district_name = #{addressVo.districtName},
+        address_detail = #{addressVo.addressDetail},
+        address_show = #{addressVo.addressShow},
+        customer_id = #{addressVo.customerId},
+        lng = #{addressVo.lng},
+        lat = #{addressVo.lat},
+        update_time = NOW()
+        WHERE id = #{addressVo.id}
+    </update>
+    <!--删除地址信息-->
+    <delete id="deleteAddressById">
+        delete
+        from address
+        where tenant_id = #{tenantId}
+        and id = #{id}
+    </delete>
+</mapper>

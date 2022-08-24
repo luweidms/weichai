@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.AccountBankRelMapper">
+
+    <select id="getBankInfo" resultType="com.youming.youche.order.domain.order.AccountBankRel">
+        SELECT
+            abr.*
+        FROM
+            account_bank_user_type_rel abutr
+                LEFT JOIN account_bank_rel abr ON abutr.BANK_REL_ID = abr.id
+       <where>
+           <if test="acctNo != null and acctNo != ''">
+               AND abr.ACCT_NO = #{acctNo}
+           </if>
+           <if test="accountName != null and accountName != ''">
+               AND abr.ACCT_NAME = #{accountName}
+           </if>
+           <if test="userType != null and userType &gt; 0">
+               AND abutr.USER_TYPE = #{userType}
+           </if>
+           <if test="bankType != null and bankType &gt; 0">
+               AND abutr.BANK_TYPE = #{bankType}
+           </if>
+           <if test="userId != null and userId &gt; 0">
+               AND abutr.USER_ID =#{userId}
+           </if>
+       </where>
+    </select>
+    <select id="getAccountBankList" resultType="com.youming.youche.order.domain.order.AccountBankRel">
+
+        SELECT
+            a.*
+        FROM
+            account_bank_rel a
+                LEFT JOIN account_bank_tenant_bill_rel b ON a.id = b.REL_SEQ
+                LEFT JOIN bill_info_2 c ON c.BILL_INFO_ID = b.BILL_ID
+        WHERE
+            b.TENANT_ID = #{tenantId}
+          AND c.BILL_LOOK_UP = #{billLookUp}
+
+    </select>
+    <select id="queryAccountBankRel" resultType="com.youming.youche.order.domain.order.AccountBankRel">
+        SELECT
+            rel.id,
+            rel.ACCT_ID,
+            rel.USER_ID,
+            rel.BANK_ID,
+            rel.BANK_NAME,
+            rel.ACCT_NAME,
+            rel.ACCT_NO,
+            rel.BRANCH_NAME,
+            rel.BRANCH_ID,
+            rel.STS_DATE,
+            rel.STS,
+            rel.BILLID,
+            rel.PROVINCEID,
+            rel.PROVINCE_NAME,
+            rel.CITYID,
+            rel.CITY_NAME,
+            rel.DISTRICTID,
+            rel.DISTRICT_NAME,
+            rel.IDENTIFICATION,
+            rel.TENANT_ID,
+            rel.CREATE_DATE,
+            rel.UPDATE_DATE,
+            rel.UPDATE_OP_ID,
+            rel.OP_ID,
+            rel.BANK_TYPE,
+            rel.WEQR_CODE_ID,
+            rel.WEQR_CODE_URL,
+            rel.WECHAT_ACCOUNT,
+            rel.PINGAN_COLLECT_ACCT_ID,
+            rel.PINGAN_PAY_ACCT_ID,
+            rel.PINGAN_MOUT_ID,
+            typeRel.IS_DEFAULT AS IS_DEFAULT_ACCT,
+            rel.PINGAN_NOUT_ID,
+            rel.BIND_USER_TYPE,
+            rel.BUSINESS_LICENSE_NO,
+            rel.IS_COLLECT_AMOUNT
+        FROM
+            account_bank_user_type_rel typeRel
+                LEFT JOIN account_bank_rel rel ON rel.id = typeRel.BANK_REL_ID
+        <where>
+            typeRel.USER_ID = #{userId}
+            <if test="bankType != null and bankType &gt;= 0">
+                AND typeRel.BANK_TYPE =#{bankType}
+            </if>
+            <if test="userType != null and userType &gt; 0">
+                AND typeRel.USER_TYPE =#{userType}
+            </if>
+        </where>
+    </select>
+    <select id="selectBankCard" resultType="com.youming.youche.order.domain.order.AccountBankRel">
+        SELECT abr.ACCT_NO FROM account_bank_user_type_rel abutr LEFT JOIN account_bank_rel abr ON abutr.BANK_REL_ID = abr.id
+        WHERE abutr.USER_ID = #{userId}
+        <if test="userType != null">
+            AND abutr.USER_TYPE = #{userType}
+        </if>
+        and abutr.BANK_TYPE = #{bankType}
+        AND abr.ACCT_NO IS NOT NULL AND TRIM(abr.ACCT_NO) != ''
+    </select>
+
+    <select id="selectAcctUserTypeRelList"  resultType="com.youming.youche.order.domain.order.AccountBankRel">
+        SELECT
+        c.* FROM
+        account_bank_rel c
+        WHERE c.user_id=#{userId} AND c.PINGAN_PAY_ACCT_ID IS NOT NULL
+        <if test="acctNameOrNo!=null and acctNameOrNo!=''">
+            AND (c.ACCT_NAME  like CONCAT('%',#{acctNameOrNo},'%')
+             OR c.ACCT_NO like CONCAT('%',#{acctNameOrNo},'%'))
+        </if>
+    </select>
+    <select id="selectS" resultType="com.youming.youche.order.dto.DirverxDto">
+        SELECT abutr.USER_TYPE as userType,abr.PINGAN_COLLECT_ACCT_ID as collectAcctNo,abr.PINGAN_PAY_ACCT_ID as payAcctNo,abr.ACCT_NO as acctNo
+        FROM account_bank_user_type_rel abutr LEFT JOIN account_bank_rel abr ON abutr.BANK_REL_ID = abr.REL_SEQ WHERE 1 = 1
+        <if test="pinganAcctNo != null and pinganAcctNo !=''">
+            AND (abr.PINGAN_COLLECT_ACCT_ID = #{pinganAcctNo} OR abr.PINGAN_PAY_ACCT_ID = #{pinganAcctNo})
+        </if>
+        <if test="bankAcctNo != null and bankAcctNo != ''">
+            AND abr.ACCT_NO = #{bankAcctNo}
+        </if>
+        <if test="userId != null and userId>0">
+            AND abutr.USER_ID = #{userId}
+        </if>
+    </select>
+</mapper>
+

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantVehicleCertRelVerMapper">
+
+    <!---->
+    <update id="updTenantVehicleCertRelVer">
+        update tenant_vehicle_cert_rel_ver set ver_state= #{destVerState} where vehicle_code= #{vehicleCode} and ver_state=1 and tenant_id= #{tenantId}
+    </update>
+</mapper>

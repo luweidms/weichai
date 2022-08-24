@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.VehicleExpenseDetailedMapper">
+
+    <select id="getVehicleExpense" resultType="com.youming.youche.finance.vo.GetVehicleExpenseVo">
+        SELECT *
+        from vehicle_expense_detailed a
+        LEFT JOIN vehicle_expense b on b.apply_no= a.apply_no
+        where b.tenant_id =#{tenantId}
+          and a.tenant_id =#{tenantId}
+        <if test="applyNo != null and applyNo != '' ">
+            and a.apply_no =#{applyNo}
+        </if>
+        ORDER BY a.create_time DESC
+
+    </select>
+
+    <select id="getVehicleExpenseDetailedList" resultType="com.youming.youche.finance.vo.GetVehicleExpenseVo">
+        SELECT *
+        from vehicle_expense_detailed a
+        LEFT JOIN vehicle_expense b on b.apply_no= a.apply_no
+        where b.tenant_id =#{getVehicleExpenseDto.tenantId}
+        and a.tenant_id =#{getVehicleExpenseDto.tenantId}
+        <if test="getVehicleExpenseDto.applyNo != null and getVehicleExpenseDto.applyNo != '' ">
+            and a.apply_no like concat('%',#{getVehicleExpenseDto.applyNo},'%')
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyAmount != null ">
+            and a.apply_amount >= #{getVehicleExpenseDto.beginApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyAmount != null ">
+            and a.apply_amount <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyTime1 != null ">
+            and a.apply_time >= #{getVehicleExpenseDto.beginApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyTime1 != null ">
+            and a.apply_time <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.type != null and getVehicleExpenseDto.type >=0 ">
+            and a.type =#{getVehicleExpenseDto.type}
+        </if>
+        <if test="getVehicleExpenseDto.state != null and getVehicleExpenseDto.state >= 0 ">
+            <if test="getVehicleExpenseDto.state != 4 and getVehicleExpenseDto.state != 8 ">
+                and b.state =#{getVehicleExpenseDto.state}
+            </if>
+        </if>
+        <if test="getVehicleExpenseDto.state == null">
+            and b.state <![CDATA[ <> ]]> 4
+            and b.state <![CDATA[ <> ]]> 8
+        </if>
+        <if test="getVehicleExpenseDto.orgId != null ">
+            and b.org_id =#{getVehicleExpenseDto.orgId}
+        </if>
+        <if test="getVehicleExpenseDto.plateNumber != null and getVehicleExpenseDto.plateNumber != '' ">
+            and b.plate_number  like concat('%',#{getVehicleExpenseDto.plateNumber},'%')
+        </if>
+        <if test="getVehicleExpenseDto.applyName != null and getVehicleExpenseDto.applyName != '' ">
+            and a.apply_name like concat('%',#{getVehicleExpenseDto.applyName},'%')
+        </if>
+        ORDER BY a.create_time DESC
+
+    </select>
+
+    <select id="getSumApplyAmount" resultType="java.lang.Long">
+        SELECT sum(a.apply_amount)
+        from vehicle_expense_detailed a
+        LEFT JOIN vehicle_expense b on b.apply_no= a.apply_no
+        where b.tenant_id =#{getVehicleExpenseDto.tenantId}
+        and a.tenant_id =#{getVehicleExpenseDto.tenantId}
+        <if test="getVehicleExpenseDto.applyNo != null and getVehicleExpenseDto.applyNo != '' ">
+            and a.apply_no like concat('%',#{getVehicleExpenseDto.applyNo},'%')
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyAmount != null ">
+            and a.apply_amount >= #{getVehicleExpenseDto.beginApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyAmount != null ">
+            and a.apply_amount <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyTime1 != null ">
+            and a.apply_time >= #{getVehicleExpenseDto.beginApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyTime1 != null ">
+            and a.apply_time <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.type != null and getVehicleExpenseDto.type >=0 ">
+            and a.type =#{getVehicleExpenseDto.type}
+        </if>
+        <if test="getVehicleExpenseDto.state != null and getVehicleExpenseDto.state >= 0 ">
+            <if test="getVehicleExpenseDto.state != 4 and getVehicleExpenseDto.state != 8 ">
+                and b.state =#{getVehicleExpenseDto.state}
+            </if>
+        </if>
+        <if test="getVehicleExpenseDto.state == null">
+            and b.state <![CDATA[ <> ]]> 4
+            and b.state <![CDATA[ <> ]]> 8
+        </if>
+        <if test="getVehicleExpenseDto.orgId != null ">
+            and b.org_id =#{getVehicleExpenseDto.orgId}
+        </if>
+        <if test="getVehicleExpenseDto.plateNumber != null and getVehicleExpenseDto.plateNumber != '' ">
+            and b.plate_number like concat('%',#{getVehicleExpenseDto.plateNumber},'%')
+        </if>
+        <if test="getVehicleExpenseDto.applyName != null and getVehicleExpenseDto.applyName != '' ">
+            and a.apply_name like concat('%',#{getVehicleExpenseDto.applyName},'%')
+        </if>
+        ORDER BY a.create_time DESC
+
+    </select>
+
+    <select id="sumApplyAmount" resultType="java.lang.Long">
+        SELECT sum(a.apply_amount)
+        from vehicle_expense_detailed a
+        where a.tenant_id =#{getVehicleExpenseDto.tenantId}
+        <if test="getVehicleExpenseDto.applyNo != null and getVehicleExpenseDto.applyNo != '' ">
+            and a.apply_no =#{getVehicleExpenseDto.applyNo}
+        </if>
+    </select>
+
+    <select id="getVehicleFeeByMonth" resultType="com.youming.youche.finance.domain.vehicle.VehicleMiscellaneouFeeDto">
+        SELECT
+            a.type AS type,
+            sum( a.apply_amount ) AS applyamountsum
+        FROM
+            vehicle_expense_detailed a
+            LEFT JOIN vehicle_expense b ON b.apply_no = a.apply_no
+        WHERE
+            b.tenant_id = #{tenantId}
+            AND a.tenant_id = #{tenantId}
+            AND b.state = 3
+            AND a.type IN ( 64, 65, 62, 63, 67 )
+            AND date_format( expense_time, '%Y-%m' ) = #{month}
+            AND b.plate_number = #{plateNumber}
+        GROUP BY
+            `type`
+    </select>
+
+</mapper>

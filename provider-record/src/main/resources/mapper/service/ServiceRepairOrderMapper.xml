@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.service.ServiceRepairOrderMapper">
+
+    <insert id="insertServiceRepairOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO service_repair_order (id,ORDER_CODE,
+        CREATE_DATE,TENANT_ID,USER_ID,OP_ID,UPDATE_OP_ID,UPDATE_DATE,
+        ORDER_STATUS,WORK_TYPE,CAR_NO,CONTRACT_NAME,CONTRACT_MOBILE
+        <if test="serviceRepairOrder.scrStartTime != null and serviceRepairOrder.scrStartTime != ''">
+            ,SCR_START_TIME
+        </if>
+        <if test="serviceRepairOrder.scrEndTime != null and serviceRepairOrder.scrEndTime != ''">
+            ,SCR_END_TIME
+        </if>
+        <if test="serviceRepairOrder.remark != null and serviceRepairOrder.remark != ''">
+            ,REMARK
+        </if>
+        ,ITEMS
+        )
+        VALUES
+        (null,#{serviceRepairOrder.orderCode},
+        #{serviceRepairOrder.createDate},#{serviceRepairOrder.tenantId},#{serviceRepairOrder.userId},#{serviceRepairOrder.opId},#{serviceRepairOrder.updateOpId},
+        #{serviceRepairOrder.updateDate},#{serviceRepairOrder.orderStatus},#{serviceRepairOrder.workType},#{serviceRepairOrder.carNo},#{serviceRepairOrder.contractName},
+        #{serviceRepairOrder.contractMobile}
+        <if test="serviceRepairOrder.scrStartTime != null and serviceRepairOrder.scrStartTime != ''">
+            ,#{serviceRepairOrder.scrStartTime}
+        </if>
+        <if test="serviceRepairOrder.scrEndTime != null and serviceRepairOrder.scrEndTime != ''">
+            ,#{serviceRepairOrder.scrEndTime}
+        </if>
+        <if test="serviceRepairOrder.remark != null and serviceRepairOrder.remark != ''">
+            ,#{serviceRepairOrder.remark}
+        </if>
+        ,#{serviceRepairOrder.items}
+        )
+    </insert>
+
+    <sql id="query">
+        SELECT
+        app.id id,
+        app.id eid,
+        app.order_code orderCode,
+        app.order_sn orderSn,
+        app.create_date createDate,
+        app.scr_start_time scrStartTime,
+        app.scr_end_time scrEndTime,
+        app.work_type workType,
+        app.shop_name shopName,
+        ( SELECT count( 1 ) FROM service_repair_items s WHERE s.repair_order_id = app.id ) itemCount,
+        app.total_amount totalAmount,
+        app.car_no carNo,
+        s.service_name serviceName,
+        app.contract_name contractName,
+        app.contract_mobile contractMobile,
+        app.in_factory_time inFactoryTime,
+        app.out_factory_time outFactoryTime,
+        app.order_status orderStatus,
+        app.repair_start_time repairStartTime,
+        app.repair_end_time repairEndTime,
+        app.last_order_mileage lastOrderMileage,
+        app.car_mileage carMileage,
+        app.brand_price brandPrice,
+        <if test="serviceRepairOrderVo.tenantId == 1">
+            tenant.NAME tenantName,
+            payout.is_automatic isAutomatic,
+        </if>
+        app.check_amount checkAmount,
+        su.`name` opName
+        FROM
+        service_repair_order app
+        LEFT JOIN service_product sp ON app.shop_id = sp.station_id
+        AND sp.product_type = 3
+        LEFT JOIN service_info s ON sp.service_user_id = s.service_user_id
+        LEFT JOIN sys_user su ON app.op_id = su.id
+        <if test="serviceRepairOrderVo.tenantId == 1">
+            LEFT JOIN sys_tenant_def tenant ON app.tenant_id = tenant.id
+            LEFT JOIN payout_intf payout ON payout.busi_code = app.order_sn
+        </if>
+        WHERE
+        1 = 1
+        <if test="serviceRepairOrderVo.tenantId != 1">
+            and app.tenant_id = #{serviceRepairOrderVo.tenantId}
+        </if>
+        <if test="serviceRepairOrderVo.workType != null and serviceRepairOrderVo.workType != '' and serviceRepairOrderVo.workType != '-1'">
+            and app.work_type = #{serviceRepairOrderVo.workType}
+        </if>
+        <if test="serviceRepairOrderVo.tenantId == 1 and serviceRepairOrderVo.tenantName != null and serviceRepairOrderVo.tenantName != ''">
+            and tenant.name like CONCAT('%',#{serviceRepairOrderVo.tenantName},'%')
+        </if>
+        <if test="serviceRepairOrderVo.scrStartTime != null">
+            and app.in_Factory_Time <![CDATA[ >= ]]> #{serviceRepairOrderVo.scrStartTime}
+        </if>
+        <if test="serviceRepairOrderVo.scrEndTime != null">
+            and app.in_Factory_Time <![CDATA[ <= ]]> #{serviceRepairOrderVo.scrEndTime}
+        </if>
+        <if test="serviceRepairOrderVo.repairStartTime != null and serviceRepairOrderVo.repairStartTime != ''">
+            and DATE_FORMAT(app.create_date,'%Y-%m-%d %H:%i:%s') <![CDATA[ >= ]]> #{serviceRepairOrderVo.repairStartTime}
+        </if>
+        <if test="serviceRepairOrderVo.repairEndTime != null and serviceRepairOrderVo.repairEndTime != ''">
+            and DATE_FORMAT(app.create_date,'%Y-%m-%d %H:%i:%s') <![CDATA[ <= ]]> #{serviceRepairOrderVo.repairEndTime}
+        </if>
+        <if test="serviceRepairOrderVo.contractName != null and serviceRepairOrderVo.contractName != ''">
+            and app.contract_name like CONCAT('%',#{serviceRepairOrderVo.contractName},'%')
+        </if>
+        <if test="serviceRepairOrderVo.shopName != null and serviceRepairOrderVo.shopName != ''">
+            and app.shop_Name like CONCAT('%',#{serviceRepairOrderVo.shopName},'%')
+        </if>
+        <if test="serviceRepairOrderVo.orderStatus != null and serviceRepairOrderVo.orderStatus != -1">
+            and app.order_Status = #{serviceRepairOrderVo.orderStatus}
+        </if>
+        <if test="serviceRepairOrderVo.contractMobile != null and serviceRepairOrderVo.contractMobile != ''">
+            and app.contract_mobile like CONCAT('%',#{serviceRepairOrderVo.contractMobile},'%')
+        </if>
+        <if test="serviceRepairOrderVo.carNo != null and serviceRepairOrderVo.carNo != ''">
+            and app.car_no like CONCAT('%',#{serviceRepairOrderVo.carNo},'%')
+        </if>
+        <if test="serviceRepairOrderVo.orderCode != null and serviceRepairOrderVo.orderCode != ''">
+            and app.order_code = #{serviceRepairOrderVo.orderCode}
+        </if>
+        <if test="serviceRepairOrderVo.orderSn != null and serviceRepairOrderVo.orderSn != ''">
+            and (app.order_code like CONCAT('%',#{serviceRepairOrderVo.orderSn},'%') or app.order_sn like
+            CONCAT('%',#{serviceRepairOrderVo.orderSn},'%') )
+        </if>
+        <if test="serviceRepairOrderVo.opName != null and serviceRepairOrderVo.opName != ''">
+            AND su.`name` LIKE CONCAT('%',#{serviceRepairOrderVo.opName},'%')
+        </if>
+        order by app.id desc
+    </sql>
+
+    <select id="doQueryOrderList" resultType="com.youming.youche.record.dto.service.ServiceRepairOrderDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="doQueryOrderListExport" resultType="com.youming.youche.record.dto.service.ServiceRepairOrderDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="getTotalFee" resultType="java.lang.Double">
+        SELECT
+        sum( app.check_amount ) totalFee
+        FROM
+        service_repair_order app
+        <if test="inParam.tenantId == 1">
+            LEFT JOIN sys_tenant_def tenant ON app.tenant_id = tenant.id
+        </if>
+        WHERE 1 = 1
+        <if test="inParam.tenantId == 1">
+            and app.tenant_id = #{inParam.tenantId}
+        </if>
+        <if test="inParam.workType != null and inParam.workType != '' and inParam.workType != '-1'">
+            and app.work_type = #{inParam.workType}
+        </if>
+        <if test="inParam.tenantId == 1 and inParam.tenantName != null and inParam.tenantName != ''">
+            and tenant.name like CONCAT('%',#{inParam.tenantName},'%')
+        </if>
+        <if test="inParam.scrStartTime != null">
+            and app.in_Factory_Time <![CDATA[ >= ]]> #{inParam.scrStartTime}
+        </if>
+        <if test="inParam.scrEndTime != null">
+            and app.in_Factory_Time <![CDATA[ < ]]> #{inParam.scrEndTime}
+        </if>
+        <if test="inParam.repairStartTime != null">
+            and app.repair_start_time <![CDATA[ >= ]]> #{inParam.repairStartTime}
+        </if>
+        <if test="inParam.repairEndTime != null">
+            and app.repair_start_time <![CDATA[ < ]]> #{inParam.repairEndTime}
+        </if>
+        <if test="inParam.contractName != null and inParam.contractName != ''">
+            and app.contract_name like CONCAT('%',#{inParam.contractName},'%')
+        </if>
+        <if test="inParam.shopName != null and inParam.shopName != ''">
+            and app.contract_name like CONCAT('%',#{inParam.shopName},'%')
+        </if>
+        <if test="inParam.orderStatus != null">
+            and app.order_Status = #{inParam.orderStatus}
+        </if>
+        <if test="inParam.contractMobile != null and inParam.contractMobile != ''">
+            and app.contract_mobile like CONCAT('%',#{inParam.contractMobile},'%')
+        </if>
+        <if test="inParam.carNo != null and inParam.carNo != ''">
+            and app.car_no like CONCAT('%',#{inParam.carNo},'%')
+        </if>
+        <if test="inParam.orderCode != null and inParam.orderCode !=''">
+            and app.order_code = #{inParam.orderCode}
+        </if>
+        <if test="inParam.orderSn != null and inParam.orderSn !=''">
+            and (app.order_code like CONCAT('%',#{inParam.orderSn},'%') or app.order_sn like
+            CONCAT('%',#{inParam.orderSn},'%') )
+        </if>
+    </select>
+
+    <select id="selectRecordById" resultType="com.youming.youche.record.domain.service.ServiceRepairOrder">
+        SELECT
+            ID AS id,
+            OP_ID AS opId,
+            ORDER_STATUS AS orderStatus,
+            WORK_TYPE AS workType,
+            CAR_MILEAGE AS carMileage,
+            LAST_ORDER_MILEAGE AS lastOrderMileage,
+            TENANT_ID AS tenantId,
+            CREATE_DATE AS createDate,
+            CAR_NO AS carNo,
+            CONTRACT_NAME AS contractName,
+            CONTRACT_MOBILE AS contractMobile,
+            DATE_FORMAT( SCR_START_TIME, '%Y-%m-%d' ) AS scrStartTime,
+	        DATE_FORMAT( SCR_END_TIME, '%Y-%m-%d' ) AS scrEndTime,
+            ITEMS AS items,
+            REMARK AS remark,
+            SHOP_ID AS shopId,
+            SHOP_NAME AS shopName,
+			ORDER_CODE AS orderCode
+        FROM
+            service_repair_order
+        WHERE
+            id = #{flowId}
+    </select>
+
+    <update id="updateOrderStatusById">
+        UPDATE service_repair_order
+        SET order_status =  #{serviceRepairOrder.orderStatus}
+        WHERE
+            id = #{serviceRepairOrder.id}
+    </update>
+
+    <update id="updateServiceRepairOrderById">
+        UPDATE service_repair_order
+        SET
+        ORDER_CODE = #{entity.orderCode}
+        WHERE
+            id = #{entity.id}
+    </update>
+
+    <update id="updateLastOrderMileageById">
+        UPDATE service_repair_order
+        SET last_order_mileage = #{serviceRepairOrder.lastOrderMileage}
+        WHERE
+            id = #{serviceRepairOrder.id}
+    </update>
+
+    <select id="getTableMaintenanceCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from service_repair_order where order_status = 1 group by tenant_id
+    </select>
+
+    <select id="getTableMaintenanceMeCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select
+        user_info_id,
+        sum(count) as count
+        from (
+        SELECT
+        su.user_info_id AS user_info_id,
+        IFNULL( COUNT( 1 ), 0 ) AS count
+        FROM
+        service_repair_order app
+        LEFT JOIN sys_user su ON app.op_id = su.id
+        GROUP BY
+        user_id
+        HAVING
+        user_info_id IS NOT NULL
+        ) as total
+        group by user_info_id
+    </select>
+</mapper>

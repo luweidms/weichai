@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderInfoHMapper">
+
+    <select id="getOrderListOutExport" resultType="com.youming.youche.order.dto.OrderListOut">
+        SELECT
+        o.order_id AS orderId,
+        g.goods_name AS goodsName,
+        o.source_region AS sourceRegion,
+        o.des_region AS desRegion,
+        o.order_update_state AS orderUpdateState,
+        o.is_need_bill as isNeedBill,
+        o.from_order_id AS fromOrderId,
+        o.to_order_id AS toOrderId,
+        g.company_name AS customName,
+        g.custom_number as customNumber,
+        s.plate_number AS plateNumber,
+        s.car_driver_phone AS carDriverPhone,
+        s.car_driver_id AS carDriverId,
+        s.car_driver_man AS carDriverMan,
+        s.vehicle_code AS vehicleCode,
+        s.source_name AS sourceName,
+        s.car_lengh AS carLengh,
+        s.car_status AS carStatus,
+        s.car_user_type AS carUserType,
+        s.vehicle_Class AS vehicleClass,
+        s.depend_time AS dependTime,
+        o.order_state AS orderState,
+        s.licence_type as licenceType,
+        g.recive_type AS reciveType,
+        g.recive_state AS reciveState,
+        ifnull(f.arrive_payment_state, 0) as arrivePaymentState,
+        ifnull(f.arrive_payment_fee, 0) as arrivePaymentFee,
+        f.guide_price AS guidePrice,
+        f.total_fee AS totalFee,
+        g.square AS square,
+        g.weight AS weight,
+        e.pre_amount_flag AS preAmountFlag,
+        o.is_tansit AS isTransit,
+        s.collection_user_name as collectionUserName,
+        g.contract_url AS contractUrl,
+        g.contract_id AS contractId,
+        o.order_type AS orderType,
+        ifnull(fe.est_Fee, 0) as estFee,
+        e.sign_agree_state as signAgreeState,
+        e.luge_sign_agree_url as lugeSignAgreeUrl,
+        fe.pontage as pontage,
+        fe.oil_account_type as oilAccountType,
+        fe.oil_bill_type as oilBillType,
+        IFNULL(o.no_audit_exc_num, 0)
+        + IFNULL(o.no_audit_exc_num_in, 0) AS exceptionDealNum,
+        f.pre_total_fee AS preTotalFee,
+        f.cost_price as costPrice,
+        f.pre_cash_fee AS preCashFee,
+        f.pre_oil_virtual_fee AS preOilVirtualFee,
+        f.pre_oil_fee AS preOilFee,
+        f.pre_etc_fee AS preEtcFee,
+        f.final_fee AS finalFee,
+        g.load_state AS loadState,
+        o.to_tenant_name AS toTenantName,
+        s.appoint_way AS appointWay,
+        o.to_tenant_id as toTenantId,
+        o.refuse_order_reason as refuseOrderReason,
+        s.arrive_time as arriveTime,
+        g.goods_type as goodsType,
+        s.verify_depend_date as verifyDependDate,
+        s.verify_start_date as verifyStartDate,
+        s.verify_arrive_date as verifyArriverDate,
+        s.verify_departure_date as verifyDepartureDate,
+        IFNULL(e.payment_way, 0) as paymentWay,
+        IFNULL(fe.copilot_salary, 0) as copilotSalary,
+        IFNULL(fe.salary, 0) as salary,
+        s.source_id as sourceId,
+        IFNULL(s.is_collection, 0) as isCollection,
+        s.copilot_user_id as copilotUserId
+        FROM order_info o
+        LEFT JOIN order_aging_info a ON a.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_transit_line_info t ON t.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_driver_switch_info odsi ON odsi.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_problem_info p ON p.ORDER_ID = o.ORDER_ID
+        LEFT JOIN city c1 ON c1.Id = o.SOURCE_REGION AND c1.Id = o.DES_REGION
+        LEFT JOIN province p1 ON p1.Id = o.SOURCE_REGION AND p1.Id = o.DES_REGION
+        LEFT JOIN district d1 ON d1.Id = o.SOURCE_COUNTY AND d1.Id = o.DES_COUNTY
+        LEFT JOIN order_goods g ON g.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_fee f ON f.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_fee_ext fe ON fe.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_scheduler s ON s.ORDER_ID = o.ORDER_ID
+        LEFT JOIN order_info_ext e ON e.order_id = o.ORDER_ID
+        LEFT JOIN order_transfer_info oti on oti.ORDER_ID = o.ORDER_ID
+        WHERE  o.tenant_id= #{tenantId}
+        <if test="orderListIn.getHasAllData()!=null and orderListIn.getHasAllData()">
+            <if test="orderListIn.getOrgIdList() != null  and  orderListIn.getOrgIdList().size() > 0">
+                and o.org_id in (
+                <foreach collection="orderListIn.getOrgIdList()" item="orgid" separator=",">
+                    #{orgid}
+                </foreach>
+                )
+            </if>
+        </if>
+
+        <!--        <if test="orderListIn.getOpName()!=null and orderListIn.getOpName()!=''">-->
+        <!--            and o.op_name like #{orderListIn.getOpName()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getPlateNumber()!=null and orderListIn.getPlateNumber()!=''">-->
+        <!--            and s.plate_number like #{orderListIn.getPlateNumber()}-->
+        <!--        </if>-->
+        <!--        <if test="orderListIn.getBeginOrderTime()!=null  and orderListIn.getBeginOrderTime()!=''">&ndash;&gt;-->
+        <!--            and o.create_date>=#{orderListIn.getBeginOrderTime()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getEndOrderTime()!=null and orderListIn.getEndOrderTime()!=''">-->
+        <!--            and s.create_date <![CDATA[ <= ]]> #{orderListIn.getEndOrderTime()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getBeginDependTime() !=null and orderListIn.getBeginDependTime()!=''">-->
+        <!--            and s.depend_time>=#{orderListIn.getBeginDependTime()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getEndDependTime()!=null and orderListIn.getEndDependTime() !=''">-->
+        <!--            and s.depend_time<![CDATA[ <= ]]>#{orderListIn.getEndDependTime()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getOrderState()!=null and orderListIn.getOrderState() >0">-->
+        <!--            and o.order_state =#{orderListIn.getOrderState()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getOrderType()!=null and orderListIn.getOrderType()>0">-->
+        <!--            and o.order_type=#{orderListIn.getOrderType()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getAmountFlag()!=null  and orderListIn.getAmountFlag()!=''">-->
+        <!--            and e.pre_amount_flag=#{orderListIn.getAmountFlag()}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getAmountFlag()!=null and orderListIn.getAmountFlag()==0 ">-->
+        <!--            and e.pre_amount_flag= #{orderListIn.getAmountFlag()} and o.order_state>=#{preOrderState}-->
+        <!--        </if>-->
+
+        <!--        <if test="orderListIn.getArrivePaymentState()!=null and  orderListIn.getArrivePaymentState()!=''">-->
+        <!--            and f.arrive_Payment_State=#{orderListIn.getArrivePaymentState()}-->
+        <!--        </if>-->
+
+        order by s.create_date desc
+
+    </select>
+
+    <sql id="sbHead">
+        SELECT o.`ORDER_ID` AS orderId,g.`GOODS_NAME` AS goodsName,o.`SOURCE_REGION` AS sourceRegion,
+               o.`DES_REGION` AS desRegion,s.`MILEAGE_NUMBER` AS distance,o.`TENANT_NAME` AS tenantName,
+               s.`DEPEND_TIME` AS dependTime,o.`ORDER_STATE` AS orderState,g.`ADDR_DTL` AS source,
+               g.`DES_DTL` AS des,IFNULL(s.`CAR_ARRIVE_DATE`,DATE_ADD(s.`DEPEND_TIME`,INTERVAL s.`ARRIVE_TIME` HOUR)) AS carArriveDate,
+               g.`SQUARE` AS square,g.`WEIGHT` AS weight,g.`VEHICLE_LENGH` AS vehicleLengh,g.`VEHICLE_STATUS` AS vehicleStatus,
+               g.`LOCAL_PHONE` AS localPhone,g.`LOCAL_USER_NAME` AS localUserName,g.CUSTOM_NUMBER AS customNumber,s.`PLATE_NUMBER` AS plateNumber,
+               s.`CAR_DRIVER_PHONE` AS carDriverPhone,s.`CAR_DRIVER_ID` AS carDriverId,s.`CAR_DRIVER_MAN` AS carDriverMan,
+               s.`COPILOT_MAN` AS copilotMan,s.`COPILOT_PHONE` AS copilotPhone,s.`COPILOT_USER_ID` AS copilotUserId,
+               s.`CAR_LENGH` AS carLengh,s.`CAR_STATUS` AS carStatus,s.`VEHICLE_CLASS` AS vehicleClass,IFNULL(oe.`PAYMENT_WAY`,0) AS paymentWay,
+               IFNULL(oe.`PRE_AMOUNT_FLAG`,0) AS preAmountFlag,IFNULL(oe.`CAPACITY_OIL`,0)/100.0 AS capacityOil,IFNULL(oe.`RUN_OIL`,0)/100.0 AS runOil,
+               g.`RECIVE_TYPE` AS reciveType,g.`RECIVE_STATE` AS reciveState,IFNULL(f.`TOTAL_FEE`,0) AS totalFee,IFNULL(f.FINAL_FEE_FLAG,0) as finalAmountFlag,
+               IFNULL(f.`PRE_OIL_VIRTUAL_FEE`,0) AS preOilVirtualFee,IFNULL(f.`PRE_OIL_FEE`,0) AS preOilFee,IFNULL(f.`PRE_TOTAL_FEE`,0) AS preTotalFee,
+               IFNULL(f.`FINAL_FEE`,0) AS finalFee,IFNULL(f.`insurance_fee`,0) AS insuranceFee,IFNULL(fe.`SALARY`,0) AS salary,IFNULL(fe.`COPILOT_SALARY`,0) AS copilotSalary,IFNULL(oe.IS_EVALUATE,0) AS isEvaluate,IFNULL(oe.AGING_STAR_LEVEL,0) AS agingStarLevel,
+               IFNULL(oe.SERVICE_STAR_LEVEL,0) AS serviceStarLevel,IFNULL(oe.MANNER_STAR_LEVEL,0) AS mannerStarLevel,s.TRAILER_PLATE as trailerPlate,IFNULL(f.pre_Cash_Fee,0) as preCashFee,IFNULL(f.pre_Etc_Fee,0) as preEtcFee,
+               g.eand as  eand,g.eand_Des as eandDes,g.nand as nand ,g.nand_Des as nandDes,g.CONTRACT_ID as contractId,g.CONTRACT_URL as contractUrl,s.source_Name as sourceName,o.remark as remark,
+               g.RECIVE_ADDR as inReciveAddr,s.RECIVE_ADDR as costReciveAddr,o.FROM_ORDER_ID AS fromOrderId,IFNULL(f.ARRIVE_PAYMENT_STATE,0) as arrivePaymentState,IFNULL(f.ARRIVE_PAYMENT_FEE,0) as arrivePaymentFee,
+               g.CUSTOM_NAME as  customName,g.CONTACT_PHONE as customPhone,IFNULL(o.IS_NEED_BILL,0) as isNeedBill,IFNULL(fe.PONTAGE,0) as pontage,g.load_State as loadState,g.GOODS_TYPE as goodsType,IFNULL(o.to_Tenant_Id,0) as toTenantId,IFNULL(s.is_Collection,0) as isCollection,
+               IFNULL(f.GUIDE_PRICE,0) as guidePrice,IFNULL(s.IS_URGENT,0) AS isUrgent,IFNULL(f.COST_PRICE,0) as costPrice,
+               IFNULL(oe.SIGN_AGREE_STATE,0) signAgreeState,oe.LUGE_SIGN_AGREE_URL lugeSignAgreeUrl,
+               g.RECIVE_PROVINCE_ID as reciveProvinceId,g.RECIVE_CITY_ID as reciveCityId,g.RECIVE_NAME as reciveName,g.RECIVE_PHONE as recivePhone,
+               s.DISPATCHER_NAME as dispatcherName,s.DISPATCHER_ID as dispatcherId,s.DISPATCHER_BILL as dispatcherBill,
+               o.TENANT_ID AS tenantId,o.ORG_ID as orgId,IFNULL(oe.IS_TEMP_TENANT,0) as isTempTenant,IFNULL(oe.run_way,0) AS runWay,s.`ARRIVE_TIME` as arriveTime,
+               s.ON_DUTY_DRIVER_ID as onDutyDriverId,s.ON_DUTY_DRIVER_NAME as onDutyDriverName,s.ON_DUTY_DRIVER_PHONE as onDutyDriverPhone,IFNULL(fe.DRIVER_SWITCH_SUBSIDY,0) as driverSwitchSubsidy,g.company_name AS companyName,
+    </sql>
+    <sql id="sbWhere">
+        WHERE o.`ORDER_ID` = s.`ORDER_ID` AND o.`ORDER_ID` = f.`ORDER_ID`
+          AND o.`ORDER_ID` = fe.`ORDER_ID` AND o.`ORDER_ID` = g.`ORDER_ID`
+          AND o.`ORDER_ID` = oe.`ORDER_ID`
+          AND o.`ORDER_ID` = #{orderId}
+        <if test="selectType=null or selectType!=1">
+            AND (s.`VEHICLE_CLASS` = 1 OR (s.`VEHICLE_CLASS` in (2,3,4) AND (o.`TO_TENANT_ID` IS NULL OR o.`TO_TENANT_ID` &lt;=0) ))
+        </if>
+    </sql>
+
+    <select id="queryOrderDetailsAppOut" resultType="com.youming.youche.order.dto.order.OrderDetailsAppDto">
+        <choose>
+            <when test="isHis==1">
+                <include refid="sbHead"/>
+                1 as isHis,o.end_date as endDate
+                FROM ordeR_info_h o,`order_scheduler_h` s,`order_fee_h` f,
+                `order_fee_ext_h` fe,`order_goods_h` g,`order_info_ext_h` oe
+                <include refid="sbWhere"/>
+            </when>
+            <when test="isHis==0">
+                <include refid="sbHead"/>
+                0 as isHis
+                FROM ordeR_info o,`order_scheduler` s,`order_fee` f,
+                `order_fee_ext` fe,`order_goods` g,`order_info_ext` oe
+                <include refid="sbWhere"/>
+            </when>
+            <otherwise>
+                select * from (
+                    <include refid="sbHead"/>
+                    1 as isHis
+                    FROM ordeR_info_h o,`order_scheduler_h` s,`order_fee_h` f,
+                    `order_fee_ext_h` fe,`order_goods_h` g,`order_info_ext_h` oe
+                    <include refid="sbWhere"/>
+                    UNION
+                    <include refid="sbHead"/>
+                    0 as isHis
+                    FROM ordeR_info o,`order_scheduler` s,`order_fee` f,
+                    `order_fee_ext` fe,`order_goods` g,`order_info_ext` oe
+                    <include refid="sbWhere"/>
+                ) tmp
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

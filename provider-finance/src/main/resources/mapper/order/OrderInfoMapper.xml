@@ -1,0 +1,1811 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderInfoMapper">
+
+    <sql id="fieldStr">
+        o.ORDER_ID AS orderId,
+        oie.payment_way as paymentWay,
+        s.DEPEND_TIME AS dependDate,
+        g.company_name AS companyName,
+        g.custom_name AS customName,
+        s.SOURCE_NAME AS sourceName,
+        NULL AS customerId,
+        0 AS customerNum,
+        o.source_Region AS sourceRegion,
+        o.des_Region AS desRegion,
+        o.order_Type AS orderType,
+        f.COST_PRICE AS costPrice,
+        f.INCOME_EXCEPTION_FEE AS incomeExceptionFee,
+        0 AS diffFee,
+        fs.GET_AMOUNT AS getAmount,
+        fs.BILL_NUMBER AS billNumber,
+        NULL AS receiptNumber,
+    IF
+        ( fs.check_name IS NOT NULL, fs.check_name, g.company_name ) AS checkName,
+        o.order_state AS orderState,
+        fs.finance_Sts AS financeSts,
+        ifnull( fs.REAL_INCOME, 0 ) AS realIncome,
+        g.CUSTOM_USER_ID AS customUserId,
+        s.plate_Number AS plateNumber,
+        s.TRAILER_PLATE AS trailerPlate,
+        o.tenant_Id AS tenantId,
+        s.CAR_STATUS AS carStatus,
+        o.OP_NAME AS opName,
+        f.total_Fee AS totalFee,
+        s.CAR_LENGH AS carLengh,
+        o.ORG_ID AS orgId,
+        o.FROM_ORDER_ID AS fromOrderId,
+        NULL AS receiptNumbers,
+        IFNULL( f.INSURANCE_FEE, 0 ) AS insuranceFee,
+        s.CAR_DEPEND_DATE AS carDependDate,
+        s.CAR_START_DATE AS carStartDate,
+        s.CAR_ARRIVE_DATE AS carArriveDate,
+        CONCAT((
+            SELECT
+                ssd.CODE_NAME
+            FROM
+                sys_static_data ssd
+            WHERE
+                ssd.CODE_TYPE = 'VEHICLE_STATUS'
+                AND ssd.id = s.CAR_STATUS
+                ),
+            '/',
+            ( SELECT ssd.CODE_NAME FROM sys_static_data ssd WHERE ssd.CODE_TYPE = 'VEHICLE_LENGTH' AND ssd.id = s.CAR_LENGH )
+        ) AS carType,
+        CONCAT( IFNULL( g.WEIGHT, 0 ), '吨/', IFNULL( g.SQUARE, 0 ), '方' ) AS goodsInfo,
+        g.CUSTOM_NUMBER AS customNumber,
+		opdi.balance_type AS balanceType,
+		DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+		opdi.collection_time AS collectionTime,
+		NULL AS updateTime,
+		opdi.collection_month AS collectionMonth,
+		opdi.collection_day AS collectionDay,
+		DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDateT
+    </sql>
+
+    <sql id="fieldStrH">
+        o.ORDER_ID AS orderId,
+        oie.payment_way as paymentWay,
+        s.DEPEND_TIME AS dependDate,
+        g.company_name AS companyName,
+        g.custom_name AS customName,
+        s.SOURCE_NAME AS sourceName,
+        NULL AS customerId,
+        0 AS customerNum,
+        o.source_Region AS sourceRegion,
+        o.des_Region AS desRegion,
+        o.order_Type AS orderType,
+        f.COST_PRICE AS costPrice,
+        f.INCOME_EXCEPTION_FEE AS incomeExceptionFee,
+        0 AS diffFee,
+        fs.GET_AMOUNT AS getAmount,
+        fs.BILL_NUMBER AS billNumber,
+        NULL AS receiptNumber,
+    IF
+        ( fs.check_name IS NOT NULL, fs.check_name, g.company_name ) AS checkName,
+        o.order_state AS orderState,
+        fs.finance_Sts AS financeSts,
+        ifnull( fs.REAL_INCOME, 0 ) AS realIncome,
+        g.CUSTOM_USER_ID AS customUserId,
+        s.plate_Number AS plateNumber,
+        s.TRAILER_PLATE AS trailerPlate,
+        o.tenant_Id AS tenantId,
+        s.CAR_STATUS AS carStatus,
+        o.OP_NAME AS opName,
+        f.total_Fee AS totalFee,
+        s.CAR_LENGH AS carLengh,
+        o.ORG_ID AS orgId,
+        o.FROM_ORDER_ID AS fromOrderId,
+        NULL AS receiptNumbers,
+        IFNULL( f.INSURANCE_FEE, 0 ) AS insuranceFee,
+        s.CAR_DEPEND_DATE AS carDependDate,
+        s.CAR_START_DATE AS carStartDate,
+        s.CAR_ARRIVE_DATE AS carArriveDate,
+        CONCAT((
+            SELECT
+                ssd.CODE_NAME
+            FROM
+                sys_static_data ssd
+            WHERE
+                ssd.CODE_TYPE = 'VEHICLE_STATUS'
+                AND ssd.id = s.CAR_STATUS
+                ),
+            '/',
+            ( SELECT ssd.CODE_NAME FROM sys_static_data ssd WHERE ssd.CODE_TYPE = 'VEHICLE_LENGTH' AND ssd.id = s.CAR_LENGH )
+        ) AS carType,
+        CONCAT( IFNULL( g.WEIGHT, 0 ), '吨/', IFNULL( g.SQUARE, 0 ), '方' ) AS goodsInfo,
+        g.CUSTOM_NUMBER AS customNumber,
+		opdi.balance_type AS balanceType,
+		DATE_FORMAT( opdi.create_time, '%Y-%m-%d' ) AS createTime,
+		opdi.collection_time AS collectionTime,
+		DATE_FORMAT( o.end_date, '%Y-%m-%d' ) AS updateTime,
+		opdi.collection_month AS collectionMonth,
+		opdi.collection_day AS collectionDay,
+		DATE_FORMAT( s.car_depend_date, '%Y-%m-%d' ) AS carDependDateT
+    </sql>
+
+    <sql id="sqlWhere">
+        o.TENANT_ID = #{orderInfoVo.tenantId}
+        AND o.ORDER_STATE <![CDATA[ >= ]]> 7 AND opdi.payment_days_type = 2
+        <if test="orderInfoVo.companyName != null and orderInfoVo.companyName != ''">
+            AND g.company_name LIKE CONCAT('%',#{orderInfoVo.companyName},'%')
+        </if>
+        <if test="orderInfoVo.checkName != null and orderInfoVo.checkName != ''">
+            AND if(fs.CHECK_NAME is not null, fs.CHECK_NAME LIKE CONCAT('%',#{orderInfoVo.checkName},'%'),
+            g.company_name LIKE CONCAT('%',#{orderInfoVo.checkName},'%') )
+        </if>
+        <if test="orderInfoVo.orderState != null and orderInfoVo.orderState > 0">
+            AND o.ORDER_STATE = #{orderInfoVo.orderState}
+        </if>
+        <if test="orderInfoVo.stateType != null and orderInfoVo.stateType >-1">
+            <if test="orderInfoVo.stateType == 0">
+                AND o.ORDER_STATE = 15
+            </if>
+            <if test="orderInfoVo.stateType != 0">
+                AND o.ORDER_STATE != 15
+            </if>
+        </if>
+        <if test="orderInfoVo.beginDependTime != null and orderInfoVo.beginDependTime != ''">
+            and s.DEPEND_TIME <![CDATA[ >= ]]> #{orderInfoVo.beginDependTime}
+        </if>
+        <if test="orderInfoVo.endDependTime != null and orderInfoVo.endDependTime != ''">
+            and s.DEPEND_TIME <![CDATA[ <= ]]> #{orderInfoVo.endDependTime}
+        </if>
+        <if test="orderInfoVo.orderId != null and orderInfoVo.orderId != ''">
+            and o.order_Id in (${orderInfoVo.orderId})
+        </if>
+        <if test="orderInfoVo.billNumber != null and orderInfoVo.billNumber != ''">
+            AND fs.BILL_NUMBER LIKE CONCAT('%',#{orderInfoVo.billNumber},'%')
+        </if>
+        <if test="orderInfoVo.billNumber == null or orderInfoVo.billNumber == ''">
+            AND (o.ORDER_STATE != 15 or (o.ORDER_STATE = 15 AND (fs.BILL_NUMBER is not null or
+            (income_exception_fee is not null or income_exception_fee != 0))))
+        </if>
+        <if test="orderInfoVo.orderType != null and orderInfoVo.orderType > 0">
+            AND o.order_Type LIKE #{orderInfoVo.orderType}
+        </if>
+        <if test="orderInfoVo.isCreateBill != null and orderInfoVo.isCreateBill == 1">
+            AND fs.BILL_NUMBER is not null
+        </if>
+        <if test="orderInfoVo.isCreateBill != null and orderInfoVo.isCreateBill == 2">
+            AND fs.BILL_NUMBER is null
+        </if>
+        <if test="orderInfoVo.financeSts != null and orderInfoVo.financeSts > 0">
+            and fs.finance_Sts = #{orderInfoVo.financeSts}
+        </if>
+        <if test="orderInfoVo.financeSts != null and orderInfoVo.financeSts == 0">
+            and fs.finance_Sts in (0,3)
+        </if>
+        <if test="orderInfoVo.receiptNumber != null and orderInfoVo.receiptNumber != ''">
+            and fs.BILL_NUMBER IN (SELECT i.BILL_NUMBER FROM order_bill_invoice i where RECEIPT_NUMBER like
+            CONCAT('%',#{orderInfoVo.receiptNumber},'%'))
+        </if>
+        <if test="orderInfoVo.orgId != null and orderInfoVo.orgId > 0">
+            and o.ORG_ID = #{orderInfoVo.orgId}
+        </if>
+        <if test="orderInfoVo.plateNumber != null and orderInfoVo.plateNumber != ''">
+            and s.plate_Number LIKE CONCAT('%',#{orderInfoVo.plateNumber},'%')
+        </if>
+        <if test="orderInfoVo.sourceName != null and orderInfoVo.sourceName != ''">
+            and s.SOURCE_NAME LIKE CONCAT('%',#{orderInfoVo.sourceName},'%')
+        </if>
+        <if test="orderInfoVo.customNumber != null and orderInfoVo.customNumber != ''">
+            and (${orderInfoVo.customNumber})
+        </if>
+        <if test="orderInfoVo.customerIds != null and orderInfoVo.customerIds != ''">
+            and o.order_Id in (select order_id from order_receipt where recive_number in(${orderInfoVo.customerIds}) )
+        </if>
+    </sql>
+
+    <sql id="query">
+        SELECT * FROM (
+        SELECT
+        <include refid="fieldStr"/>
+        FROM
+        order_info o
+        LEFT JOIN order_goods g ON o.ORDER_ID = g.ORDER_ID
+        LEFT JOIN order_scheduler s ON o.ORDER_ID = s.ORDER_ID
+        LEFT JOIN order_fee f ON o.ORDER_ID = f.ORDER_ID
+        LEFT JOIN order_fee_statement fs ON o.ORDER_ID = fs.ORDER_ID
+        LEFT JOIN order_payment_days_info opdi ON o.order_id = opdi.order_id
+        LEFT JOIN order_info_ext oie ON o.ORDER_ID = oie.ORDER_ID
+        WHERE
+        <include refid="sqlWhere"/>
+        UNION
+        SELECT
+        <include refid="fieldStrH"/>
+        FROM
+        order_info_h o
+        LEFT JOIN order_goods_h g ON o.ORDER_ID = g.ORDER_ID
+        LEFT JOIN order_scheduler_h s ON o.ORDER_ID = s.ORDER_ID
+        LEFT JOIN order_fee_h f ON o.ORDER_ID = f.ORDER_ID
+        LEFT JOIN order_fee_statement_h fs ON o.ORDER_ID = fs.ORDER_ID
+        LEFT JOIN order_payment_days_info_h opdi ON o.order_id = opdi.order_id
+        LEFT JOIN order_info_ext_h oie ON o.ORDER_ID = oie.ORDER_ID
+        WHERE
+        <include refid="sqlWhere"/>
+        ) AS temp ORDER BY dependDate DESC ,orderId
+    </sql>
+
+    <select id="queryReceviceManageOrder" resultType="com.youming.youche.finance.dto.order.OrderInfoDto">
+        <include refid="query"/>
+    </select>
+
+    <select id="queryReceviceManageOrderExport" resultType="com.youming.youche.finance.dto.order.OrderInfoDto">
+        <include refid="query"/>
+    </select>
+
+    <sql id="sqlHeadWhere">
+        WHERE o.`ORDER_ID` = f.`ORDER_ID` AND o.`ORDER_ID` = s.`ORDER_ID` AND o.`ORDER_ID` = g.`ORDER_ID`
+        AND o.`ORDER_ID` = l.`ORDER_ID`  AND
+        l.`USER_ID` = CASE WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) <![CDATA[ <= ]]> 0 THEN s.`CAR_DRIVER_ID`
+        WHEN IFNULL(o.`to_tenant_id`,0) <![CDATA[ <= ]]> 0 AND IFNULL(s.`IS_COLLECTION`,0) = 1 THEN s.`COLLECTION_USER_ID`  ELSE st.`ADMIN_USER` END
+        AND o.`ORDER_ID` = ie.`ORDER_ID`
+        AND o.`ORDER_STATE` BETWEEN 7 and  14
+        AND ((s.VEHICLE_CLASS= 2 or  s.VEHICLE_CLASS = 4) OR (s.VEHICLE_CLASS = 1 and ie.payment_way = 3))
+        <if test="orderStatementListInVo.monthStr != null and orderStatementListInVo.monthStr != ''">
+            <foreach collection="orderStatementListInVo.monthArr" item="item" index="index">
+                <if test="index == 0">
+                    AND ((s.depend_Time BETWEEN #{item.dateStart} AND #{item.dateEnd})
+                </if>
+                <if test="index != 0">
+                    OR (s.depend_Time BETWEEN #{item.dateStart} AND #{item.dateEnd} )
+                </if>
+                <if test="index == orderStatementListInVo.monthArr.size() - 1">
+                    )
+                </if>
+            </foreach>
+        </if>
+        <if test="orderStatementListInVo.plateNumbers != null and orderStatementListInVo.plateNumbers.size() > 0">
+            AND s.`PLATE_NUMBER` in
+            <foreach collection="orderStatementListInVo.plateNumbers" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="orderStatementListInVo.plateNumber != null and orderStatementListInVo.plateNumber != ''">
+            AND s.`PLATE_NUMBER` = #{orderStatementListInVo.plateNumber}
+        </if>
+        <if test="orderStatementListInVo.companyName != null and orderStatementListInVo.companyName != ''">
+            AND g.`COMPANY_NAME` LIKE CONCAT("%", #{orderStatementListInVo.companyName}, "%")
+        </if>
+        <if test="orderStatementListInVo.carDriverMan != null and orderStatementListInVo.carDriverMan != ''">
+            AND s.`CAR_DRIVER_MAN` LIKE CONCAT("%", #{orderStatementListInVo.carDriverMan}, "%")
+        </if>
+        <if test="orderStatementListInVo.carDriverPhone != null and orderStatementListInVo.carDriverPhone != ''">
+            AND s.`CAR_DRIVER_PHONE` LIKE CONCAT("%", #{orderStatementListInVo.carDriverPhone}, "%")
+        </if>
+        <if test="orderStatementListInVo.sourceName != null and orderStatementListInVo.sourceName != ''">
+            AND s.`SOURCE_NAME` LIKE CONCAT("%", #{orderStatementListInVo.sourceName}, "%")
+        </if>
+        <if test="orderStatementListInVo.userPhone != null and orderStatementListInVo.userPhone != ''">
+            AND l.`USER_PHONE` LIKE CONCAT("%", #{orderStatementListInVo.userPhone}, "%")
+        </if>
+        <if test="orderStatementListInVo.tenantId != null and orderStatementListInVo.tenantId > 0">
+            AND o.`TENANT_ID` = #{orderStatementListInVo.tenantId}
+        </if>
+        <if test="orderStatementListInVo.orderId != null and orderStatementListInVo.orderId > 0">
+            AND o.`ORDER_ID` = #{orderStatementListInVo.orderId}
+        </if>
+        <if test="orderStatementListInVo.startTime != null and orderStatementListInVo.startTime != ''">
+            AND s.`depend_Time` <![CDATA[ >= ]]> #{orderStatementListInVo.startTime}
+        </if>
+        <if test="orderStatementListInVo.endTime != null and orderStatementListInVo.endTime != ''">
+            AND s.`depend_Time` <![CDATA[ <= ]]> #{orderStatementListInVo.endTime}
+        </if>
+        <if test="orderStatementListInVo.orderState != null and orderStatementListInVo.orderState != ''">
+            AND o.`ORDER_STATE` in
+            <foreach collection="orderStatementListInVo.orderStates" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="orderStatementListInVo.state = true">
+            AND (l.`fianl_sts` is null
+            <if test="orderStatementListInVo.finalStates != null and orderStatementListInVo.finalStates.size() > 0">
+            or l.`fianl_sts` in
+                <foreach collection="orderStatementListInVo.finalStates" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </if>
+        <if test="orderStatementListInVo.state = false and orderStatementListInVo.finalStates != null and orderStatementListInVo.finalStates.size() > 0">
+            AND l.`fianl_sts` in
+            <foreach collection="orderStatementListInVo.finalStates" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="orderStatementListInVo.isCollection != null and orderStatementListInVo.isCollection != ''">
+            <if test="orderStatementListInVo.isCollection0 = true and orderStatementListInVo.isCollection1 = false">
+                AND l.`USER_PHONE` = #{orderStatementListInVo.userPhone} AND l.user_type = #{orderStatementListInVo.userType}
+            </if>
+            <if test="orderStatementListInVo.isCollection0 = false and orderStatementListInVo.isCollection1 = true">
+                AND l.`USER_PHONE` != #{orderStatementListInVo.userPhone} AND l.user_type != #{orderStatementListInVo.userType}
+            </if>
+        </if>
+        GROUP BY o.order_id
+    </sql>
+
+    <sql id="sqlHead">
+        SELECT
+        o.`ORDER_ID` orderId,
+        s.`DEPEND_TIME` dependTime,
+        o.`ORDER_STATE` orderState,
+        s.`PLATE_NUMBER` plateNumber,
+        g.`COMPANY_NAME` companyName,
+        s.`SOURCE_NAME` sourceName,
+        s.`CAR_DRIVER_ID` carDriverId,
+        s.`CAR_DRIVER_MAN` carDriverMan,
+        s.`CAR_DRIVER_PHONE` carDriverPhone,
+        IFNULL( s.`IS_COLLECTION`, 0 ) isCollection,
+        CASE
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) <![CDATA[ <= ]]> 0 THEN
+        s.`CAR_DRIVER_ID`
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) = 1 THEN
+        s.`COLLECTION_USER_ID` ELSE st.`ADMIN_USER`
+        END payeeUserId,
+        CASE
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) <![CDATA[ <= ]]> 0 THEN
+        s.`CAR_DRIVER_MAN`
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) = 1 THEN
+        s.`COLLECTION_USER_NAME` ELSE o.`to_tenant_name`
+        END payee,
+        CASE
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) <![CDATA[ <= ]]> 0 THEN
+        s.`CAR_DRIVER_PHONE`
+        WHEN IFNULL( o.`to_tenant_id`, 0 ) <![CDATA[ <= ]]> 0
+        AND IFNULL( s.`IS_COLLECTION`, 0 ) = 1 THEN
+        s.`COLLECTION_USER_PHONE` ELSE st.LINK_PHONE
+        END payeePhone,
+        IFNULL( f.`TOTAL_FEE`, 0 ) totalFee,
+        IFNULL( f.`PRE_CASH_FEE`, 0 ) preCashFee,
+        IFNULL( f.`PRE_OIL_FEE`, 0 ) + IFNULL( f.`PRE_OIL_VIRTUAL_FEE`, 0 ) totalOilFee,
+        IFNULL( f.`PRE_OIL_FEE`, 0 ) preOilFee,
+        IFNULL( f.`PRE_OIL_VIRTUAL_FEE`, 0 ) preOilVirtualFee,
+        IFNULL( f.`PRE_ETC_FEE`, 0 ) preEtcFee,
+        IFNULL( f.`ARRIVE_PAYMENT_FEE`, 0 ) arrivePaymentFee,
+        IFNULL( f.`ARRIVE_PAYMENT_STATE`, 0 ) arrivePaymentState,
+        IFNULL( f.`FINAL_FEE`, 0 ) finalFee,
+        IFNULL( f.`INSURANCE_FEE`, 0 ) insuranceFee,
+        IFNULL( f.`EXCEPTION_IN`, 0 ) exceptionIn,
+        IFNULL( f.`EXCEPTION_OUT`, 0 ) exceptionOut,
+        IFNULL( SUM( a.`FINE_PRICE` ), 0 ) finePrice,
+        ie.`PRE_AMOUNT_FLAG` preAmountFlag,
+        o.to_tenant_id toTenantId,
+        s.source_Id sourceCode,
+        g.custom_user_Id customUserId,
+        l.`USER_ID` userId,
+        l.`user_type` userType,
+        l.`USER_PHONE` userPhone,
+        IFNULL( l.`MARGIN_TURN`, 0 ) + IFNULL( l.`MARGIN_ADVANCE`, 0 ) + IFNULL( l.`MARGIN_SETTLEMENT`, 0 ) + IFNULL( l.`MARGIN_DEDUCTION`, 0 ) paidFinal,
+        l.`FIANL_STS` fianlSts,
+        IFNULL( l.`PAID_ETC`, 0 ) paidEtc,
+        IFNULL( l.`OIL_TURN`, 0 ) oilTurnCash,
+        IFNULL( l.`ETC_TURN`, 0 ) etcTurnCash,
+        IFNULL( l.`PLEDGE_OILCARD_FEE`, 0 ) pledgeOilcardFee,
+        IFNULL( l.`NO_PAY_FINAL`, 0 ) noPayFinal,
+        IFNULL( l.`NO_PAY_CASH`, 0 ) noPayCash,
+        IFNULL( l.`PAID_CASH`, 0 ) paidCash,
+        IFNULL( l.`ARRIVE_FEE`, 0 ) arriveFee
+    </sql>
+
+    <select id="queryOrderStatementList" resultType="com.youming.youche.finance.dto.order.OrderStatementListOutDto">
+        SELECT
+        tmp.*
+        FROM
+        (
+        <include refid="sqlHead" />
+        ,
+        0 AS isHis
+        FROM
+        `order_info` o
+        LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id`
+        LEFT JOIN `order_aging_info` a ON o.`ORDER_ID` = a.`ORDER_ID`
+        AND a.AUDIT_STS = 3,
+        `order_scheduler` s,
+        `order_goods` g,
+        `order_fee` f,
+        `order_info_ext` ie,
+        `order_limit` l
+        <include refid="sqlHeadWhere" />
+        UNION ALL
+        <include refid="sqlHead" />
+        ,0 as isHis FROM `order_info_h` o
+        LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.`id`
+        LEFT JOIN `order_aging_info` a ON o.`ORDER_ID` = a.`ORDER_ID` AND a.AUDIT_STS = 3
+        ,`order_scheduler_h` s,`order_goods_h` g,`order_fee_h` f,`order_info_ext_h` ie,`order_limit` l
+        <include refid="sqlHeadWhere" />
+        ) tmp ORDER BY tmp.dependTime desc
+    </select>
+
+    <select id="queryOrderStatementPage" resultType="com.youming.youche.finance.dto.order.OrderStatementListOutDto">
+        SELECT
+        tmp.*
+        FROM
+        (
+        <include refid="sqlHead" />
+        ,
+        0 AS isHis
+        FROM
+        `order_info` o
+        LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.id
+        LEFT JOIN `order_aging_info` a ON o.`ORDER_ID` = a.`ORDER_ID`
+        AND a.AUDIT_STS = 3,
+        `order_scheduler` s,
+        `order_goods` g,
+        `order_fee` f,
+        `order_info_ext` ie,
+        `order_limit` l
+        <include refid="sqlHeadWhere" />
+        UNION ALL
+        <include refid="sqlHead" />
+        ,0 as isHis FROM `order_info_h` o
+        LEFT JOIN `sys_tenant_def` st ON o.`to_tenant_id` = st.id
+        LEFT JOIN `order_aging_info` a ON o.`ORDER_ID` = a.`ORDER_ID` AND a.AUDIT_STS = 3
+        ,`order_scheduler_h` s,`order_goods_h` g,`order_fee_h` f,`order_info_ext_h` ie,`order_limit` l
+        <include refid="sqlHeadWhere" />
+        ) tmp ORDER BY tmp.dependTime desc
+    </select>
+
+    <sql id="queryDriverMonthOrderInfoCountHander">
+        SELECT o.order_id AS orderId,s.CAR_DRIVER_ID as carDriverId,s.COPILOT_USER_ID as copilotUserId,s.DEPEND_TIME AS dependTime,
+        g.COMPANY_NAME AS companyName,o.order_state AS orderState,s.PLATE_NUMBER AS plateNumber,ifnull(s.MILEAGE_NUMBER,0) AS mieageNumber, e.PAYMENT_WAY as paymentWay
+    </sql>
+
+    <sql id="queryDriverMonthOrderInfoCountHanderWhere">
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND s.VEHICLE_CLASS = 1 AND o.order_state BETWEEN 7 and 14
+        <if test="month != null and month != ''">
+            AND s.DEPEND_TIME BETWEEN #{date} and #{lastDate}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND o.tenant_id = #{tenantId}
+        </if>
+    </sql>
+    <select id="queryDriverMonthOrderInfoCount" resultType="java.lang.Integer">
+        SELECT count(*) FROM (
+            SELECT * FROM (
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+            LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE = 1,
+            `order_scheduler` s,`order_goods` g, `order_info_ext` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND ds.RECEIVE_USER_ID = #{userId}
+            </if>
+            UNION ALL
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+            LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE = 1,
+            `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND ds.RECEIVE_USER_ID = #{userId}
+            </if>
+            UNION ALL
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id,
+            `order_scheduler` s,`order_goods` g, `order_info_ext` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND s.CAR_DRIVER_ID = #{userId}
+            </if>
+            UNION ALL
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id,
+            `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND s.CAR_DRIVER_ID = #{userId}
+            </if>
+            UNION ALL
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id ,
+            `order_scheduler` s,`order_goods` g, `order_info_ext` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND s.COPILOT_USER_ID = #{userId}
+            </if>
+            UNION ALL
+                <include refid="queryDriverMonthOrderInfoCountHander" />
+            FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id ,
+            `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e
+                <include refid="queryDriverMonthOrderInfoCountHanderWhere" />
+            <if test="userId != null and userId > 0">
+                AND s.COPILOT_USER_ID = #{userId}
+            </if>
+        ) tab GROUP BY  orderId order by  dependTime  DESC ) tmp
+    </select>
+
+    <select id="queryDriverMonthOrderInfo" resultType="com.youming.youche.finance.dto.order.OrderListOutDto">
+        select * from (
+        SELECT * FROM (
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE = 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND ds.RECEIVE_USER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE= 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND ds.RECEIVE_USER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.CAR_DRIVER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.CAR_DRIVER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.COPILOT_USER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.COPILOT_USER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        ) tab GROUP BY  orderId order by  dependTime  DESC
+        ) newTab order by orderId desc
+    </select>
+    <sql id="queryDriverMonthOrderInfoSqlHead">
+        SELECT o.order_id AS orderId,s.CAR_DRIVER_ID as carDriverId,s.COPILOT_USER_ID as copilotUserId,s.DEPEND_TIME AS dependTime,
+        g.COMPANY_NAME AS companyName,o.order_state AS orderState,s.PLATE_NUMBER AS plateNumber,ifnull(s.MILEAGE_NUMBER,0) AS mieageNumber, e.PAYMENT_WAY as paymentWay,
+        f.subsidy_day AS subsidyDay, f.salary AS salary, us.subsidy AS subsidyFee, us.salary_pattern AS salaryPattern, ods. subsidy_fee_sum as subsidyFeeSum,
+        ods.subsidy_fee_sum_state as subsidyFeeSumState, o.update_time as orderCompleteTime, ods.settle_money as  settleMoney
+    </sql>
+
+    <sql id="queryDriverMonthOrderInfoSqlWhere">
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        AND o.order_state = 14
+<!--        <if test="monthStart != null and monthEnd != null">-->
+<!--            AND s.DEPEND_TIME BETWEEN #{monthStart} and #{monthEnd}-->
+<!--        </if>-->
+        <if test="orderListInVo.tenantId != null and orderListInVo.tenantId > 0">
+            AND o.tenant_id = #{orderListInVo.tenantId}
+        </if>
+        <if test="orderListInVo.plateNumber != null and orderListInVo.plateNumber != ''">
+            AND s.plate_Number like CONCAT("%", #{orderListInVo.plateNumber}, "%")
+        </if>
+        <if test="orderListInVo.beginDependTime != null and orderListInVo.beginDependTime != ''">
+            AND s.DEPEND_TIME <![CDATA[ >= ]]> #{orderListInVo.beginDependTime}
+        </if>
+        <if test="orderListInVo.endDependTime != null and orderListInVo.endDependTime != ''">
+            AND s.DEPEND_TIME <![CDATA[ <= ]]> #{orderListInVo.endDependTime}
+        </if>
+        <!--        <if test="orderListInVo.orderState != null and orderListInVo.orderState > 0">-->
+        <!--            AND o.order_state = #{orderListInVo.orderState}-->
+        <!--        </if>-->
+        <if test="orderListInVo.customName != null and orderListInVo.customName != ''">
+            AND g.company_name like CONCAT("%", #{orderListInVo.customName}, "%")
+        </if>
+        <if test="orderListInVo.orderIds != null and orderListInVo.orderIds != ''">
+            <if test="orderListInVo.orderIdList != null and orderListInVo.orderIdList.size() > 0">
+                AND o.order_Id in
+                <foreach collection="orderListInVo.orderIdList" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+        <if test="orderListInVo.desRegion != null and orderListInVo.desRegion > 0">
+            AND (o.DES_REGION = #{orderListInVo.desRegion} or t.REGION = #{orderListInVo.desRegion} )
+        </if>
+        <if test="orderListInVo.sourceRegion != null and orderListInVo.sourceRegion > 0">
+            AND (o.SOURCE_REGION = #{orderListInVo.sourceRegion} or t.REGION = #{orderListInVo.desRegion} )
+        </if>
+    </sql>
+
+
+    <select id="queryDriverMonthOrderInfoList" resultType="com.youming.youche.finance.dto.order.OrderListOutDto">
+        SELECT * FROM (
+        SELECT * FROM (
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE = 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND ds.RECEIVE_USER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE= 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND ds.RECEIVE_USER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.CAR_DRIVER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.CAR_DRIVER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.COPILOT_USER_ID = #{userId}
+        </if>
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us
+        <include refid="queryDriverMonthOrderInfoSqlWhere" />
+        <if test="userId != null and userId > 0">
+            AND s.COPILOT_USER_ID = #{userId}
+        </if>
+        <if test="monthStart != null and monthEnd != null">
+            AND o.end_date BETWEEN #{monthStart} and #{monthEnd}
+        </if>
+        ) tab GROUP BY  orderId order by  dependTime  DESC
+        ) newTab order by orderId desc
+    </select>
+
+    <select id="queryDriverMonthOrderInfoListNew" resultType="com.youming.youche.finance.dto.order.OrderListOutDto">
+        SELECT * FROM (
+        SELECT * FROM (
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE = 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_switch_info` ds ON ds.order_id = o.order_id AND ds.STATE= 1
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info o  LEFT JOIN order_transit_line_info t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler` s,`order_goods` g, `order_info_ext` e, `order_fee_ext` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        UNION ALL
+        <include refid="queryDriverMonthOrderInfoSqlHead" />
+        FROM order_info_h o  LEFT JOIN order_transit_line_info_h t ON t.order_id = o.order_id
+        LEFT JOIN `order_driver_subsidy_info` ods ON o.order_id = ods.order_id,
+        `order_scheduler_h` s,`order_goods_h` g, `order_info_ext_h` e, `order_fee_ext_h` f, `tenant_user_salary_rel` us, `cm_salary_send_order_info` cssoi
+        WHERE e.order_id = o.order_id and o.order_id = s.order_id  AND o.order_id = g.order_id
+        AND o.order_id = f.order_id
+        AND s.car_driver_id = us.user_id
+        and o.order_id = cssoi.order_id
+        and cssoi.send_id = #{sendId}
+        AND o.order_state = 14
+        ) tab GROUP BY  orderId order by  dependTime  DESC
+        ) newTab order by orderId desc
+    </select>
+
+    <sql id="merchants">
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        --             odi.diff_fee AS diffFee,
+        f.total_fee AS totalFee,
+        o.order_state AS orderState,
+        SUM(p.problem_deal_price) AS problemPrice
+        FROM order_info_h o
+        LEFT JOIN order_scheduler_h s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods_h g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee_h f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN  order_fee_statement_h ofs
+        ON o.order_id=ofs.order_id
+        --                  LEFT JOIN order_diff_info odi
+        --                            ON o.order_id=odi.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=2
+        and s.tenant_Id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+        UNION ALL
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        --             odi.diff_fee AS diffFee,
+        f.total_fee AS totalFee,
+        o.order_state AS orderState,
+        SUM(p.problem_deal_price) AS problemPrice
+        FROM order_info o
+        LEFT JOIN order_scheduler s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN  order_fee_statement ofs
+        ON o.order_id=ofs.order_id
+        --                  LEFT JOIN order_diff_info odi
+        --                            ON o.order_id=odi.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=2
+        and s.tenant_Id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+    </sql>
+    <select id="merchantsVehicleOrder" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="merchants"/>
+    </select>
+    <select id="merchantsExport" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="merchants"/>
+    </select>
+
+
+    <select id="getLineNodeByOrderId" resultType="com.youming.youche.order.domain.order.OrderAgingInfo">
+        select
+            `id`, `order_start_date`, `order_arrive_date`, `op_id`, `op_name`, `order_id`, `create_time`, `arrive_time`, `fine_price`, `remark`, `audit_sts`, `audit_date`, `tenant_id`, `arrive_hour`, `user_id`, `user_name`, `user_phone`, `line_node`, `source_region`, `des_region`, `nand`, `nand_des`, `eand`, `eand_des`, `deduction_fee`, `arrive_deduction_fee`, `final_deduction_fee`, `update_time`
+        from order_aging_info
+        where order_id = #{orderId}
+    </select>
+
+    <sql id="transfer">
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        --             odi.diff_fee AS diffFee,
+        f.total_fee AS totalFee,
+        o.order_state AS orderState,
+        SUM(p.problem_deal_price) AS problemPrice
+        FROM order_info_h o
+        LEFT JOIN order_scheduler_h s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods_h g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee_h f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN  order_fee_statement_h ofs
+        ON o.order_id=ofs.order_id
+        --                  LEFT JOIN order_diff_info odi
+        --                            ON o.order_id=odi.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=3
+        and s.tenant_id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+        UNION ALL
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        --             odi.diff_fee AS diffFee,
+        f.total_fee AS totalFee,
+        o.order_state AS orderState,
+        SUM(p.problem_deal_price) AS problemPrice
+        FROM order_info o
+        LEFT JOIN order_scheduler s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN  order_fee_statement ofs
+        ON o.order_id=ofs.order_id
+        --                  LEFT JOIN order_diff_info odi
+        --                            ON o.order_id=odi.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=3
+        and s.tenant_id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+    </sql>
+    <select id="transferVehicleOrder" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="transfer"/>
+    </select>
+    <select id="transferExport" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="transfer"/>
+    </select>
+
+    <sql id="own">
+    SELECT * FROM (
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        s.CAR_ARRIVE_DATE AS carArriveDate,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        SUM(p.problem_deal_price) AS problemPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        -- odi.diff_fee AS diffFee,
+        i.payment_way AS paymentWay,-- 成本模式
+        f.total_fee AS totalFee,-- 中标价
+        f.pre_oil_virtual_fee AS preOilVirtualFee,-- 预付虚拟油卡金额
+        f.pre_oil_fee AS preOilFee,-- 预付油卡金额
+        e.pontage AS pontage,-- 路桥费
+        f.pre_etc_fee AS preEtcFee,
+        o.order_state AS orderState,
+        e.driver_day_salary AS driverDaySalary
+        FROM order_info_h o
+        LEFT JOIN order_scheduler_h s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods_h g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee_h f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN order_fee_statement_h ofs
+        ON o.order_id=ofs.order_id
+        LEFT JOIN order_fee_ext_h e
+        ON o.order_id=e.order_id
+        LEFT JOIN order_info_ext_h i
+        ON o.order_id=i.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=1
+        and s.tenant_id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+        UNION ALL
+        SELECT
+        o.order_id AS orderId,
+        s.depend_time AS dependTime,
+        o.create_time AS createTime,
+        s.CAR_ARRIVE_DATE AS carArriveDate,
+        g.company_name AS companyName,
+        g.custom_number AS customNumber,
+        s.source_code AS sourceCode,
+        a.line_node AS lineNode,
+        s.source_name AS sourceName,
+        s.plate_number AS plateNumber,
+        s.trailer_plate AS trailerPlate,
+        s.car_driver_man AS carDriverMan,
+        s.copilot_man AS copilotMan,
+        g.local_user_name AS localUserName,
+        o.op_name AS opName,
+        o.tenant_name AS tenantName,
+        CONCAT(g.goods_name, '/',IFNULL( g.weight, 0 ), '吨/', IFNULL( g.square, 0 ), '方' ) AS goodsInfo,
+        g.goods_type AS goodsType,
+        f.cost_price AS costPrice,
+        SUM(p.problem_deal_price) AS problemPrice,
+        f.income_exception_fee AS incomeExceptionFee,
+        ofs.confirm_diff_amount AS confirmDiffAmount,
+        --             odi.diff_fee AS diffFee,
+        i.payment_way AS paymentWay,-- 成本模式
+        f.total_fee AS totalFee,-- 中标价
+        f.pre_oil_virtual_fee AS preOilVirtualFee,-- 预付虚拟油卡金额
+        f.pre_oil_fee AS preOilFee,-- 预付油卡金额
+        e.pontage AS pontage,-- 路桥费
+        f.pre_etc_fee AS preEtcFee,
+        o.order_state AS orderState,
+        e.driver_day_salary AS driverDaySalary
+        FROM order_info o
+        LEFT JOIN order_scheduler s
+        ON o.order_id=s.order_id
+        LEFT JOIN order_goods g
+        ON o.order_id=g.order_id
+        LEFT JOIN order_problem_info p
+        ON o.order_id=p.order_id
+        LEFT JOIN order_fee f
+        ON o.order_id=f.order_id
+        LEFT JOIN order_aging_info a
+        ON o.order_id=a.order_id
+        LEFT JOIN order_fee_statement ofs
+        ON o.order_id=ofs.order_id
+        LEFT JOIN order_fee_ext e
+        ON o.order_id=e.order_id
+        LEFT JOIN order_info_ext i
+        ON o.order_id=i.order_id
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != ''">
+            LEFT JOIN city c1 ON c1.id = o.SOURCE_REGION LEFT JOIN city c2 ON c2.id = o.DES_REGION
+            LEFT JOIN province p1 ON p1.id = o.SOURCE_REGION LEFT JOIN province p2 ON p2.id = o.DES_REGION
+            LEFT JOIN district d1 ON d1.id = o.SOURCE_COUNTY LEFT JOIN district d2 ON d2.id = o.DES_COUNTY
+        </if>
+        WHERE s.vehicle_class=1
+        and s.tenant_id=#{tenantId}
+        <if test="vehicleOrderVo.orderIds!=null and vehicleOrderVo.orderIds!=''"> and o.order_id=#{vehicleOrderVo.orderIds}</if>
+        <if test="vehicleOrderVo.plateNumber!=null and vehicleOrderVo.plateNumber!=''"> and s.plate_number LIKE CONCAT('%',#{vehicleOrderVo.plateNumber},'%') </if>
+        <if test="vehicleOrderVo.beginDependTime!=null and vehicleOrderVo.beginDependTime!=''">
+            and s.depend_time &gt;= #{vehicleOrderVo.beginDependTime}
+        </if>
+        <if test="vehicleOrderVo.endDependTime!=null and vehicleOrderVo.endDependTime!=''">
+            and s.depend_time &lt;= #{vehicleOrderVo.endDependTime}
+        </if>
+        <if test="vehicleOrderVo.beginOrderTime!=null  and vehicleOrderVo.beginOrderTime!=''">
+            and o.create_time &gt;= #{vehicleOrderVo.beginOrderTime}
+        </if>
+        <if test="vehicleOrderVo.endOrderTime!=null and vehicleOrderVo.endOrderTime!=''">
+            and o.create_time &lt;= #{vehicleOrderVo.endOrderTime}
+        </if>
+        <if test="vehicleOrderVo.carUserName!=null and vehicleOrderVo.carUserName!=''">
+            and s.car_driver_man LIKE CONCAT('%',#{vehicleOrderVo.carUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.customName!=null and vehicleOrderVo.customName!=''">
+            and g.company_name LIKE CONCAT('%',#{vehicleOrderVo.customName},'%')
+        </if>
+        <if test="vehicleOrderVo.customNumber!=null and vehicleOrderVo.customNumber!=''">
+            and g.custom_order_id = #{vehicleOrderVo.customNumber}
+        </if>
+        <if test="vehicleOrderVo.orgId!=null and vehicleOrderVo.orgId!=''">
+            and o.org_id = #{vehicleOrderVo.orgId}
+        </if>
+        <if test="vehicleOrderVo.localUserName!=null and vehicleOrderVo.localUserName!=''">
+            and g.local_user_name LIKE CONCAT('%',#{vehicleOrderVo.localUserName},'%')
+        </if>
+        <if test="vehicleOrderVo.opName!=null and vehicleOrderVo.opName!=''">
+            and o.op_name LIKE CONCAT('%',#{vehicleOrderVo.opName},'%')
+        </if>
+        <if test="vehicleOrderVo.copilotMan!=null and vehicleOrderVo.copilotMan!=''">
+            and s.copilot_man LIKE CONCAT('%',#{vehicleOrderVo.copilotMan},'%')
+        </if>
+        <!-- 线路关键字-->
+        <if test="vehicleOrderVo.lineKey != null and vehicleOrderVo.lineKey != '' ">
+            and  s.source_name like CONCAT('%',#{vehicleOrderVo.lineKey},'%')
+        </if>
+        <if test="vehicleOrderVo.trailerPlate!=null and vehicleOrderVo.trailerPlate!=''">
+            and s.trailer_plate LIKE CONCAT('%',#{vehicleOrderVo.trailerPlate},'%')
+        </if>
+        <if test="vehicleOrderVo.orderState!=null and vehicleOrderVo.orderState!=''">
+            and o.order_state = #{vehicleOrderVo.orderState}
+        </if>
+        GROUP BY o.order_id
+    ) AS temp
+        ORDER BY temp.createTime DESC
+    </sql>
+    <select id="ownVehicleOrder" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="own"/>
+    </select>
+    <select id="ownExport" resultType="com.youming.youche.finance.dto.order.VehicleOrderDto">
+        <include refid="own"/>
+    </select>
+
+    <select id="getConsumeFee" resultType="com.youming.youche.finance.domain.order.OrderCostOtherReport">
+        SELECT
+            `id`, `rel_id`, `order_id`, `audit_remark`, `consume_fee`, `consume_num`, `file_id1`, `file_id2`, `file_id3`, `file_url1`, `file_url2`, `file_url3`, `is_audit`, `price_unit`, `remark`, `state`, `sub_time`, `sub_user_id`, `sub_user_name`, `tenant_id`, `type_id`, `type_name`, `user_id`, `card_no`, `file_id4`, `file_id5`, `file_url4`, `file_url5`, `create_time`, `update_time`, `payment_way`, `oil_mileage`, `oil_product_name`, `oil_rise`, `table_type`        from order_cost_other_report
+        where order_id=#{orderId}
+    </select>
+
+    <sql id="lineStatementsInfo">
+        select
+        tmp.sourceName as sourceName,
+        sum(tmp.weight) as weight,
+        sum(tmp.square) as square,
+        sum(tmp.notarizeReceivable) as notarizeReceivable,
+        sum(tmp.mileageNumber) as mileageNumber,
+        sum(tmp.preOilVirtualFee) as preOilVirtualFee,
+        sum(tmp.preOilFee) as preOilFee,
+        sum(tmp.pontage) as pontage,
+        sum(tmp.consumeOilFee) as consumeOilFee,
+        sum(tmp.consumePontageFee) as consumePontageFee,
+        sum(tmp.consumeFee) as consumeFee,
+        sum(tmp.amount) as amount,
+        tmp.createTime as createTime
+        from (   SELECT
+        s.source_code as sourceCode,
+        s.source_name AS sourceName,
+        g.weight AS weight,
+        g.square AS square,
+        IFNULL(f.cost_price, 0) + IFNULL(f.income_exception_fee, 0) + IFNULL(ofs.confirm_diff_amount, 0) AS notarizeReceivable,
+        s.mileage_number AS mileageNumber,
+        f.pre_oil_virtual_fee AS preOilVirtualFee,
+        f.pre_oil_fee AS preOilFee,
+        IFNULL(e.pontage, 0) + IFNULL(f.pre_etc_fee, 0) AS pontage,
+        c.amount as amount,
+        (
+        SELECT SUM(consume_fee)
+        FROM order_cost_other_report r
+        WHERE s.order_id = r.order_id AND r.type_name = '油费'
+        ) AS consumeOilFee,
+        (
+        SELECT SUM(consume_fee)
+        FROM order_cost_other_report r
+        WHERE r.order_id = s.order_id AND r.type_name = '路桥费'
+        ) AS consumePontageFee,
+        (
+        SELECT SUM(consume_fee)
+        FROM order_cost_other_report r
+        WHERE s.order_id = r.order_id AND r.type_name = '杂费'
+        ) AS consumeFee,
+        DATE_FORMAT(fs.create_time, '%Y-%m') AS createTime
+        FROM
+        order_scheduler_h s
+        LEFT JOIN order_goods_h g ON s.order_id = g.order_id
+        LEFT JOIN order_fee_ext_h e ON s.order_id = e.order_id
+        LEFT JOIN order_fee_h f ON s.order_id = f.order_id
+        LEFT JOIN order_fee_statement_h fs ON s.order_id = fs.order_id
+        LEFT JOIN order_fee_statement_h ofs ON s.order_id = ofs.order_id
+        LEFT JOIN order_info_h o ON s.order_id = o.order_id
+        LEFT JOIN order_info_ext_h i ON o.order_id = i.order_id
+        left join claim_expense_info c on s.order_id = c.order_id and c.state=3
+        WHERE
+        s.tenant_id =#{tenantId}
+        AND o.order_state = 14
+        <if test="sourceName!=null and sourceName!=''"> and s.source_name LIKE CONCAT('%', #{sourceName},'%')</if>
+        <if test="beginTime!=null "> and fs.create_time &gt;= #{beginTime}</if>
+        <if test="endTime!=null "> and fs.create_time &lt; #{endTime}</if>
+        and s.source_name is not null
+        ) as tmp
+        GROUP BY
+        tmp.sourceCode
+        ORDER BY
+        tmp.createTime DESC
+    </sql>
+    <select id="lineStatements" resultType="com.youming.youche.finance.dto.LineInfoDto">
+        <include refid="lineStatementsInfo"/>
+    </select>
+    <select id="lineStatementsExport" resultType="com.youming.youche.finance.dto.LineInfoDto">
+        <include refid="lineStatementsInfo"/>
+    </select>
+
+    <select id="getTableFinancialReceivableReceivedAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select total.tenant_id, sum(realIncome) as count from (
+        SELECT
+        b.bill_number AS billNumber,
+        b.CREATE_RECEIPT_DATE AS createReceiptDate,
+        sum( IFNULL( orders.cost_Price, 0 ) ) AS costPrice,
+        sum( IFNULL( orders.income_exception_fee, 0 ) ) AS incomeExceptionFee,
+        sum( IFNULL( orders.confirm_amount, 0 ) ) AS confirmAmount,
+        sum( IFNULL( orders.get_amount, 0 ) ) AS getAmount,
+        sum( IFNULL( orders.CONFIRM_DIFF_AMOUNT, 0 ) ) AS confirmDiffAmount,
+        IFNULL( b.receipt_num, 0 ) AS receiptNumber,
+        b.create_time AS createDate,
+        IFNULL( b.CHECK_AMOUNT, 0 ) AS checkAmount,
+        b.bill_Sts AS billSts,
+        b.REAL_INCOME AS realIncome,
+        b.creator_name AS creatorName,
+        count( * ) AS orderNum,
+        orders.company_name AS customName,
+        b.tenant_id,
+        CASE
+
+        WHEN TRIM( orders.CHECK_NAME ) != '' THEN
+        orders.CHECK_NAME ELSE orders.company_name
+        END AS checkName
+        FROM
+        (
+        SELECT
+        ob.*,
+        obi.receipt_num
+        FROM
+        order_bill_info ob
+        LEFT JOIN ( SELECT bill_number, count( 1 ) AS receipt_num FROM order_bill_invoice GROUP BY bill_number ) obi ON ob.bill_number = obi.bill_number
+        ) b
+        LEFT JOIN (
+        (
+        SELECT
+        ofs.bill_number,
+        ofh.cost_Price,
+        ofh.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name,
+        o.tenant_id
+        FROM
+        order_info_h o,
+        order_goods_h g,
+        order_fee_statement_h ofs,
+        order_fee_h ofh
+        WHERE
+        g.order_id = o.order_id
+        AND ofh.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        AND ofs.bill_number IS NOT NULL
+        AND ofs.bill_number != ''
+        ) UNION ALL
+        (
+        SELECT
+        ofs.bill_number,
+        ofe.cost_Price,
+        ofe.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name,
+        o.tenant_id
+        FROM
+        order_info o,
+        order_goods g,
+        order_fee_statement ofs,
+        order_fee ofe
+        WHERE
+        g.order_id = o.order_id
+        AND ofe.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        AND ofs.bill_number IS NOT NULL
+        AND ofs.bill_number != ''
+        )
+        ) AS orders ON b.bill_number = orders.bill_number
+        WHERE
+        b.bill_sts != 4
+        AND b.bill_Sts = 1
+        GROUP BY
+        b.bill_number
+        ORDER BY
+        b.create_time DESC
+        ) as total group by total.tenant_id
+    </select>
+
+    <select id="getTableFinancialReceivableSurplusAmount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select total.tenant_id, sum(incomeExceptionFee + costPrice + confirmDiffAmount - checkAmount) as count from (
+        SELECT
+        b.bill_number AS billNumber,
+        b.CREATE_RECEIPT_DATE AS createReceiptDate,
+        sum( IFNULL( orders.cost_Price, 0 ) ) AS costPrice,
+        sum( IFNULL( orders.income_exception_fee, 0 ) ) AS incomeExceptionFee,
+        sum( IFNULL( orders.confirm_amount, 0 ) ) AS confirmAmount,
+        sum( IFNULL( orders.get_amount, 0 ) ) AS getAmount,
+        sum( IFNULL( orders.CONFIRM_DIFF_AMOUNT, 0 ) ) AS confirmDiffAmount,
+        IFNULL( b.receipt_num, 0 ) AS receiptNumber,
+        b.create_time AS createDate,
+        IFNULL( b.CHECK_AMOUNT, 0 ) AS checkAmount,
+        b.bill_Sts AS billSts,
+        b.REAL_INCOME AS realIncome,
+        b.creator_name AS creatorName,
+        count( * ) AS orderNum,
+        orders.company_name AS customName,
+        b.tenant_id,
+        CASE
+
+        WHEN TRIM( orders.CHECK_NAME ) != '' THEN
+        orders.CHECK_NAME ELSE orders.company_name
+        END AS checkName
+        FROM
+        (
+        SELECT
+        ob.*,
+        obi.receipt_num
+        FROM
+        order_bill_info ob
+        LEFT JOIN ( SELECT bill_number, count( 1 ) AS receipt_num FROM order_bill_invoice GROUP BY bill_number ) obi ON ob.bill_number = obi.bill_number
+        ) b
+        LEFT JOIN (
+        (
+        SELECT
+        ofs.bill_number,
+        ofh.cost_Price,
+        ofh.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name,
+        o.tenant_id
+        FROM
+        order_info_h o,
+        order_goods_h g,
+        order_fee_statement_h ofs,
+        order_fee_h ofh
+        WHERE
+        g.order_id = o.order_id
+        AND ofh.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        AND ofs.bill_number IS NOT NULL
+        AND ofs.bill_number != ''
+        ) UNION ALL
+        (
+        SELECT
+        ofs.bill_number,
+        ofe.cost_Price,
+        ofe.income_exception_fee,
+        ofs.confirm_amount,
+        ofs.get_amount,
+        ofs.CONFIRM_DIFF_AMOUNT,
+        ofs.receipt_number,
+        g.company_name,
+        ofs.check_name,
+        o.tenant_id
+        FROM
+        order_info o,
+        order_goods g,
+        order_fee_statement ofs,
+        order_fee ofe
+        WHERE
+        g.order_id = o.order_id
+        AND ofe.order_id = o.order_id
+        AND ofs.order_id = o.order_id
+        AND ofs.bill_number IS NOT NULL
+        AND o.order_state != 16
+        AND ofs.bill_number IS NOT NULL
+        AND ofs.bill_number != ''
+        )
+        ) AS orders ON b.bill_number = orders.bill_number
+        WHERE
+        b.bill_sts != 4
+        AND b.bill_Sts in (0,2,3)
+        GROUP BY
+        b.bill_number
+        ORDER BY
+        b.create_time DESC
+        ) as total group by total.tenant_id
+    </select>
+
+    <select id="queryOrderNumberByState" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        order_info o,
+        order_scheduler s
+        WHERE
+        o.order_id = s.order_id
+        AND o.tenant_id = #{tenantId}
+        <if test="selectType != null">
+            <if test="selectType == 1">
+                AND o.order_state <![CDATA[ < ]]> 13
+            </if>
+            <if test="selectType == 2">
+                AND o.order_state = 3
+            </if>
+            <if test="selectType == 3">
+                AND (o.order_state = 1 or o.Order_Update_State = 2)
+            </if>
+        </if>
+        ORDER BY
+        o.create_time DESC
+    </select>
+
+    <select id="getOaLoanAmount" resultType="java.lang.Double">
+        SELECT sum(amount) FROM oa_loan
+        WHERE tenant_id = #{tenantId}
+        AND order_id = #{orderId}
+        and state in (3,4,5)
+        <if test="!aBoolean">
+            <if test="subOrgList!=null and subOrgList.size() &gt; 0">
+                AND org_id in (
+                <foreach collection="subOrgList" item="btnId" separator=",">
+                    #{btnId}
+                </foreach>
+                )
+            </if>
+        </if>
+        <if test="queryType==1">
+            AND classify = 1
+        </if>
+        <if test="queryType==2">
+            AND classify = 2 AND (launch = 1 or (launch = 2 and loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )))
+        </if>
+
+        <if test="queryType==3">
+            AND launch = 2 AND loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )
+        </if>
+    </select>
+
+
+    <select id="getAssetDetails" resultType="com.youming.youche.record.dto.trailer.DateCostDto">
+        SELECT
+            a.plate_number AS plateNumber,
+            c.purchase_date AS purchaseDate,
+            c.depreciated_month AS depreciatedMonth,
+            SUM(c.price) AS price,
+            a.licence_type AS licenceType,
+            c.residual AS residual
+        FROM
+            vehicle_data_info AS a
+                LEFT JOIN tenant_vehicle_rel AS b ON a.id = b.vehicle_code
+                LEFT JOIN tenant_vehicle_cost_rel AS c ON a.id = c.vehicle_code
+        WHERE
+            b.tenant_id = #{tenantId}
+          AND a.plate_number=#{plateNumber}
+          AND b.vehicle_class = 1
+        GROUP BY a.plate_number
+    </select>
+
+    <select id="getOaLoanAmountLine" resultType="java.lang.Double">
+        SELECT sum(o.amount) FROM oa_loan o,order_scheduler_h s
+        WHERE o.order_id=s.order_id
+          AND o.tenant_id = #{tenantId}
+          AND s.source_name = #{sourceName}
+        <if test="!aBoolean">
+            <if test="subOrgList!=null and subOrgList.size() &gt; 0">
+                AND org_id in (
+                <foreach collection="subOrgList" item="btnId" separator=",">
+                    #{btnId}
+                </foreach>
+                )
+            </if>
+        </if>
+        <if test="queryType==1">
+            AND classify = 1
+        </if>
+        <if test="queryType==2">
+            AND classify = 2 AND (launch = 1 or (launch = 2 and loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )))
+        </if>
+
+        <if test="queryType==3">
+            AND launch = 2 AND loan_subject IN (
+            <foreach collection="subjects" item="btnId" separator=",">
+                #{btnId}
+            </foreach>
+            )
+        </if>
+    </select>
+
+    <select id="getLineReimburse" resultType="java.lang.Double">
+        SELECT SUM(c.amount) FROM claim_expense_info c,order_scheduler_h s
+        WHERE c.order_id=s.order_id
+          AND c.tenant_id = #{tenantId}
+          AND s.source_name=#{sourceName}
+    </select>
+
+    <select id="getCarDriverPhone" resultType="java.lang.String">
+        SELECT car_driver_phone FROM order_scheduler_h
+        WHERE source_name=#{sourceName}
+        GROUP BY car_driver_phone
+    </select>
+
+    <select id="getOrderReimburse" resultType="java.lang.Double">
+        SELECT SUM(amount) FROM claim_expense_info
+        WHERE order_id=#{orderId}
+        AND tenant_id = #{tenantId}
+        and sts = 3
+    </select>
+</mapper>

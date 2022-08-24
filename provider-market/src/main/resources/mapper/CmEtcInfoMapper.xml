@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.etc.CmEtcInfoMapper">
+
+    <select id="OrderETC" resultType="com.youming.youche.market.dto.etc.CmEtcInfoDto">
+        select
+        f.id as id ,
+        f.etc_card_no as etcCardNo,
+        f.order_id AS orderId,
+        g.custom_name as customName,
+        s.source_name AS sourceName,
+        f.collect_mobile as collectMobile,
+        f.collect_name as collectName,
+        s.car_depend_date as carDependDate,
+        f.consume_money as consumeMoney,
+        f.service_provider_id as serviceProviderId,
+        f.service_provider_name as serviceProviderName,
+        f.etc_user_type as etcUserType,
+        f.payment_way as paymentWay,
+        f.tenant_Id as tenantId,
+        f.plate_number as plateNumber
+        FROM
+        cm_etc_info f
+        LEFT JOIN order_scheduler s
+        on f.order_id = s.order_id
+        LEFT JOIN order_goods g
+        on f.order_id = g.order_id
+        WHERE  f.tenant_id = #{tenantId}
+        <if test="vo.orderId!=null and vo.orderId!=''">
+            and f.order_id like concat('%',#{vo.orderId},'%')
+        </if>
+
+        <if test="vo.plateNumber!=null and vo.plateNumber!=''">
+            and f.plate_number like concat('%',#{vo.plateNumber},'%')
+        </if>
+
+        <if test="vo.begCarDependDate1!=null ">
+            and s.car_depend_date >=#{vo.begCarDependDate1}
+        </if>
+
+        <if test="vo.EndCarDependDate1!=null ">
+            and s.car_depend_date <![CDATA[ <= ]]>#{vo.EndCarDependDate1}
+        </if>
+
+        <if test="vo.paymentWay!=null and vo.paymentWay  &gt; 0">
+            and f.payment_way =#{vo.paymentWay}
+        </if>
+        <if test="vo.etcUserType!=null and vo.etcUserType &gt; 0">
+            and f.etc_user_type = #{vo.etcUserType}
+        </if>
+        ORDER BY
+        f.create_time DESC
+    </select>
+
+
+    <!--        非历史-->
+    <select id="queryOrderInfoByCar" resultType="com.youming.youche.market.dto.etc.order.OrderSchedulerDto">
+        SELECT
+        o.order_id AS orderId,
+--          s.vehicle_come AS vehicleCode,
+        s.car_driver_id AS carDriverId,
+        s.car_depend_date AS carDependDate,
+        s.car_arrive_date AS carArriveDate,
+        f.vehicle_affiliation AS vehicleAffiliation,
+        o.to_order_id as toOrderId,
+        o.to_tenant_id as toTenantId,
+        s.depend_time as dependTime
+        FROM cm_etc_info c
+        LEFT JOIN etc_maintain m ON c.etc_card_no= m.etc_id
+        LEFT JOIN order_scheduler s ON s.vehicle_code= m.vehicle_code
+        LEFT JOIN order_info o  ON s.order_id= o.order_id
+        LEFT JOIN order_fee f ON o.order_id = f.order_id
+        WHERE
+        o.tenant_id=#{tenantId}
+        and c.id = #{id}
+<!--        AND o.order_id = s.order_id-->
+<!--        <if test="vehicleCode !=null  and vehicleCode !=''">-->
+<!--            and s.vehicle_Code =#{vehicleCode}-->
+<!--        </if>-->
+<!--        <if test="tenantId !=null">-->
+<!--            and o.tenant_id=#{tenantId}-->
+<!--        </if>-->
+<!--        <if test="fromOrderId !=null and fromOrderId !='' ">-->
+<!--            and o.from_order_id =#{fromOrderId}-->
+<!--        </if>-->
+<!--        <if test="fromTenantId !=null and fromTenantId!=''">-->
+<!--            and o.from_tenant_id =#{fromTenantId}-->
+<!--        </if>-->
+<!--        order by s.car_derend_date ASC-->
+    </select>
+
+    <!--    历史-->
+    <select id="queryOrderInfoByCarh" resultType="com.youming.youche.market.dto.etc.order.OrderSchedulerDto">
+        SELECT
+        o.order_id AS orderId,
+        --          s.vehicle_come AS vehicleCode,
+        s.car_driver_id AS carDriverId,
+        s.car_depend_date AS carDependDate,
+        s.car_arrive_date AS carArriveDate,
+        f.vehicle_affiliation AS vehicleAffiliation,
+        o.to_order_id as toOrderId,
+        o.to_tenant_id as toTenantId,
+        s.depend_time as dependTime
+        FROM cm_etc_info c
+        LEFT JOIN etc_maintain m ON c.etc_card_no= m.etc_id
+        LEFT JOIN order_scheduler_h s ON s.vehicle_code= m.vehicle_code
+        LEFT JOIN order_info_h o  ON s.order_id= o.order_id
+        LEFT JOIN order_fee_h f ON o.order_id = f.order_id
+        WHERE
+        o.tenant_id=#{tenantId}
+        and c.id = #{id}
+    </select>
+
+    <select id="calculatedEtcFeeMoney" resultType="java.lang.Long">
+        SELECT sum(ifnull(CONSUME_MONEY,0)) as money FROM cm_etc_info WHERE account_statement_no = #{accountStatementNo}
+    </select>
+
+    <select id="calculatedEtcVoList" parameterType="com.youming.youche.market.vo.etc.CalculatedEtcFeeVo" resultType="com.youming.youche.market.domain.etc.CmEtcInfo">
+        SELECT * FROM cm_etc_info where account_statement_no IS NULL AND charging_state = 3 AND tenant_id = #{calculatedEtcFeeVo.tenantId}
+        AND plate_number = #{calculatedEtcFeeVo.plateNumber}
+        <choose>
+            <when test="calculatedEtcFeeVo.receiverUserId == null or calculatedEtcFeeVo.receiverUserId > 1">
+                AND COLLECT_MOBILE = #{calculatedEtcFeeVo.receiverPhone}
+            </when>
+            <otherwise>
+                AND COLLECT_USER_ID = #{calculatedEtcFeeVo.receiverUserId}
+            </otherwise>
+        </choose>
+        <if test="calculatedEtcFeeVo.months != null and calculatedEtcFeeVo.months.size() > 0">
+            AND DATE_FORMAT( ETC_CONSUME_TIME, '%Y-%m' ) IN
+            <foreach collection="calculatedEtcFeeVo.months" item="month" separator="," open="(" close=")">
+                #{month}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="calculatedEtcFeeVoMoney" parameterType="com.youming.youche.market.vo.etc.CalculatedEtcFeeVo" resultType="java.lang.Long">
+        SELECT sum(ifnull(CONSUME_MONEY,0)) as money FROM cm_etc_info WHERE account_statement_no IS NULL AND charging_state = 3 AND tenant_id = #{calculatedEtcFeeVo.tenantId}
+        AND plate_number = #{calculatedEtcFeeVo.plateNumber}
+        <choose>
+            <when test="calculatedEtcFeeVo.receiverUserId == null or calculatedEtcFeeVo.receiverUserId > 1">
+                AND COLLECT_MOBILE = #{calculatedEtcFeeVo.receiverPhone}
+            </when>
+            <otherwise>
+                AND COLLECT_USER_ID = #{calculatedEtcFeeVo.receiverUserId}
+            </otherwise>
+        </choose>
+        <if test="calculatedEtcFeeVo.months != null and calculatedEtcFeeVo.months.size() > 0">
+            AND DATE_FORMAT( ETC_CONSUME_TIME, '%Y-%m' ) IN
+            <foreach collection="calculatedEtcFeeVo.months" item="month" separator="," open="(" close=")">
+                #{month}
+            </foreach>
+        </if>
+    </select>
+    <select id="getAll" resultType="com.youming.youche.market.domain.etc.CmEtcInfo">
+        select   *
+        from  cm_etc_info  c
+        where  c.tenant_id = #{tenantId}
+        <if test="vo.userId!=null">
+            and c.user_id =#{vo.userId}
+        </if>
+        <if test="vo.plateNumber!=null and vo.plateNumber!=''">
+            and c.plate_number like concat('%',#{vo.plateNumber},'%')
+        </if>
+        <if test="vo.beginDate1!=null">
+            and c.etc_consume_time  <![CDATA[ >= ]]> #{vo.beginDate1}
+        </if>
+        <if test="vo.endDate1!=null ">
+             and c.etc_consume_time <![CDATA[ <= ]]> #{vo.endDate1}
+        </if>
+        <if test="vo.state!=null and vo.state &gt; 0">
+            and c.state  =#{vo.state}
+        </if>
+        <if test="vo.etcCardNo!=null and vo.etcCardNo!=''">
+            and  c.etc_card_no like concat('%',#{vo.etcCardNo},'%')
+        </if>
+        <if test="vo.tradingSite!=null and vo.tradingSite!=''">
+            and c.trading_site like concat('%',#{vo.tradingSite},'%')
+        </if>
+        <if test="vo.etcUserType!=null and vo.etcUserType  &gt; 0 ">
+            and c.etc_user_type  = #{vo.etcUserType}
+        </if>
+        <if test="vo.chargingState!=null and vo.chargingState &gt; 0">
+            and  c.charging_state  = #{vo.chargingState}
+        </if>
+        <if test="vo.deductBeginDate1!=null">
+            and c.cut_payment_day <![CDATA[ >= ]]> #{vo.deductBeginDate1}
+        </if>
+        <if test="vo.deductEndDate1!=null">
+            and   c.departure_time  <![CDATA[ <= ]]>  #{vo.deductEndDate1}
+        </if>
+        <if test="vo.orderId!=null and  vo.orderId!=''">
+             and c.order_id like concat('%',#{vo.orderId},'%')
+        </if>
+        <if test="vo.etcCardType!=null and vo.etcCardType &gt; 0">
+            and c.card_type  = #{vo.etcCardType}
+        </if>
+        <if test="vo.paymentType!=null and vo.paymentType &gt; 0">
+            and c.payment_type =#{vo.paymentType}
+        </if>
+        <if test="vo.billNo!=null and vo.billNo!=''">
+            and c.bill_no like concat('%',#{vo.billNo},'%')
+        </if>
+        <if test="vo.billStartDate1!=null">
+            and c.bill_start_date  <![CDATA[ >= ]]> #{vo.billStartDate1}
+        </if>
+        <if test="vo.billEndDate1!=null">
+             and  c.bill_end_date   <![CDATA[ <= ]]> #{vo.billEndDate1}
+        </if>
+        <if test="vo.tenantName!=null and vo.tenantName!=''">
+            and c.tenant_name like concat('%',#{vo.tenantName},'%')
+        </if>
+        <if test="vo.productId!=null ">
+            and c.product_id = #{vo.productId}
+        </if>
+        <if test="vo.serviceProviderId!=null and vo.serviceProviderId &gt; 0">
+            and c.service_provider_id = #{vo.serviceProviderId}
+        </if>
+        order by c.etc_consume_time desc
+
+    </select>
+
+    <select id="getCmEtcAccountStatement" resultType="com.youming.youche.market.domain.etc.CmEtcInfo">
+        SELECT * FROM cm_etc_info WHERE account_statement_no IS NULL AND CHARGING_STATE =3
+        AND TENANT_ID = #{tenantId}
+        AND AND PLATE_NUMBER = #{plateNumber}
+        <choose>
+            <when test="receiverUserId == null or receiverUserId &lt; 1">
+                AND COLLECT_MOBILE = #{receiverPhone}
+            </when>
+            <otherwise>
+                AND COLLECT_USER_ID = #{receiverUserId}
+            </otherwise>
+        </choose>
+        AND DATE_FORMAT(ETC_CONSUME_TIME,'%Y-%m') = #{month}
+    </select>
+
+    <update id="updateCmEtcAccountStatement">
+        UPDATE cm_etc_info SET CHARGING_STATE=1,account_statement_no = #{billNumber}
+         WHERE account_statement_no IS NULL AND CHARGING_STATE =3
+        AND TENANT_ID = #{tenantId}
+        AND AND PLATE_NUMBER = #{plateNumber}
+        <choose>
+            <when test="receiverUserId == null or receiverUserId &lt; 1">
+                AND COLLECT_MOBILE = #{receiverPhone}
+            </when>
+            <otherwise>
+                AND COLLECT_USER_ID = #{receiverUserId}
+            </otherwise>
+        </choose>
+        AND DATE_FORMAT(ETC_CONSUME_TIME,'%Y-%m') = #{month}
+    </update>
+</mapper>

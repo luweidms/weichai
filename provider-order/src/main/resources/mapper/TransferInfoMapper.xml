@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.TransferInfoMapper">
+
+    <update id="updateOrderTransferState">
+        update order_transfer_info
+        set transfer_order_state = #{transferOrderState},
+        accept_date = #{opDate},
+        remark= #{remark}
+        <trim prefix="," suffixOverrides=",">
+            <if test="transferOrderId != null">
+                transfer_order_id = #{transferOrderId} ,
+            </if>
+            <if test="plateNumber != null">
+                plate_number = #{plateNumber} ,
+            </if>
+        </trim>
+        where order_id = #{orderId} and accept_tenant_id = #{acceptTenantId} and transfer_order_state = 0
+
+    </update>
+</mapper>

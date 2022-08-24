@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.workbench.BossWorkbenchCustomerInfoMapper">
+
+    <select id="getTableCustomerInfoList" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchCustomerInfo">
+        SELECT
+        *
+        FROM
+        boss_workbench_customer_info
+        WHERE
+        create_time = ( SELECT max( create_time ) FROM boss_workbench_customer_info )
+        and tenant_id = #{tenantId}
+        ORDER BY
+        business_income DESC
+        LIMIT 10
+    </select>
+
+    <select id="selectBossWorkbenchCustomerInfoNew" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchCustomerInfo">
+        select * from boss_workbench_customer_info where tenant_id = #{tenantId} and customer_id = #{customerId} and create_time = #{localDateTime}
+    </select>
+</mapper>

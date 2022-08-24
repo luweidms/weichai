@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.workbench.BossWorkbenchInfoMapper">
+
+    <select id="selectBossWorkbenchInfoNew" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchInfo">
+        select * from boss_workbench_info where tenant_id = #{tenantId}
+         and create_time = #{localDateTime} limit 1
+    </select>
+
+    <select id="maxLocalDateTime" resultType="java.time.LocalDateTime">
+        select max(create_time) from boss_workbench_info
+    </select>
+</mapper>

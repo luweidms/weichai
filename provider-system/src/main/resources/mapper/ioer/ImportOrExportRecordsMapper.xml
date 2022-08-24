@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.youming.youche.system.provider.mapper.ioer.ImportOrExportRecordsMapper">
+
+    <!-- 查询列表 -->
+    <select id="getImportOrExportRecordsList" resultType="com.youming.youche.system.domain.ioer.ImportOrExportRecords">
+        SELECT
+        id id,
+        bussiness_code bussinessCode,
+        tenant_id tenantId,
+        op_id opId,
+        bussiness_type bussinessType,
+        media_name mediaName,
+        media_url mediaUrl,
+        failure_url failureUrl,
+        name,
+        remarks remarks,
+        failure_reason failureReason,
+        state,
+        create_time createTime,
+        update_time updateTime
+        from import_or_export_records a
+        <where>
+            1 = 1
+            <if test="records.id!=null and records.id!=''">
+                and id like CONCAT('%',#{records.id},'%')
+            </if>
+            <if test="records.name!=null and records.name!=''">
+                and name like CONCAT('%',#{records.name},'%')
+            </if>
+            <if test="records.state!=null and records.state!=''">
+                <choose>
+                    <when test="records.state == 4">
+                        and state in (4,5)
+                    </when>
+                    <otherwise>
+                        and state = #{records.state}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="records.tenantId!=null and records.tenantId!=''">
+                and tenant_id = #{records.tenantId}
+            </if>
+            <!-- 业务id -->
+            <if test="records.bussinessType !=null and records.bussinessType !=''">
+                AND bussiness_type = #{records.bussinessType}
+            </if>
+            order by createTime DESC
+        </where>
+    </select>
+
+    <select id="getImportOrExportRecords" resultType="com.youming.youche.system.domain.ioer.ImportOrExportRecords">
+        SELECT id,
+               bussiness_code,
+               tenant_id,
+               op_id,
+               bussiness_type,
+               media_name,
+               media_url,
+               failure_url,
+               `name`,
+               remarks,
+               failure_reason,
+               state,
+               create_time,
+               update_time
+        from import_or_export_records
+        where id = #{recordsId}
+    </select>
+
+    <insert id="insertRecords">
+        insert into import_or_export_records
+        (
+         bussiness_code,
+         tenant_id,
+         op_id,
+         bussiness_type,
+         media_name,
+         media_url,
+         failure_url,
+         `name`,
+         remarks,
+         failure_reason,
+         state,
+         create_time,
+         update_time)
+        values (null, #{records.bussinessCode},
+                #{records.tenantId},
+                #{records.opId},
+                #{records.bussinessType},
+                #{records.mediaName},
+                #{records.mediaUrl},
+                #{records.failureUrl},
+                #{records.name},
+                #{records.remarks},
+                #{records.failureReason},
+                #{records.state},
+                #{records.createTime},
+                #{records.updateTime})
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateRecords"
+            parameterType="com.youming.youche.system.domain.ioer.ImportOrExportRecords">
+        UPDATE import_or_export_records
+        <set>
+            <if test="records.remarks!=null and records.remarks!=''">
+                remarks = #{records.remarks} ,
+            </if>
+            <if test="records.state!=null and records.state!=''">
+                state = #{records.state} ,
+            </if>
+            <if test="records.mediaUrl!=null and records.mediaUrl!=''">
+                media_url = #{records.mediaUrl} ,
+            </if>
+            <if test="records.failureUrl!=null and records.failureUrl!=''">
+                failure_url = #{records.failureUrl} ,
+            </if>
+            <if test="records.updateDate!=null and records.updateDate!=''">
+                update_date = #{records.updateDate}
+            </if>
+        </set>
+        WHERE F_ID = #{records.id}
+    </update>
+
+    <select id="getTableImportFailCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from import_or_export_records where bussiness_type = 1 and state in (4,5) group by tenant_id
+    </select>
+
+</mapper>

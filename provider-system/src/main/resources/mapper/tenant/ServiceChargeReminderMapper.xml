@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.tenant.ServiceChargeReminderMapper">
+    <update id="updateStatus">
+        UPDATE service_charge_reminder
+        SET state = #{state}
+        WHERE
+        state = 1
+        AND
+        tenant_Id =#{tenantId}
+        <if test="payDate != null">
+            AND
+            expire_date <![CDATA[ < ]]> #{payDate}
+        </if>
+    </update>
+
+    <update id="updateStatusSan">
+        UPDATE service_charge_reminder
+        SET state = #{state}
+        WHERE state = 1
+          AND tenant_Id = #{tenantId}
+          AND expire_date <![CDATA[ < ]]> adddate(curdate(), INTERVAL 3 DAY)
+    </update>
+
+    <select id="queryServiceChargeReminder" resultType="com.youming.youche.system.domain.tenant.ServiceChargeReminder">
+        SELECT id           as id,
+               user_id      as userId,
+               amount,
+               expire_date  as expireDate,
+               state,
+               op_id        as opId,
+               op_name      as opName,
+               create_time  as createTime,
+               channel_type as channelType,
+               update_op_id as updateOpId,
+               update_time  as updateTime,
+               tenant_Id    as tenantId,
+               reminder_id  as reminderId
+        FROM service_charge_reminder
+        WHERE user_id = #{userId}
+          AND DATE_FORMAT(expire_date, '%y') = DATE_FORMAT(#{expireDate}, '%y')
+          AND state != 0
+    </select>
+
+</mapper>

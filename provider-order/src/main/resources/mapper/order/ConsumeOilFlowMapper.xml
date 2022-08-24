@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.ConsumeOilFlowMapper">
+
+    <select id="getConsumeOilFlowNew" resultType="com.youming.youche.order.domain.order.ConsumeOilFlow">
+        select ORDER_ID orderId,
+        user_name userName,
+        user_bill userBill,
+        OTHER_NAME otherName,
+        SUM(UNDUE_AMOUNT) undueAmount,
+        state state,
+        USER_ID userId,
+        EXPIRE_TYPE expireType,
+        GET_DATE getDate,
+        GET_RESULT getResult,
+        OIL_AFFILIATION oilAffiliation,
+        VEHICLE_AFFILIATION vehicleAffiliation,
+        user_type userType,
+        create_time create_time,
+        FROM_TYPE fromType,
+        pay_user_type payUserType,
+        SO_NBR soNbr,
+        PLATE_NUMBER plateNumber,
+        GROUP_CONCAT(id) flowIds,
+        id flowId,
+        TENANT_ID tenantId
+        from consume_oil_flow
+        where cost_type = #{costType}
+        and state in (#{states})
+        <if test="getDate!=null">
+            and get_date  <![CDATA[<= ]]> #{getDate}
+        </if>
+        <if test="userType != null and userType > 0">
+            and user_type = #{userType}
+        </if>
+        <if test="payUserType != null and payUserType > 0">
+            and pay_user_type = #{payUserType}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and ORDER_ID = #{orderId}
+        </if>
+        GROUP BY ORDER_ID, OIL_AFFILIATION, VEHICLE_AFFILIATION, user_type, pay_user_type, tenant_id, user_id
+    </select>
+
+    <select id="queryConsumeOilFlowsNew" resultType="com.youming.youche.order.domain.order.ConsumeOilFlow">
+        select
+        c.ORDER_ID orderId,
+        c.user_name userName,
+        c.user_bill userBill,
+        c.OTHER_NAME otherName,
+        SUM(c.UNDUE_AMOUNT) undueAmount,
+        c.state state,
+        c.USER_ID userId,
+        c.EXPIRE_TYPE expireType,
+        MAX(c.GET_DATE) getDate,
+        c.GET_RESULT getResult,
+        c.OIL_AFFILIATION oilAffiliation,
+        c.VEHICLE_AFFILIATION vehicleAffiliation,
+        c.user_type userType,
+        c.pay_user_type payUserType,
+        c.id flowId,
+        GROUP_CONCAT(c.id) flowIds,
+        c.SO_NBR soNbr
+#         s.CAR_DRIVER_MAN AS carDriverMan,
+#         s.collection_user_name AS collectionUserName,
+#         s.vehicle_class AS vehicleClass
+        from consume_oil_flow c
+           #,order_scheduler_h s
+        where 1=1
+        <if test="advanceExpireOutVo.orderId!=null and advanceExpireOutVo.orderId>0">
+            AND c.id=#{advanceExpireOutVo.orderId}
+        </if>
+        <if test="advanceExpireOutVo.busiCode!=null and advanceExpireOutVo.busiCode!=''">
+            AND c.ORDER_ID =#{advanceExpireOutVo.busiCode}
+        </if>
+        <if test="advanceExpireOutVo.userName!=null and advanceExpireOutVo.userName!=''">
+            AND c.user_Name like CONCAT('%',#{advanceExpireOutVo.userName},'%')
+        </if>
+        <if test="advanceExpireOutVo.userPhone!=null and advanceExpireOutVo.userPhone!=''">
+            AND c.user_bill =#{advanceExpireOutVo.userPhone}
+        </if>
+        <if test="advanceExpireOutVo.state>-1 ">
+            AND c.state=#{advanceExpireOutVo.state}
+        </if>
+        <choose>
+            <when test="advanceExpireOutVo.includeManual">
+                AND ((c.get_Date >NOW() AND c.state=0 ) OR c.EXPIRE_TYPE=1)
+            </when>
+            <otherwise>
+                AND c.get_Date >NOW() AND c.state=0
+            </otherwise>
+        </choose>
+        AND c.COST_TYPE =2
+        <if test="advanceExpireOutVo.mainDriver!=null and advanceExpireOutVo.mainDriver!=''">
+            AND c.OTHER_NAME like CONCAT('%',#{advanceExpireOutVo.mainDriver},'%')
+        </if>
+        <if test="advanceExpireOutVo.userType!=null and advanceExpireOutVo.userType!='' and advanceExpireOutVo.userType>0 ">
+            AND c.user_type = #{advanceExpireOutVo.userType}
+        </if>
+        <if test="advanceExpireOutVo.payUserType>0 ">
+            AND c.pay_user_type = #{advanceExpireOutVo.payUserType}
+        </if>
+        AND c.tenant_Id = #{advanceExpireOutVo.tenantId}
+        GROUP BY
+        c.ORDER_ID,c.OIL_AFFILIATION,c.VEHICLE_AFFILIATION,c.user_type,c.pay_user_type,c.user_id,c.user_type,c.pay_user_type
+        order by getDate DESC
+    </select>
+    <select id="getConsumeOilFlow" resultType="com.youming.youche.order.domain.order.ConsumeOilFlow">
+        SELECT id,
+               user_id,
+               user_bill,
+               user_name,
+               cost_type,
+               order_id,
+               amount,
+               oil_price,
+               oil_rise,
+               platform_amount,
+               platform_price,
+               is_verification,
+               verification_amount,
+               no_verification_amount,
+               other_user_id,
+               other_user_bill,
+               other_name,
+               acc_id,
+               vehicle_affiliation,
+               tenant_id,
+               product_id,
+               state,
+               expire_type,
+               expired_amount,
+               undue_amount,
+               service_charge,
+               get_date,
+               get_result,
+               is_need_bill,
+               oil_rate_invoice,
+               product_name,
+               service_call,
+               address,
+               syn_flow_id,
+               syn_date,
+               syn_account,
+               oil_balance,
+               balance,
+               margin_balance,
+               advance_fee,
+               is_evaluate,
+               evaluate_quality,
+               evaluate_price,
+               evaluate_service,
+               op_id,
+               update_op_id,
+               remark,
+               oil_affiliation,
+               plate_number,
+               from_type,
+               order_num,
+               so_nbr,
+               locale_balance_state,
+               user_type,
+               pay_user_type,
+               create_time,
+               update_time
+        FROM consume_oil_flow
+        WHERE id = #{flowId}
+    </select>
+
+    <select id="doQueryConsumeOilFlowTxm" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select SUM(AMOUNT) amount, SUM(PLATFORM_AMOUNT) platformAmount, SUM(OIL_RISE) oilRise
+        FROM consume_oil_flow
+        WHERE
+        <if test="flowIds!=null and flowIds.size &gt; 0">
+            id  in
+            <foreach collection="flowIds" index="index" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+
+    <select id="getConsumeOilFlowSumByWx" resultType="com.youming.youche.order.dto.ConsumeOilFlowWxOutDto">
+        select sum(IFNULL(undue_amount,0)) marginBalance,sum(IFNULL(expired_amount,0))
+        expireBalance,sum(IFNULL(platform_amount,0)) platformServiceCharge,product_name productName
+        from consume_oil_flow
+        where 1=1
+        and product_id =#{consumeOilFlowVo.productId}
+        and cost_type =#{consumeOilFlowVo.costType}
+        <choose>
+            <when test="consumeOilFlowVo.fleetName!=null and consumeOilFlowVo.fleetName!=''">
+                and tenant_id in
+                <foreach collection="consumeOilFlowVo.tenantIds" index="index" item="tenantId" open="(" separator="," close=")">
+                    #{tenantId}
+                </foreach>
+            </when>
+            <when test="consumeOilFlowVo.tenantId>0">
+                and tenant_id in
+                <foreach collection="consumeOilFlowVo.tenantIds" index="index" item="tenantId" open="(" separator="," close=")">
+                    #{tenantId}
+                </foreach>
+            </when>
+        </choose>
+        <if test="consumeOilFlowVo.month!=null and consumeOilFlowVo.month!=''">
+            and DATE_FORMAT(create_time,'%Y%-%m') = #{consumeOilFlowVo.month}
+        </if>
+        <if test="consumeOilFlowVo.isExpire!=null and consumeOilFlowVo.isExpire!=''">
+            and state in
+            <foreach collection="consumeOilFlowVo.stateList" index="index" item="state" open="(" separator="," close=")">
+                #{state}
+            </foreach>
+        </if>
+        <if test="consumeOilFlowVo.userType>0">
+            and user_type = #{consumeOilFlowVo.userType}
+        </if>
+        <if test="consumeOilFlowVo.payUserType>0">
+            and pay_user_type = #{consumeOilFlowVo.payUserType}
+        </if>
+    </select>
+
+    <select id="getConsumeOilFlowByWx" resultType="com.youming.youche.order.dto.ConsumeOilFlowWxDto">
+        select order_id orderId,
+        SUM(amount) amount,
+        oil_price oilPrice,
+        plate_number plateNumber,
+        CREATE_TIME createDate,
+        GET_DATE getDate,
+        tenant_id tenantId,
+        OTHER_NAME otherName,
+        OIL_AFFILIATION oilAffiliation,
+        VEHICLE_AFFILIATION vehicleAffiliation,
+        SUM(PLATFORM_AMOUNT) platformAmount,
+        user_type userType,
+        pay_user_type payUserType,
+        GROUP_CONCAT(ID) flowIds,
+        locale_balance_state localeBalanceState,
+        id flowId,
+        state state
+        from consume_oil_flow
+        where 1=1
+        and product_id = #{consumeOilFlowVo.productId} and cost_type = #{consumeOilFlowVo.costType}
+        <if test="consumeOilFlowVo.fleetName!=null and consumeOilFlowVo.fleetName!=''">
+            and tenant_id in
+            <foreach collection="consumeOilFlowVo.tenantIds" index="index" item="tenantId" open="(" separator="," close=")">
+                #{tenantId}
+            </foreach>
+        </if>
+        <if test="consumeOilFlowVo.tenantId>0">
+            and tenant_id in
+            <foreach collection="consumeOilFlowVo.tenantIds" index="index" item="tenantId" open="(" separator="," close=")">
+                #{tenantId}
+            </foreach>
+        </if>
+        <if test="consumeOilFlowVo.month!=null and consumeOilFlowVo.month!=''">
+            and DATE_FORMAT(create_time, '%Y%-%m') = #{consumeOilFlowVo.month}
+        </if>
+        <if test="consumeOilFlowVo.isExpire!=null and consumeOilFlowVo.isExpire!=''">
+            and state in
+            <foreach collection="consumeOilFlowVo.stateList" index="index" item="state" open="(" separator="," close=")">
+                #{state}
+            </foreach>
+        </if>
+        <if test="consumeOilFlowVo.userType>0">
+            and user_type = #{consumeOilFlowVo.userType}
+        </if>
+        <if test="consumeOilFlowVo.payUserType>0">
+            and pay_user_type = #{consumeOilFlowVo.payUserType}
+        </if>
+        GROUP BY ORDER_ID,OIL_AFFILIATION,VEHICLE_AFFILIATION,user_type,pay_user_type,tenant_id,user_id
+        order by create_time desc
+
+    </select>
+
+
+    <select id="getConsumeOilFlows" resultType="com.youming.youche.order.domain.order.ConsumeOilFlow">
+        SELECT id,
+               user_id,
+               user_bill,
+               user_name,
+               cost_type,
+               order_id,
+               amount,
+               oil_price,
+               oil_rise,
+               platform_amount,
+               platform_price,
+               is_verification,
+               verification_amount,
+               no_verification_amount,
+               other_user_id,
+               other_user_bill,
+               other_name,
+               acc_id,
+               vehicle_affiliation,
+               tenant_id,
+               product_id,
+               state,
+               expire_type,
+               expired_amount,
+               undue_amount,
+               service_charge,
+               get_date,
+               get_result,
+               is_need_bill,
+               oil_rate_invoice,
+               product_name,
+               service_call,
+               address,
+               syn_flow_id,
+               syn_date,
+               syn_account,
+               oil_balance,
+               balance,
+               margin_balance,
+               advance_fee,
+               is_evaluate,
+               evaluate_quality,
+               evaluate_price,
+               evaluate_service,
+               op_id,
+               update_op_id,
+               remark,
+               oil_affiliation,
+               plate_number,
+               from_type,
+               order_num,
+               so_nbr,
+               locale_balance_state,
+               user_type,
+               pay_user_type,
+               create_time,
+               update_time
+        FROM consume_oil_flow
+        WHERE id = #{flowId}
+    </select>
+
+    <select id="getConsumeOilFlowOut" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select
+        consumeOilFlow.*
+        from consume_oil_flow consumeOilFlow
+        where 1=1
+        and consumeOilFlow.user_id= #{vo.userId}
+        and consumeOilFlow.cost_type = #{vo.costType}
+        <if test="vo.userType>0">
+            and consumeOilFlow.user_type = #{vo.userType}
+        </if>
+        <if test="vo.payUserType>0">
+            and consumeOilFlow.user_type = #{vo.payUserType}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="doQueryOilSum" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select SUM( OIL_BALANCE) as amountSum,
+        SUM(RECHARGE_OIL_BALANCE ) as amountSumL
+        from order_account where user_id=#{userId}
+        <if test="userType>0">
+            and user_type=#{userType}
+        </if>
+    </select>
+
+
+    <select id="doQuerySharedOilSum" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select
+        SUM(NO_PAY_OIL+NO_CREDIT_OIL+NO_REBATE_OIL) as orderAmt
+        from order_oil_source
+        WHERE USER_ID=#{userId} and OIL_CONSUMER=2
+        <if test="userType>0">
+            and user_type=#{userType}
+        </if>
+    </select>
+
+    <select id="doQuerySharedOilSums" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select
+        SUM(NO_PAY_OIL+NO_CREDIT_OIL+NO_REBATE_OIL) as oilAmt
+        from
+        recharge_oil_source WHERE USER_ID=#{userId} and OIL_CONSUMER=2
+        <if test="userType>0">
+            and user_type=#{userType}
+        </if>
+    </select>
+
+    <select id="selectSqlOrder" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select
+        SUM(NO_PAY_OIL+NO_CREDIT_OIL+NO_REBATE_OIL) as oilBalance,
+        SOURCE_TENANT_ID as suorceTenantId
+        from order_oil_source
+        WHERE USER_ID=#{userId}
+        and OIL_CONSUMER=1
+        <if test="userType>0">
+            and user_type=#{userType}
+        </if>
+        GROUP BY SOURCE_TENANT_ID
+    </select>
+
+    <select id="selectSqlOil" resultType="com.youming.youche.order.dto.ConsumeOilFlowDto">
+        select
+        SUM(NO_PAY_OIL+NO_CREDIT_OIL+NO_REBATE_OIL) as oilBalance,
+        SOURCE_TENANT_ID as suorceTenantId
+        from recharge_oil_source
+        WHERE USER_ID=#{userId}
+        and OIL_CONSUMER=1
+        <if test="userType>0">
+            and user_type=#{userType}
+        </if>
+        GROUP BY SOURCE_TENANT_ID
+    </select>
+    <select id="getConsumeOilFlowByWxOk" resultType="com.youming.youche.order.dto.ConsumeOilFlowWxDto">
+        select order_id orderId,
+        SUM(amount) amount,
+        oil_price oilPrice,
+        plate_number plateNumber,
+        CREATE_TIME createDate,
+        GET_DATE getDate,
+        tenant_id tenantId,
+        OTHER_NAME otherName,
+        OIL_AFFILIATION oilAffiliation,
+        VEHICLE_AFFILIATION vehicleAffiliation,
+        SUM(PLATFORM_AMOUNT) platformAmount,
+        user_type userType,
+        pay_user_type payUserType,
+        GROUP_CONCAT(ID) flowIds,
+        locale_balance_state localeBalanceState,
+        id flowId,
+        state state
+        from consume_oil_flow
+        where 1=1
+        and product_id = #{consumeOilFlowVo.productId} and cost_type = #{consumeOilFlowVo.costType}
+        <if test="consumeOilFlowVo.fleetName!=null and consumeOilFlowVo.fleetName!=''">
+            and tenant_id in(#{consumeOilFlowVo.tenantIds})
+
+        </if>
+        <if test="consumeOilFlowVo.tenantId>0">
+            and tenant_id in(#{consumeOilFlowVo.tenantIds})
+        </if>
+        <if test="consumeOilFlowVo.month!=null and consumeOilFlowVo.month!=''">
+            and DATE_FORMAT(create_time, '%Y%-%m') = #{consumeOilFlowVo.month}
+        </if>
+        <if test="consumeOilFlowVo.isExpire!=null and consumeOilFlowVo.isExpire!=''">
+            and state in(#{consumeOilFlowVo.state})
+        </if>
+        <if test="consumeOilFlowVo.userType>0">
+            and user_type = #{consumeOilFlowVo.userType}
+        </if>
+        <if test="consumeOilFlowVo.payUserType>0">
+            and pay_user_type = #{consumeOilFlowVo.payUserType}
+        </if>
+        GROUP BY ORDER_ID,OIL_AFFILIATION,VEHICLE_AFFILIATION,user_type,pay_user_type,tenant_id,user_id
+        order by create_time desc
+
+    </select>
+
+</mapper>

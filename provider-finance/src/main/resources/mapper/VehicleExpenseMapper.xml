@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.VehicleExpenseMapper">
+
+    <select id="getVehicleExpenseVoByPage" resultType="com.youming.youche.finance.vo.GetVehicleExpenseVo">
+        SELECT b.id as vehicleExpenseId,
+               b.apply_no as applyNo,
+               b.plate_number as plateNumber,
+               b.state as state,
+               a.apply_name as applyName,
+               a.apply_time as applyTime,
+               a.apply_id as applyId,
+               a.expense_time as expenseTime,
+               b.expense_department as expenseDepartment
+            from vehicle_expense b
+        LEFT JOIN vehicle_expense_detailed a on a.apply_no= b.apply_no
+            where a.tenant_id =#{getVehicleExpenseDto.tenantId}
+            and b.tenant_id =#{getVehicleExpenseDto.tenantId}
+        <if test="lids!=null and lids.size()>0">
+            and b.id in(
+            <foreach collection="lids" item="id" separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+        <if test="getVehicleExpenseDto.applyNo != null and getVehicleExpenseDto.applyNo != '' ">
+            and a.apply_no like concat('%',#{getVehicleExpenseDto.applyNo},'%')
+        </if>
+        <if test="getVehicleExpenseDto.typeId != null and getVehicleExpenseDto.typeId >=0 ">
+            and a.type =#{getVehicleExpenseDto.typeId}
+        </if>
+        <if test="getVehicleExpenseDto.state != null and getVehicleExpenseDto.state >= 0 ">
+            and b.state =#{getVehicleExpenseDto.state}
+        </if>
+        <if test="getVehicleExpenseDto.orgId != null ">
+            and b.org_id =#{getVehicleExpenseDto.orgId}
+        </if>
+        <if test="getVehicleExpenseDto.applyName != null and getVehicleExpenseDto.applyName != '' ">
+            and a.apply_name like concat('%',#{getVehicleExpenseDto.applyName},'%')
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyAmount != null ">
+            and a.apply_amount >= #{getVehicleExpenseDto.beginApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyAmount != null ">
+            and a.apply_amount <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyAmount}
+        </if>
+        <if test="getVehicleExpenseDto.beginApplyTime1 != null ">
+            and a.apply_time >= #{getVehicleExpenseDto.beginApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.endApplyTime1 != null ">
+            and a.apply_time <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyTime1}
+        </if>
+        <if test="getVehicleExpenseDto.plateNumber!=null and getVehicleExpenseDto.plateNumber!=''">
+             and b.plate_number like concat('%',#{getVehicleExpenseDto.plateNumber},'%')
+        </if>
+        GROUP BY a.apply_no
+        ORDER BY a.apply_time DESC
+
+    </select>
+
+    <select id="getTableVehicleCostCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select * from (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( * )
+        FROM
+        (
+        SELECT
+        b.id AS vehicleExpenseId,
+        b.apply_no AS applyNo,
+        b.plate_number AS plateNumber,
+        b.state AS state,
+        a.apply_name AS applyName,
+        a.apply_time AS applyTime,
+        a.apply_id AS applyId,
+        a.expense_time AS expenseTime,
+        b.expense_department AS expenseDepartment
+        FROM
+        vehicle_expense b
+        LEFT JOIN vehicle_expense_detailed a ON a.apply_no = b.apply_no
+        WHERE
+        a.tenant_id = ifnull(std.id, s.tenant_id)
+        AND b.tenant_id = ifnull(std.id, s.tenant_id)
+        AND b.id IN (
+        SELECT
+        busi_id
+        FROM
+        Audit_Node_Inst i,
+        audit_user u
+        WHERE
+        u.target_Obj_Id = s.user_info_id
+        AND u.node_id = i.node_id
+        AND i.AUDIT_CODE = 500005
+        AND i.TENANT_ID = ifnull(std.id, s.tenant_id)
+        AND i.AUDIT_RESULT = 0
+        )
+        GROUP BY
+        a.apply_no
+        ) AS total
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) as top
+        where top.tenant_id is not null
+    </select>
+
+    <select id="getTableVehicleCostMeCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        select * from (
+        SELECT
+        ifnull(std.id, s.tenant_code) tenant_id,
+        s.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( * )
+        FROM
+        (
+        SELECT
+        b.id AS vehicleExpenseId,
+        b.apply_no AS applyNo,
+        b.plate_number AS plateNumber,
+        b.state AS state,
+        a.apply_name AS applyName,
+        a.apply_time AS applyTime,
+        a.apply_id AS applyId,
+        a.expense_time AS expenseTime,
+        b.expense_department AS expenseDepartment
+        FROM
+        vehicle_expense b
+        LEFT JOIN vehicle_expense_detailed a ON a.apply_no = b.apply_no
+        WHERE
+        a.tenant_id = ifnull(std.id, s.tenant_code)
+        AND b.tenant_id = ifnull(std.id, s.tenant_code)
+        and a.apply_id = s.id
+        GROUP BY
+        a.apply_no
+        ) AS total
+        ) AS count
+        FROM
+        sys_user s left join sys_tenant_def std on std.admin_user = s.user_info_id
+        ) as top where top.tenant_id is not null
+    </select>
+    <select id="selectOr" resultType="com.youming.youche.finance.dto.VehicleListByDriverDto">
+        select
+        vehicle.id id,
+        rel.auth_state authState,
+        rel.tenant_id tenantId,
+        vehicle.plate_number plateNumber
+        from vehicle_data_info vehicle left join tenant_vehicle_rel rel
+        on vehicle.id = rel.vehicle_code
+        and vehicle.plate_number = rel.plate_number
+        and rel.vehicle_class = 1
+        where vehicle.driver_user_id = #{driverUserId}
+        and vehicle.auth_state = 2
+    </select>
+
+    <select id="getCarCostReportAuditCount" resultType="java.lang.Integer">
+        SELECT
+        count( 1 )
+        FROM
+        vehicle_expense b
+        LEFT JOIN vehicle_expense_detailed a ON a.apply_no = b.apply_no
+        WHERE
+        a.tenant_id = #{tenantId}
+        AND b.tenant_id = #{tenantId}
+        <if test="lids!=null and lids.size()>0">
+            and b.id in(
+            <foreach collection="lids" item="id" separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+    </select>
+
+</mapper>

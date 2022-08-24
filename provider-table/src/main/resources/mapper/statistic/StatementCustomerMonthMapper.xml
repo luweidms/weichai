@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.statistic.StatementCustomerMonthMapper">
+    <select id="dailySummary" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDto">
+        select ifnull(sum(scm.own_income), 0) ownIncome,
+        ifnull(sum(scm.own_cost), 0) ownCost,
+        ifnull(sum(scm.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(scm.diversion_income), 0) diversionIncome,
+        ifnull(sum(scm.diversion_cost), 0) diversionCost,
+        ifnull(sum(scm.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(scm.merchants_income), 0) merchantsIncome,
+        ifnull(sum(scm.merchants_cost), 0) merchantsCost,
+        ifnull(sum(scm.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(scm.own_income + scm.diversion_income + scm.merchants_income), 0) sumIncome,
+        ifnull(sum(scm.own_cost + scm.diversion_cost + scm.merchants_cost), 0) sumCost,
+        ifnull(sum(socm.oil_fee), 0) oilFee,
+        ifnull(sum(socm.cash), 0) cash,
+        ifnull(sum(socm.toll_fee), 0) tollFee,
+        ifnull(sum(socm.wage_fee), 0) subsidyFee,
+        ifnull(sum(socm.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socm.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socm.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socm.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socm.maintain_fee), 0) maintainFee,
+        ifnull(sum(socm.parking_fee), 0) parkingFee,
+        ifnull(sum(socm.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socm.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socm.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socm.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socm.employees_credit_fee), 0) employeesCreditFee
+        from statement_customer_month scm
+        left join statement_own_cost_month socm on scm.id = socm.statement_id
+        where scm.tenant_id = #{tenantId}
+        and socm.type = 2
+        <if test="startMonth != null and startMonth != ''">
+            and scm.create_month between #{startMonth} and #{endMonth}
+        </if>
+    </select>
+
+    <select id="monthDetail" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDetailDto">
+        select ifnull(sum(scm.own_income), 0) ownIncome,
+        ifnull(sum(scm.own_cost), 0) ownCost,
+        ifnull(sum(scm.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(scm.diversion_income), 0) diversionIncome,
+        ifnull(sum(scm.diversion_cost), 0) diversionCost,
+        ifnull(sum(scm.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(scm.merchants_income), 0) merchantsIncome,
+        ifnull(sum(scm.merchants_cost), 0) merchantsCost,
+        ifnull(sum(scm.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(scm.own_income + scm.diversion_income + scm.merchants_income), 0) sumIncome,
+        ifnull(sum(scm.own_cost + scm.diversion_cost + scm.merchants_cost), 0) sumCost,
+        ifnull(sum(socm.cash), 0) cash,
+        ifnull(sum(socm.oil_fee), 0) oilFee,
+        ifnull(sum(socm.toll_fee), 0) tollFee,
+        ifnull(sum(socm.wage_fee), 0) subsidyFee,
+        ifnull(sum(socm.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socm.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socm.maintain_fee), 0) maintainFee,
+        ifnull(sum(socm.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socm.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socm.parking_fee), 0) parkingFee,
+        ifnull(sum(socm.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socm.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socm.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socm.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socm.employees_credit_fee), 0) employeesCreditFee,
+        scm.customer_id id,
+        cci.company_name name,
+        socm.type type
+        from statement_customer_month scm
+        left join cm_customer_info cci on scm.customer_id = cci.id
+        left join statement_own_cost_month socm on scm.id = socm.statement_id
+        where scm.tenant_id = #{tenantId}
+        and socm.type = 2
+        <if test="startMonth != null and startMonth != ''">
+            and scm.create_month between #{startMonth} and #{endMonth}
+        </if>
+        group by scm.customer_id
+    </select>
+
+
+</mapper>

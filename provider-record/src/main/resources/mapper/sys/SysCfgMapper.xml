@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.sys.SysCfgRecordMapper">
+    <!--根据配置名查询配置-->
+    <select id="getCfgBooleanVal" resultType="com.youming.youche.commons.domain.SysCfg">
+       select * from sys_cfg where cfg_name = #{cfgName} limit 0,1
+    </select>
+
+    <select id="getSysCfgStrByCfgName" resultType="java.lang.String">
+        SELECT
+            cfg_value
+        FROM
+            sys_cfg
+        WHERE
+            cfg_name = #{cfgName}
+    </select>
+
+    <select id="getCfgVal" resultType="java.lang.Double">
+        SELECT
+            cfg_value
+        FROM
+            sys_cfg
+        WHERE
+            tenant_id = #{tenantId}
+            AND cfg_name = #{cfgName}
+            AND cfg_system = #{system}
+    </select>
+
+</mapper>

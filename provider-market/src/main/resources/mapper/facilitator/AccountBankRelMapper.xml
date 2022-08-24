@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.AccountBankRelMapper">
+
+    <select id="queryBank" resultType="java.lang.String">
+        SELECT abr.ACCT_NO
+        FROM account_bank_user_type_rel abutr
+        LEFT JOIN account_bank_rel abr ON abutr.BANK_REL_ID = abr.ID
+        WHERE abutr.USER_ID = #{userId}
+          AND abutr.USER_TYPE = #{userType}
+          and abutr.BANK_TYPE = #{bankType}
+          AND abr.ACCT_NO IS NOT NULL
+          AND TRIM(abr.ACCT_NO) != ''
+    </select>
+</mapper>

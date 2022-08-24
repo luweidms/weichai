@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.trailer.TrailerLineRelVerMapper">
+
+    <!--更新状态为失效-->
+    <update id="updtLineRelVerStatus">
+        update trailer_line_rel_ver set ver_state = #{newStatus},is_auth_succ = #{newStatus} where trailer_id = #{trailerId} and ver_state = #{oldStatus}
+    </update>
+</mapper>

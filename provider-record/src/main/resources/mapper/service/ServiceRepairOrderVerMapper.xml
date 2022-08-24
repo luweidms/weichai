@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.service.ServiceRepairOrderVerMapper">
+
+    <insert id="insertServiceRepairOrderVer">
+        INSERT INTO service_repair_order_ver (FLOW_ID,ORDER_CODE,
+        CREATE_DATE,TENANT_ID,USER_ID,OP_ID,UPDATE_OP_ID,UPDATE_DATE,
+        ORDER_STATUS,WORK_TYPE,CAR_NO,CONTRACT_NAME,CONTRACT_MOBILE
+        <if test="ver.scrStartTime != null and ver.scrStartTime != ''">
+            ,SCR_START_TIME
+        </if>
+        <if test="ver.scrEndTime != null and ver.scrEndTime != ''">
+            ,SCR_END_TIME
+        </if>
+        <if test="ver.items != null and ver.items != ''">
+            , REMARK
+        </if>
+        ,ITEMS
+        )
+        VALUES
+        (#{ver.flowId},#{ver.orderCode},
+        #{ver.createDate},#{ver.tenantId},#{ver.userId},#{ver.opId},#{ver.updateOpId},
+        #{ver.updateDate},#{ver.orderStatus},#{ver.workType},#{ver.carNo},#{ver.contractName},
+        #{ver.contractMobile}
+        <if test="ver.scrStartTime != null and ver.scrStartTime != ''">
+            ,#{ver.scrStartTime}
+        </if>
+        <if test="ver.scrEndTime != null and ver.scrEndTime != ''">
+            ,#{ver.scrEndTime}
+        </if>
+        <if test="ver.items != null and ver.items != ''">
+            ,#{ver.remark}
+        </if>
+        ,#{ver.items}
+        )
+    </insert>
+
+    <update id="updateServiceRepairOrderVerByFlowId">
+        UPDATE service_repair_order_ver
+        SET CAR_NO = #{ver.carNo},
+        REMARK = #{ver.remark}
+        <if test="ver.scrStartTime != null and ver.scrStartTime != ''">
+            ,SCR_START_TIME = #{ver.scrStartTime}
+        </if>
+        <if test="ver.scrEndTime != null and ver.scrEndTime != ''">
+            ,SCR_END_TIME = #{ver.scrEndTime}
+        </if>
+        <if test="ver.items != null and ver.items != ''">
+            ,ITEMS = #{ver.items}
+        </if>
+        WHERE
+        FLOW_ID = #{ver.flowId}
+    </update>
+
+    <select id="getServiceRepairOrderVer" resultType="com.youming.youche.record.domain.service.ServiceRepairOrderVer">
+        SELECT
+            *
+        FROM
+            service_repair_order_ver
+        WHERE
+            FLOW_ID = #{flowId}
+        ORDER BY
+            id DESC
+        limit 1
+    </select>
+
+</mapper>

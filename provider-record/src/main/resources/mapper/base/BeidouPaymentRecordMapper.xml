@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.base.BeidouPaymentRecordMapper">
+
+    <!--查询北斗购买区间车辆列表-->
+    <select id="queryBeiDouVehicleList" resultType="com.youming.youche.record.domain.base.BeidouPaymentRecord">
+        SELECT
+         *
+        FROM
+        beidou_payment_record bpr
+        WHERE
+                1 = 1
+          AND ( (#{startTime} BETWEEN bpr.EFFECT_DATE AND bpr.INVALID_DATE ) OR ( #{endTime} BETWEEN bpr.EFFECT_DATE AND bpr.INVALID_DATE ) )
+          AND STATE = 1
+    </select>
+
+    <!--车辆查询有效购买记录-->
+    <select id="getRecordByVehicle" resultType="com.youming.youche.record.domain.base.BeidouPaymentRecord">
+        select * from beidou_payment_record where VEHICLE_CODE = #{vehicleCode} and STATE = 1 and PAY_STATE = 1
+    </select>
+
+</mapper>

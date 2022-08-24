@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OilRechargeAccountDetailsMapper">
+
+<!--    预存明细  select ORDER_ID," +
+				"NO_PAY_OIL+NO_WITHDRAW_OIL " +
+				"NO_PAY_OIL FROM order_limit WHERE TENANT_ID=:tenantId AND PINGAN_PAY_ACCT_ID=:pinganPayAcctId AND NO_PAY_OIL>0 AND OIL_FEE_PRESTORE=1
+				 order_limit 这个表没有 pingan_pay_acct_id  oil_fee_prestore 老库的表也没有  但是 老代码的sql 如上-->
+
+    <select id="getLockBalanceDetailsOrder" resultType="com.youming.youche.order.dto.order.OilRechargeAccountDetailsOutDto">
+    SELECT
+    order_id,
+     no_pay_oil+no_withdraw_oil as no_pay_oil
+      FROM order_limit WHERE
+      tenant_id =#{vo.tenantId}
+        <!--   and  pingan_pay_acct_id= #{vo.pinganPayAcctId} -->
+      and no_pay_oil >0
+        <!--    and oil_fee_prestore =1; -->
+    </select>
+
+    <select id="queryOrderPayee" resultType="com.youming.youche.order.dto.order.OilRechargeAccountDetailsOutDto">
+        SELECT
+        s.vehicle_class as vehicleClass,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.car_driver_id WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]>0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_ID
+        ELSE st.ADMIN_USER END payeeUserId,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.CAR_DRIVER_MAN
+        WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_NAME
+        ELSE o.to_tenant_name END payee,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.CAR_DRIVER_PHONE
+        WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_PHONE
+        ELSE st.link_phone END payeePhone
+        FROM order_info o
+        LEFT JOIN sys_tenant_def st ON o.to_tenant_id = st.id,
+        order_scheduler s
+        WHERE o.order_id = s.order_id AND o.order_id = #{orderId}
+    </select>
+    <select id="queryOrderPayeeH" resultType="com.youming.youche.order.dto.order.OilRechargeAccountDetailsOutDto">
+        SELECT
+        s.vehicle_class as vehicleClass,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.car_driver_id WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]>0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_ID
+        ELSE st.ADMIN_USER END payeeUserId,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.CAR_DRIVER_MAN
+        WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_NAME
+        ELSE o.to_tenant_name END payee,
+        CASE WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) <![CDATA[ <= ]]> 0
+        THEN s.CAR_DRIVER_PHONE
+        WHEN IFNULL(o.to_tenant_id,0) <![CDATA[ <= ]]> 0
+        AND IFNULL(s.IS_COLLECTION,0) = 1
+        THEN s.COLLECTION_USER_PHONE
+        ELSE st.link_phone END payeePhone
+        FROM order_info_h o
+        LEFT JOIN sys_tenant_def st ON o.to_tenant_id = st.id,
+        order_scheduler_h s
+        WHERE o.order_id = s.order_id AND o.order_id = #{orderId}
+    </select>
+</mapper>

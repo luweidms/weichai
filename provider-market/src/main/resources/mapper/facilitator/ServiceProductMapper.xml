@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.ServiceProductMapper">
+
+    <resultMap id="dto" type="com.youming.youche.market.dto.youca.ProductNearByDto">
+        <id column="staffId" property="id"></id>
+<!--        服务商站点表-->
+        <collection property="serviceProduct"  ofType="com.youming.youche.market.domain.facilitator.ServiceProduct">
+            <id column="id" property="id"></id>
+            <result column="service_User_Id" property="serviceUserId"></result>
+            <result column="product_Name" property="productName"></result>
+            <result column="province_Id" property="provinceId"></result>
+            <result column="city_Id" property="cityId"></result>
+            <result column="county_Id" property="countyId"></result>
+            <result column="address" property="address"></result>
+
+            <result column="nand" property="nand"></result>
+            <result column="eand" property="eand"></result>
+            <result column="child_Account_User_Id" property="childAccountUserId"></result>
+            <result column="state" property="state"></result>
+            <result column="introduce" property="introduce"></result>
+            <result column="tenant_Id" property="tenantId"></result>
+            <result column="service_Call" property="serviceCall"></result>
+
+            <result column="business_Type" property="businessType"></result>
+            <result column="repair_Grade" property="repairGrade"></result>
+            <result column="op_Id" property="opId"></result>
+            <result column="is_Bill_Ability" property="isBillAbility"></result>
+            <result column="is_Auth" property="isAuth"></result>
+            <result column="auth_State" property="authState"></result>
+
+            <result column="auth_User_Id" property="authUserId"></result>
+            <result column="auth_Remark" property="authRemark"></result>
+            <result column="auth_Date" property="authDate"></result>
+            <result column="product_Type" property="productType"></result>
+            <result column="station_Id" property="stationId"></result>
+            <result column="logo_Id" property="logoId"></result>
+
+            <result column="logo_Url" property="logoUrl"></result>
+            <result column="oil_Card_Type" property="oilCardType"></result>
+            <result column="parent_Account_Balance" property="parentAccountBalance"></result>
+            <result column="consumption_Record_Time" property="consumptionRecordTime"></result>
+            <result column="consumption_Record_Date" property="consumptionRecordDate"></result>
+            <result column="rebate_Time" property="rebateTime"></result>
+
+            <result column="rebate_Month" property="rebateMonth"></result>
+            <result column="re_Service_Id" property="reServiceId"></result>
+            <result column="is_Re_Service" property="isReService"></result>
+            <result column="location_Type" property="locationType"></result>
+            <result column="product_Pic_Id" property="productPicId"></result>
+
+        </collection>
+        <!--  全国油价表  -->
+        <collection property="oilPriceProvince"  ofType="com.youming.youche.market.domain.facilitator.OilPriceProvince">
+            <id column="id" property="id"></id>
+            <result column="province_Id" property="provinceId"></result>
+            <result column="oil_Price" property="oilPrice"></result>
+            <result column="province_Name" property="provinceName"></result>
+            <result column="tenant_Id" property="tenantId"></result>
+        </collection>
+        <!--  租户与站点关系表  -->
+        <collection property="tenantProductRel"  ofType="com.youming.youche.market.domain.facilitator.TenantProductRel">
+            <id column="id" property="id"></id>
+            <result column="tenant_Id" property="tenantId"></result>
+            <result column="product_Id" property="productId"></result>
+            <result column="auth_State" property="authState"></result>
+            <result column="state" property="state"></result>
+            <result column="auth_Reason" property="authReason"></result>
+            <result column="auth_ManId" property="authManId"></result>
+
+            <result column="float_Balance" property="floatBalance"></result>
+            <result column="fixed_Balance" property="fixedBalance"></result>
+            <result column="child_Account_User_Id" property="authDate"></result>
+            <result column="state" property="state"></result>
+            <result column="opId" property="opId"></result>
+            <result column="tenant_Id" property="tenantId"></result>
+
+
+            <result column="is_Auth" property="isAuth"></result>
+            <result column="service_Charge" property="serviceCharge"></result>
+            <result column="op_Id" property="opId"></result>
+            <result column="float_Balance_Bill" property="floatBalanceBill"></result>
+            <result column="fixed_Balance_Bill" property="fixedBalanceBill"></result>
+            <result column="service_Charge_Bill" property="serviceChargeBill"></result>
+
+            <result column="service_Auth_State" property="serviceAuthState"></result>
+            <result column="service_Auth_Remark" property="serviceAuthRemark"></result>
+            <result column="cooperation_State" property="cooperationState"></result>
+            <result column="float_Service_Charge_Bill" property="floatServiceChargeBill"></result>
+            <result column="float_Service_Charge" property="floatServiceCharge"></result>
+            <result column="locale_Balance_State" property="localeBalanceState"></result>
+        </collection>
+        <!--  服务商表  -->
+        <collection property="serviceInfo"  ofType="com.youming.youche.market.domain.facilitator.ServiceInfo">
+            <id column="id" property="id"></id>
+            <result column="service_User_Id" property="serviceUserId"></result>
+            <result column="company_Address" property="companyAddress"></result>
+            <result column="service_Name" property="serviceName"></result>
+            <result column="service_Type" property="serviceType"></result>
+            <result column="state" property="state"></result>
+
+            <result column="op_Id" property="opId"></result>
+            <result column="is_Bill_Ability" property="isBillAbility"></result>
+            <result column="auth_ManId" property="authManId"></result>
+            <result column="auth_Man_Name" property="authManName"></result>
+            <result column="auth_Date" property="authDate"></result>
+            <result column="auth_Flag" property="authFlag"></result>
+
+
+            <result column="auth_Reason" property="authReason"></result>
+            <result column="is_Auth" property="isAuth"></result>
+            <result column="tenant_Id" property="tenantId"></result>
+            <result column="logo_Id" property="logoId"></result>
+            <result column="logo_Url" property="logoUrl"></result>
+            <result column="agent_Collection" property="agentCollection"></result>
+        </collection>
+    </resultMap>
+    
+    <select id="queryServiceProductList" resultType="com.youming.youche.market.dto.facilitator.ServiceProductDto">
+        SELECT sp.id as productId,
+        sp.PRODUCT_NAME as productName,
+        sp.tenant_id as tenantId,
+        tpl.tenant_id oilSourceTenantId,
+        sp.ADDRESS as address,
+        tpl.FLOAT_BALANCE as floatBalance,
+        tpl.fixed_Balance as fixedBalance,
+        tpl.STATE as state,
+        tpl.AUTH_STATE as authState,
+        sp.service_Call as serviceCall,
+        sp.province_Id as provinceId,
+        sp.city_Id as cityId,
+        sp.county_id as countyId,
+        tpl.is_auth as isAuth,
+        tpl.auth_reason as authReason,
+        tpl.id as relId,
+        si.service_name as serviceName,
+        si.service_user_id as serviceUserId,
+        si.service_type as serviceType,
+        tpl.float_Balance_bill as floatBalanceBill,
+        tpl.fixed_Balance_bill as fixedBalanceBill,
+        tpl.LOCALE_BALANCE_STATE as localeBalanceState,
+        sp.is_share as isShare,
+        tpl.SERVICE_AUTH_STATE as serviceAuthState,
+        sp.IS_BILL_ABILITY as isBillAbility
+        <if test="productQueryDto.isShare != null and productQueryDto.isShare &gt; 0">
+            ,opp.oil_Price as originalPrice,
+            tpl.SERVICE_CHARGE as serviceCharge,
+            tpl.SERVICE_CHARGE_BILL as serviceChargeBill
+        </if>
+        <if test=" productQueryDto.isShare  == null or productQueryDto.isShare &lt; 0 ">
+            ,tsr.is_bill as isBill
+        </if>
+        from service_product sp inner join tenant_product_rel tpl ON sp.ID = tpl.PRODUCT_ID
+        <if test="productQueryDto.isShare !=null and productQueryDto.isShare &gt; 0">
+            left join oil_price_province opp ON opp.province_id = sp.id
+        </if>
+        inner join service_info si ON si.service_user_id = sp.service_user_id
+        <if test="productQueryDto.isShare == null or productQueryDto.isShare &lt; 0 ">
+            inner join tenant_service_rel tsr ON tsr.service_user_id = si.service_user_id
+        </if>
+        <where>
+            AND tpl.TENANT_ID = #{user.tenantId}
+            <if test="productQueryDto.isShare !=null and productQueryDto.isShare &gt; 0">
+                and sp.is_share = 1
+                <if test="productQueryDto.State != null">
+                    AND sp.state = #{productQueryDto.state}
+                </if>
+            </if>
+            <if test="productQueryDto.isShare == null or productQueryDto.isShare &lt; 0">
+                and tsr.tenant_id = #{user.tenantId}
+                <if test="productQueryDto.State != null">
+                    AND tpl.state = #{productQueryDto.state}
+                </if>
+            </if>
+
+            <if test="productQueryDto.ServiceUserId != null and productQueryDto.ServiceUserId &gt; 0">
+                and sp.service_User_Id = #{productQueryDto.serviceUserId}
+            </if>
+            <if test="productQueryDto.ServiceName != null and productQueryDto.ServiceName != ''">
+                and si.service_name like CONCAT('%',#{productQueryDto.serviceName},'%')
+            </if>
+            <if test="productQueryDto.ProductName != null and productQueryDto.ProductName != ''">
+                AND sp.PRODUCT_NAME like CONCAT('%',#{productQueryDto.productName},'%')
+            </if>
+            <if test="productQueryDto.ServiceCall != null and productQueryDto.ServiceCall != ''">
+                AND sp.service_call like CONCAT('%',#{productQueryDto.serviceCall},'%')
+            </if>
+            <if test="productQueryDto.AuthState != null and productQueryDto.AuthState &gt; 0">
+                AND tpl.auth_state = #{productQueryDto.authState}
+            </if>
+            <if test="productQueryDto.Address != null and productQueryDto.Address != ''">
+                AND sp.address like CONCAT('%',#{productQueryDto.address},'%')
+            </if>
+            <if test="productQueryDto.ServiceType != null and productQueryDto.ServiceType &gt; 0">
+                AND si.service_type = #{productQueryDto.serviceType}
+            </if>
+            <if test="productQueryDto.BillBeginPrice != null and productQueryDto.BillBeginPrice &gt;= 0">
+                AND si.service_type=1 AND (tpl.fixed_Balance_bill <![CDATA[>=]]> 0 AND
+                IFNULL(tpl.fixed_Balance_bill,0)/100*(1+IFNULL(tpl.SERVICE_CHARGE_BILL,0.0)/100 )<![CDATA[>=]]>
+                #{productQueryDto.billBeginPrice}
+                OR tpl.FLOAT_BALANCE_BILL <![CDATA[>=]]>0 AND
+                IFNULL(tpl.FLOAT_BALANCE_BILL,0.0)/100*opp.oil_Price/100*(1+IFNULL(tpl.SERVICE_CHARGE_BILL,0.0)/100)
+                <![CDATA[>=]]>
+                #{productQueryDto.billBeginPrice})
+            </if>
+            <if test="productQueryDto.BillEndPrice  != null and productQueryDto.BillEndPrice &gt;= 0">
+                AND si.service_type=1 AND ((tpl.FLOAT_BALANCE_BILL is null OR tpl.FLOAT_BALANCE_BILL='') AND
+                tpl.fixed_Balance_bill <![CDATA[>=]]> 0 AND
+                IFNULL(tpl.fixed_Balance_bill,0)/100*(1+IFNULL(tpl.SERVICE_CHARGE_BILL,0.0)/100) <![CDATA[<=]]>
+                #{productQueryDto.billEndPrice}
+                OR (tpl.fixed_Balance_bill is Null OR tpl.fixed_Balance_bill='') AND tpl.FLOAT_BALANCE_BILL
+                <![CDATA[>=]]> 0 AND
+                IFNULL(tpl.FLOAT_BALANCE_BILL,0)/100*opp.oil_Price/100*(1+IFNULL(tpl.SERVICE_CHARGE_BILL,0.0)/100)
+                <![CDATA[<=]]>
+                #{productQueryDto.billEndPrice})
+            </if>
+            <if test="productQueryDto.NoBillBeginPrice != null and productQueryDto.NoBillBeginPrice &gt; 0">
+                AND (tpl.fixed_Balance <![CDATA[>]]> 0 AND
+                IFNULL(tpl.fixed_Balance,0)/100*(1+IFNULL(tpl.SERVICE_CHARGE,0.0)/100) <![CDATA[>=]]>
+                #{productQueryDto.noBillBeginPrice}
+                OR tpl.FLOAT_BALANCE <![CDATA[>]]> 0 AND
+                IFNULL(tpl.FLOAT_BALANCE,0)/100*opp.oil_Price/100*(1+IFNULL(tpl.SERVICE_CHARGE,0.0)/100) <![CDATA[>=]]>
+                #{productQueryDto.noBillBeginPrice}
+                )
+            </if>
+            <if test="productQueryDto.NoBillEndPrice != null and productQueryDto.NoBillEndPrice &gt; 0">
+                AND (tpl.fixed_Balance <![CDATA[>]]> 0 AND
+                IFNULL(tpl.fixed_Balance,0)/100*(1+IFNULL(tpl.SERVICE_CHARGE,0.0)/100) <![CDATA[<=]]>
+                #{productQueryDto.noBillEndPrice}
+                OR tpl.FLOAT_BALANCE <![CDATA[>]]> 0 AND
+                IFNULL(tpl.FLOAT_BALANCE,0)/100*opp.oil_Price/100*(1+IFNULL(tpl.SERVICE_CHARGE,0.0)/100) <![CDATA[<=]]>
+                #{productQueryDto.noBillEndPrice} )
+            </if>
+            <if test="productQueryDto.CityId != null and productQueryDto.CityId != ''">
+                AND sp.city_Id = #{productQueryDto.cityId}
+            </if>
+            order by sp.id desc
+        </where>
+    </select>
+    <select id="getServiceProductApply"
+            resultType="com.youming.youche.market.dto.facilitator.ServiceProductDto">
+        SELECT
+        sp.ID AS productId,
+        sp.SERVICE_USER_ID AS serviceUserId,
+        sp.PRODUCT_NAME AS productName,
+        si.COMPANY_ADDRESS AS companyAddress,
+        tpr.FLOAT_BALANCE AS floatBalance,
+        tpr.FIXED_BALANCE AS fixedBalance,
+        tpr.FLOAT_BALANCE_BILL AS floatBalanceBill,
+        tpr.FIXED_BALANCE_BILL AS fixedBalanceBill,
+        tpr.SERVICE_CHARGE AS serviceCharge,
+        tpr.SERVICE_CHARGE_BILL AS serviceChargeBill,
+        opp.oil_price AS oilPrice1,
+        sp.province_id AS provinceId,
+        sp.city_id AS cityId,
+        sp.county_id AS countyId,
+        sp.address AS address
+        FROM
+        Service_Product sp
+        INNER JOIN Service_Info si ON sp.service_user_id = si.service_user_id
+        LEFT JOIN tenant_product_rel tpr ON sp.id = tpr.product_Id
+        LEFT JOIN service_invitation_dtl sid ON sid.product_id = sp.id
+        LEFT JOIN service_invitation sit ON sit.service_user_id = si.service_user_id
+        LEFT JOIN oil_price_province opp ON opp.province_id = sp.province_id
+        <where>
+          sp.re_service_id IS NULL
+            AND (
+            sp.is_re_service = 0  or
+            sp.is_re_service IS NULL
+            )
+            <if test="tenantId == null">
+                AND sp.is_share = 1
+            </if>
+            <if test="serviceUserId != null">
+                and sp.service_user_id = #{serviceUserId}
+            </if>
+            <if test="serviceType != null and serviceType &gt;= 0">
+                and sp.business_Type = #{serviceType}
+            </if>
+            group by sp.id
+        </where>
+    </select>
+    <select id="queryObmsProduct" resultType="com.youming.youche.market.vo.facilitator.ServiceProductInfoVo">
+        SELECT
+        sp.id AS productId,
+        sp.product_name AS productName,
+        sp.service_call AS servicePhone,
+        sp.create_time AS createDate,
+        sp.is_auth AS isAuth,
+        sp.auth_state AS authState,
+        udi.mobile_phone AS serviceLoginAcct,
+        si.service_name AS serviceName,
+        si.service_type AS serviceType,
+        sp.tenant_id AS tenantId,
+        std. NAME AS tenantName,
+        std.ACTUAL_CONTROLLER AS tenantLinkMan,
+        std.ACTUAL_CONTROLLER_PHONE AS tenantLinkPhone,
+        sp.state AS state,
+        sp.is_share AS isShare,
+        sp.auth_remark AS authReason,
+        sp.address,
+        <if test="serviceProductInfoDto.isAudit != null and serviceProductInfoDto.isAudit == 1">
+            tpr.SERVICE_AUTH_STATE AS serviceAuthState,
+        </if>
+        udi.linkman AS linkman,
+        sp.service_user_id AS serviceUserId
+        FROM
+        service_product sp
+        INNER JOIN service_info si ON sp.service_user_id = si.service_user_id
+        INNER JOIN user_data_info udi ON udi.id = sp.service_user_id
+        LEFT JOIN sys_tenant_def std ON sp.tenant_id = std.id
+        <if test="serviceProductInfoDto.isShare != null and serviceProductInfoDto.isShare == 1">
+            LEFT JOIN tenant_product_rel tpr ON tpr.product_id = sp.id
+        </if>
+        <if  test="serviceProductInfoDto.isShare != null and  serviceProductInfoDto.isShare &gt; 0">
+            left join oil_price_province opp ON opp.province_id = sp.id
+
+        </if>
+        <where>
+            <if test="serviceProductInfoDto.serviceUserId != null and serviceProductInfoDto.serviceUserId &gt;= 0">
+                and sp.service_user_id = #{serviceProductInfoDto.serviceUserId}
+            </if>
+            <if test="serviceProductInfoDto.address != null and  serviceProductInfoDto.address != ''">
+                and sp.address like CONCAT('%',#{serviceProductInfoDto.address},'%')
+            </if>
+            <if test="serviceProductInfoDto.serviceCall != null and serviceProductInfoDto.serviceCall != ''">
+                and sp.service_call like CONCAT('%',#{serviceProductInfoDto.serviceCall},'%')
+            </if>
+            <if test="serviceProductInfoDto.isAudit != null and serviceProductInfoDto.isAudit == 1">
+                and (tpr.tenant_id = #{tenantId} or sp.tenant_id =#{tenantId} )
+            </if>
+            <if test="serviceProductInfoDto.beginTime != null and  serviceProductInfoDto.beginTime != ''">
+                and sp.create_time <![CDATA[>= ]]> CONCAT(#{serviceProductInfoDto.beginTime},' 00:00:00')
+            </if>
+            <if test="serviceProductInfoDto.endTime != null and serviceProductInfoDto.endTime != ''">
+                and sp.create_time <![CDATA[<= ]]> CONCAT(#{serviceProductInfoDto.endTime},' 23:59:59')
+            </if>
+            <if test="serviceProductInfoDto.state != null and  serviceProductInfoDto.state &gt;= 0">
+                and sp.state = #{serviceProductInfoDto.state}
+            </if>
+            <if test="serviceProductInfoDto.isShare != null and  serviceProductInfoDto.isShare &gt; 0">
+                <choose>
+                    <when test="serviceProductInfoDto.isShare == 2">
+                        and (sp.is_share = #{serviceProductInfoDto.isShare} OR sp.is_share is null)
+                    </when>
+                    <otherwise>
+                        and sp.is_share = #{serviceProductInfoDto.isShare}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="serviceProductInfoDto.serviceType != null and  serviceProductInfoDto.serviceType &gt; 0">
+                and si.service_type = #{serviceProductInfoDto.serviceType}
+            </if>
+            <if test="serviceProductInfoDto.tenantName != null and serviceProductInfoDto.tenantName != ''">
+                and std.NAME like CONCAT('%',#{serviceProductInfoDto.tenantName},'%')
+            </if>
+            <if test="serviceProductInfoDto.tenantLinkMan != null and serviceProductInfoDto.tenantLinkMan != ''">
+                and std.ACTUAL_CONTROLLER like CONCAT('%',#{serviceProductInfoDto.tenantLinkMan},'%')
+            </if>
+            <if test="serviceProductInfoDto.tenantCall != null and serviceProductInfoDto.tenantCall != ''">
+                and std.ACTUAL_CONTROLLER_PHONE like CONCAT('%',#{serviceProductInfoDto.tenantCall},'%')
+            </if>
+            <if test="serviceProductInfoDto.productName != null and  serviceProductInfoDto.productName != ''">
+                and sp.product_name like CONCAT('%',#{serviceProductInfoDto.productName},'%')
+            </if>
+            <if test="serviceProductInfoDto.loginAcct != null and serviceProductInfoDto.loginAcct != ''">
+                and udi.mobile_phone like CONCAT('%',#{serviceProductInfoDto.loginAcct},'%')
+            </if>
+            <if test="serviceProductInfoDto.serviceName != null and serviceProductInfoDto.serviceName != ''">
+                and si.service_name like CONCAT('%',#{serviceProductInfoDto.serviceName},'%')
+            </if>
+            <if test="serviceProductInfoDto.linkman != null and serviceProductInfoDto.linkman != ''">
+                and udi.linkman like CONCAT('%',#{serviceProductInfoDto.linkMan},'%')
+            </if>
+            <if test="serviceProductInfoDto.authState != null and serviceProductInfoDto.authState &gt; 0">
+                and sp.auth_state = #{serviceProductInfoDto.authState}
+            </if>
+            <if test="serviceProductInfoDto.billBeginPrice != null and  serviceProductInfoDto.billBeginPrice != ''">
+                AND si.service_type=1 AND  (tpr.fixed_Balance_bill <![CDATA[>= ]]> 0 AND IFNULL(tpr.fixed_Balance_bill,0)/100*(1+IFNULL(tpr.SERVICE_CHARGE_BILL,0.0)/100) <![CDATA[>= ]]> #{serviceProductInfoDto.billBeginPrice}
+                OR tpr.FLOAT_BALANCE_BILL <![CDATA[>= ]]> 0 AND IFNULL(tpr.FLOAT_BALANCE_BILL,0.0)/100*opp.oil_Price/100*(1+IFNULL(tpr.SERVICE_CHARGE_BILL,0.0)/100) <![CDATA[>= ]]> #{serviceProductInfoDto.billBeginPrice})
+            </if>
+            <if test="serviceProductInfoDto.billEndPrice != null and  serviceProductInfoDto.billEndPrice != ''">
+                AND si.service_type=1 AND ((tpr.FLOAT_BALANCE_BILL is null OR tpr.FLOAT_BALANCE_BILL='') AND tpr.fixed_Balance_bill <![CDATA[>= ]]> 0 AND IFNULL(tpr.fixed_Balance_bill,0)/100*(1+IFNULL(tpr.SERVICE_CHARGE_BILL,0.0)/100) <![CDATA[<= ]]> #{serviceProductInfoDto.billEndPrice}
+                OR (tpr.fixed_Balance_bill is Null OR tpr.fixed_Balance_bill='') AND tpr.FLOAT_BALANCE_BILL <![CDATA[>= ]]> 0 AND IFNULL(tpr.FLOAT_BALANCE_BILL,0)/100*opp.oil_Price/100*(1+IFNULL(tpr.SERVICE_CHARGE_BILL,0.0)/100) <![CDATA[<= ]]> #{serviceProductInfoDto.billEndPrice})
+            </if>
+
+        </where>
+        group by sp.id order by sp.id desc
+    </select>
+    <select id="countCooperationNum" resultType="com.youming.youche.market.dto.facilitator.CooperationNumDto">
+        SELECT
+        count(1) AS cooperationNum,
+        sp.id AS productId
+        FROM
+        tenant_product_rel tpr
+        INNER JOIN service_product sp ON sp.id = tpr.product_id
+        WHERE
+        sp.id IN (#{serviceProductInfoVo.productId})
+        AND tpr.tenant_id <![CDATA[<> ]]> #{tenantId}
+        AND tpr.auth_state = #{authState}
+        GROUP BY
+        sp.id
+    </select>
+    <select id="queryCooperationTenant"
+            resultType="com.youming.youche.market.dto.facilitator.CooperationTenantDto">
+        SELECT
+        std.id AS tenantId,
+        std. NAME AS tenantName,
+        std.ACTUAL_CONTROLLER_PHONE AS tenantLinkPhone,
+        std.ACTUAL_CONTROLLER AS tenantLinkMan,
+        tpr.product_id AS productId,
+        tpr.create_date AS createDate,
+        tpr.float_balance_bill AS floatBalanceBill,
+        tpr.fixed_balance_bill AS fixedBalanceBill,
+        tpr.float_balance AS floatBalance,
+        tpr.fixed_balance AS fixedBalance
+        FROM
+        tenant_product_rel tpr
+        INNER JOIN sys_tenant_def std ON tpr.tenant_id = std.id
+        <where>
+            and tpr.tenant_id <![CDATA[<> ]]> #{tenantId}
+            and tpr.product_id = #{cooperationProductDto.productId}
+            and tpr.auth_state = #{authState}
+            <if test="cooperationProductDto.tenantName != null and cooperationProductDto.tenantName != ''">
+                and std.name like CONCAT('%',#{cooperationProductDto.tenantName},'%')
+            </if>
+            <if test="cooperationProductDto.tenantLinkMan != null and cooperationProductDto.tenantLinkMan != ''">
+                and std.ACTUAL_CONTROLLER like CONCAT('%',#{cooperationProductDto.tenantLinkMan},'%')
+            </if>
+            order by tpr.id
+        </where>
+    </select>
+
+    <select id="getServiceProduct" resultType="com.youming.youche.market.domain.facilitator.ServiceProduct">
+        SELECT
+        s.*
+        FROM
+        apply_card_rel app,
+        service_product s
+        WHERE
+        app.product_id = s.id
+        AND app.oil_card_num = #{cardNum}
+        AND app.oil_card_type = #{cardType}
+        AND (
+        app.start_time <![CDATA[ <= ]]]> #{custTime} AND app.end_time <![CDATA[ > ]]]> #{custTime})
+    </select>
+
+
+    <select id="getServiceProductList" resultType="com.youming.youche.market.domain.facilitator.ServiceProduct">
+        select
+        p.*
+        from service_product p
+        left join tenant_product_rel t on p.id = t.PRODUCT_ID
+        where p.CHILD_ACCOUNT_USER_ID = #{userId}
+        <if test="tenantId != null">
+            and t.TENANT_ID = #{tenantId}
+        </if>
+    </select>
+    <select id="queryWxProduct" resultType="com.youming.youche.market.dto.facilitator.ServiceProductWxDto">
+        SELECT
+        sp.id AS productId,
+        sp.product_name AS productName,
+        sp.state AS state,
+        sp.auth_state authState,
+        sp.is_share AS isShare,
+        u.linkman AS linkman,
+        u.MOBILE_PHONE AS mobilePhone,
+        sp.service_call AS serviceCall,
+        sp.province_id AS provinceId,
+        sp.city_id AS cityId,
+        sp.county_id AS countyId,
+        sp.address AS address
+        FROM
+        service_product sp
+        LEFT JOIN user_data_info u ON u.id = sp.CHILD_ACCOUNT_USER_ID
+        WHERE
+        1 = 1
+        AND sp.BUSINESS_TYPE = #{serviceType}
+        and (sp.CHILD_ACCOUNT_USER_ID = #{serviceUserId} OR sp.service_user_id = #{serviceUserId})
+        <if test="authStates != null and authStates.size() &gt; 0">
+            and sp.auth_state in
+            <foreach collection="authStates" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="state != null and state.size() &gt; 0">
+            and sp.state in
+            <foreach collection="state" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="productName !=null and productName != ''">
+            and sp.product_name like CONCAT('%',#{productName},'%')
+        </if>
+        order by sp.id desc
+    </select>
+    <select id="queryCooperationProductVx"
+            resultType="com.youming.youche.market.vo.facilitator.ServiceProductVxVoOK">
+        select
+            std. NAME AS tenantName,
+            tpr.create_time AS createDate,
+            tpr.FIXED_BALANCE AS fixedBalance,
+            tpr.float_balance AS floatBalance,
+            tpr.FIXED_BALANCE_Bill AS fixedBalanceBill,
+            tpr.float_balance_bill AS floatBalanceBill,
+            sp.IS_BILL_ABILITY AS isBillAbility,
+            tpr.id AS relId,
+            tpr.product_id AS productId,
+            tpr.tenant_id AS tenantId,
+            opp.oil_price AS oilPrice,
+            tpr.LOCALE_BALANCE_STATE AS localeBalanceState,
+            tpr.COOPERATION_STATE AS cooperationState,
+            tsr.payment_days AS paymentDays,
+            tsr.BALANCE_TYPE AS balanceType,
+            tsr.PAYMENT_MONTH AS paymentMonth,
+            tsr.quota_amt AS quotaAmt,
+            tsr.use_quota_amt AS useQuotaAmt,
+            info.service_type AS serviceType
+        from
+            service_product sp
+                INNER JOIN tenant_product_rel tpr ON sp.id = tpr.product_id
+                INNER JOIN sys_tenant_def std ON std.id = tpr.tenant_id
+                LEFT JOIN oil_price_province opp ON opp.province_id = sp.province_id
+                LEFT JOIN tenant_service_rel tsr ON tsr.service_user_id = sp.service_user_id
+                AND tsr.tenant_id = tpr.tenant_id
+                LEFT JOIN service_info info ON info.service_user_id = tsr.service_user_id
+        WHERE
+            1 = 1
+          AND sp.id = #{productId}
+          AND tpr.tenant_id != 1
+        <if test="states != null and states.size() &gt; 0">
+            and tpr.COOPERATION_STATE in
+            <foreach collection="states" item="item" open="(" separator="," close=")">
+                 #{item}
+            </foreach>
+        </if>
+        <if test="tenantName != null and tenantName != ''">
+            and std.NAME like CONCAT ('%', #{tenantName},'%')
+        </if>
+        order by tpr.id desc
+    </select>
+
+    <select id="queryChildCompanyName" resultType="java.util.Map">
+        select
+        si.service_Name as serviceName,si.service_type as serviceType
+        ,udi.id as userId,udi.linkman as linkman,udi.mobile_phone as mobilePhone,si.IS_AUTH as authState
+        from service_info si
+        <choose>
+            <when test="userType == 4">
+                inner join service_product sp ON si.service_user_id = sp.service_user_id
+                inner join user_data_info udi on udi.id = sp.CHILD_ACCOUNT_USER_ID
+            </when>
+            <otherwise>
+                inner join user_data_info udi on udi.id = si.service_user_id
+                left join service_product sp ON si.service_user_id = sp.service_user_id
+            </otherwise>
+        </choose>
+        <if test="userType == 4">
+            where sp.CHILD_ACCOUNT_USER_ID = #{userId}
+        </if>
+        <if test="userType == 2">
+            where si.service_user_id = #{userId}
+        </if>
+        limit 0,1
+    </select>
+
+    <select id="getTableManagerSiteCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, su.tenant_code) tenant_id,
+        su.user_info_id user_info_id,
+        (
+        SELECT
+        COUNT( * )
+        FROM
+        service_product sp
+        INNER JOIN tenant_product_rel tpl ON sp.ID = tpl.PRODUCT_ID
+        INNER JOIN service_info si ON si.service_user_id = sp.service_user_id
+        INNER JOIN tenant_service_rel tsr ON tsr.service_user_id = si.service_user_id
+        WHERE
+        tpl.TENANT_ID = ifnull(std.id, su.tenant_code)
+        AND tsr.tenant_id = ifnull(std.id, su.tenant_code)
+        ) AS count
+        FROM
+        sys_user su left join sys_tenant_def std on std.admin_user = su.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+
+    <select id="doQueryPrivateProduct" resultType="com.youming.youche.market.domain.facilitator.ServiceProduct">
+        select
+        p.product_name  as productName
+         from service_product p,tenant_product_rel rel
+         where p.id = rel.product_id
+          and rel.state = 1 and p.state = 1
+            and  rel.auth_state = 2
+            and rel.tenant_id =#{tenantId}
+          and p.business_type = 1
+    </select>
+<!--  查询附近油站,按经纬度距离排序(自有或共享)  -->
+    <select id="getServiceNearBy2" resultMap="dto">
+        select
+         sp.* ,
+         tpr.* ,
+         si.* ,
+         opp.*
+         from service_product sp
+         inner join tenant_product_rel tpr
+         ON sp.id = tpr.product_id
+         inner join service_info si
+        on si.service_user_id = sp.service_user_id
+        left join Oil_Price_Province opp
+         on opp.province_id = sp.province_id
+        where 1=1
+        <if test="isShare or tenantId!=null and tenantId>0">
+            and tpr.tenant_id = #{tenantId}
+        </if>
+
+        and tpr.state = #{state}
+        and sp.state = #{state}
+        and si.state = #{state}
+        and tpr.auth_state = #{authState}
+        and sp.BUSINESS_TYPE = #{businessType}
+        <if test="longitude!=null and latitude!=null">
+            order by ABS(CONVERT(IFNULL(EAND,0),
+             DECIMAL(12,8))- 1) + ABS(CONVERT(IFNULL(NAND,0), DECIMAL(12,8))- 1 )
+        </if>
+    </select>
+
+    <select id="getServiceNearBy1" resultMap="dto" >
+        select
+        sp.* ,
+        tpr.* ,
+        si.*
+        <if test="serviceType== 1">
+            ,opp.*
+        </if>
+        from service_product sp
+        inner join tenant_product_rel tpr
+        ON sp.id = tpr.product_id
+        inner join service_info si
+        on si.service_user_id = sp.service_user_id
+        <if test="serviceType==1">
+            left join Oil_Price_Province opp
+            on opp.province_id = sp.province_id
+        </if>
+        where 1=1
+        <if test="nand1!=null and nand1!=''">
+            and sp.nand  <![CDATA[ <= ]]> #{nand1}
+        </if>
+        <if test="nand2!=null and nand2!=''">
+          and sp.nand  <![CDATA[ >= ]]> #{nand2}
+        </if>
+       <if test="eand1!=null and eand1!=''">
+           and sp.eand  <![CDATA[ <= ]]> #{eand1}
+       </if>
+        <if test="eand2!=null and eand2!=''">
+            and sp.eand  <![CDATA[ >= ]]>  #{eand2}
+        </if>
+        <if test="tenantIds!=null and tenantIds.size() &gt; 0">
+            and tpr.tenant_id in
+            <foreach collection="tenantIds" item="tenantId" open="(" separator="," close=")">
+                #{tenantId}
+            </foreach>
+        </if>
+        and tpr.state = #{state}
+        and sp.state =#{state}
+        and si.state = #{state}
+        and tpr.auth_state = #{authState}
+        and sp.BUSINESS_TYPE = #{businessType}
+        <if test="cityId!=null and cityId  &gt; 0">
+            and sp.city_id = #{cityId}
+        </if>
+        <if test="locationType!=null and locationType  &gt; 0">
+            and sp.city_id = #{locationType}
+        </if>
+        <if test="oilCardType!=null and oilCardType  &gt; 0">
+            and sp.city_id = #{oilCardType}
+        </if>
+    </select>
+
+
+    <select id="queryAppRepair" resultType="com.youming.youche.market.domain.user.UserRepairInfo">
+        SELECT
+        uri.id as id,
+        uri.repair_code as repairCode,
+        uri.total_fee as totalFee ,
+        uri.repair_date as repairDate,
+        uri.DELIVERY_DATE as deliveryDate,
+        uri.product_name as productName,
+        uri.plate_Number as plateNumber,
+        uri.app_repair_state as appRepairState
+        from user_repair_info uri
+        where 1=1
+        and uri.user_id = #{userInfoId}
+        <if test="appRepairStates!=null and appRepairStates.size() &gt; 0">
+            and uri.app_repair_state in
+            <foreach collection="appRepairStates" item="state" open="(" separator="," close=")">
+                #{state}
+            </foreach>
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.statistic.StatementDepartmentDayMapper">
+    <!--部门日报汇总查询-->
+    <select id="dailySummary" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDto">
+        select ifnull(sum(sdd.own_income), 0) ownIncome,
+        ifnull(sum(sdd.own_cost), 0) ownCost,
+        ifnull(sum(sdd.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(sdd.diversion_income), 0) diversionIncome,
+        ifnull(sum(sdd.diversion_cost), 0) diversionCost,
+        ifnull(sum(sdd.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(sdd.merchants_income), 0) merchantsIncome,
+        ifnull(sum(sdd.merchants_cost), 0) merchantsCost,
+        ifnull(sum(sdd.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(sdd.own_income + sdd.diversion_income + sdd.merchants_income), 0) sumIncome,
+        ifnull(sum(sdd.own_cost + sdd.diversion_cost + sdd.merchants_cost), 0) sumCost,
+        ifnull(sum(socd.oil_fee), 0) oilFee,
+        ifnull(sum(socd.cash), 0) cash,
+        ifnull(sum(socd.toll_fee), 0) tollFee,
+        ifnull(sum(socd.subsidy_fee), 0) subsidyFee,
+        ifnull(sum(socd.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socd.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socd.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socd.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socd.maintain_fee), 0) maintainFee,
+        ifnull(sum(socd.parking_fee), 0) parkingFee,
+        ifnull(sum(socd.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socd.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socd.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socd.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socd.employees_credit_fee), 0) employeesCreditFee
+        from statement_department_day sdd
+        left join statement_own_cost_day socd on sdd.id = socd.statement_id
+        where sdd.tenant_id = #{tenantId}
+        and socd.type = 1
+        <if test="startDate != null and startDate != ''">
+            and sdd.create_date between #{startDate} and #{endDate}
+        </if>
+    </select>
+    <!--部门日报明细查询-->
+    <select id="dailyDetail" resultType="com.youming.youche.table.dto.statistic.StatementDepartmentDetailDto">
+        select ifnull(sum(sdd.own_income), 0) ownIncome,
+        ifnull(sum(sdd.own_cost), 0) ownCost,
+        ifnull(sum(sdd.own_gross_margin), 0) ownGrossMargin,
+        ifnull(sum(sdd.diversion_income), 0) diversionIncome,
+        ifnull(sum(sdd.diversion_cost), 0) diversionCost,
+        ifnull(sum(sdd.diversion_gross_margin), 0) diversionGrossMargin,
+        ifnull(sum(sdd.merchants_income), 0) merchantsIncome,
+        ifnull(sum(sdd.merchants_cost), 0) merchantsCost,
+        ifnull(sum(sdd.merchants_gross_margin), 0) merchantsGrossMargin,
+        ifnull(sum(sdd.own_income + sdd.diversion_income + sdd.merchants_income), 0) sumIncome,
+        ifnull(sum(sdd.own_cost + sdd.diversion_cost + sdd.merchants_cost), 0) sumCost,
+        ifnull(sum(socd.oil_fee), 0) oilFee,
+        ifnull(sum(socd.cash), 0) cash,
+        ifnull(sum(socd.toll_fee), 0) tollFee,
+        ifnull(sum(socd.subsidy_fee), 0) subsidyFee,
+        ifnull(sum(socd.insurance_fee), 0) insuranceFee,
+        ifnull(sum(socd.driver_credit_fee), 0) driverCreditFee,
+        ifnull(sum(socd.driver_expense_fee), 0) driverExpenseFee,
+        ifnull(sum(socd.maintenance_fee), 0) maintenanceFee,
+        ifnull(sum(socd.maintain_fee), 0) maintainFee,
+        ifnull(sum(socd.parking_fee), 0) parkingFee,
+        ifnull(sum(socd.miscellaneous_fee), 0) miscellaneousFee,
+        ifnull(sum(socd.vehicle_inspection_fee), 0) vehicleInspectionFee,
+        ifnull(sum(socd.vehicle_accident_fee), 0) vehicleAccidentFee,
+        ifnull(sum(socd.vehicle_violation_fee), 0) vehicleViolationFee,
+        ifnull(sum(socd.employees_credit_fee), 0) employeesCreditFee,
+        sdd.department_id id,
+        so.org_name name,
+        socd.type type
+        from statement_department_day sdd
+        left join sys_organize so on sdd.department_id = so.id
+        left join statement_own_cost_day socd on sdd.id = socd.statement_id
+        where sdd.tenant_id = #{tenantId}
+        and socd.type = 1
+        <if test="startDate != null and startDate != ''">
+            and sdd.create_date between #{startDate} and #{endDate}
+        </if>
+        group by sdd.department_id
+    </select>
+
+    <select id="queryOrderReceivable" resultType="com.youming.youche.finance.dto.order.OrderInfoDto">
+        SELECT
+        <include refid="fieldStr"/>
+        FROM
+        order_info_h o
+        LEFT JOIN order_goods_h g ON o.ORDER_ID = g.ORDER_ID
+        LEFT JOIN order_scheduler_h s ON o.ORDER_ID = s.ORDER_ID
+        LEFT JOIN order_info_ext_h e ON o.order_id = e.order_id
+        LEFT JOIN order_fee_h f ON o.ORDER_ID = f.ORDER_ID
+        LEFT JOIN order_fee_ext_h ext ON o.order_id = ext.order_id
+        LEFT JOIN order_fee_statement_h fs ON o.ORDER_ID = fs.ORDER_ID
+        WHERE
+        o.TENANT_ID = #{tenantId}
+        AND o.org_id =#{orgId}
+        AND o.ORDER_STATE = 14
+        <if test="startDate != null">
+            and s.update_time <![CDATA[ >= ]]> #{startDate}
+        </if>
+        <if test="endDate != null">
+            and s.update_time <![CDATA[ <= ]]> #{endDate}
+        </if>
+        <!--        <if test="orderType != null">-->
+        <!--            and s.vehicle_class = #{orderType}-->
+        <!--        </if>-->
+    </select>
+
+    <select id="sumReportCostFee" resultType="com.youming.youche.table.dto.statistic.DepartmentReportCostFeeDto">
+        select c.type_name as feeName,ifnull(sum(c.consume_fee),0) as consumeFee
+        from order_cost_other_report c
+        left join order_info_h h
+        on c.order_id = h.order_id
+        where
+        h.org_id = #{orgId}
+        and
+        h.tenant_id = #{tenantId}
+        and c.state = 5
+        <if test="startTime != null">
+            and h.update_time <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null">
+            and h.update_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by c.type_name
+    </select>
+
+    <select id="sumCarFee" resultType="com.youming.youche.table.dto.statistic.DepartmentReportCostFeeDto">
+        select
+        <choose>
+            <when test="vehicleClass == 1">
+                type_name as feeName,
+                ifnull(sum(ved.apply_amount),0) as consumeFee
+            </when>
+            <otherwise>
+                "feeName" as feeName,
+                ifnull(sum(ved.apply_amount),0) as consumeFee
+            </otherwise>
+        </choose>
+        from vehicle_expense ve
+        left join vehicle_expense_detailed ved
+        on ve.apply_no = ved.apply_no
+        left join tenant_vehicle_rel tvr
+        on ve.vehicle_id = tvr.vehicle_code
+        where
+        ve.state = 3
+        and ve.org_id = #{orgId}
+        and tvr.vehicle_class = #{vehicleClass}
+        and tvr.tenant_id = #{tenantId}
+        and ve.tenant_id = #{tenantId}
+        and ved.tenant_id = #{tenantId}
+        <if test="startTime != null">
+            and ve.update_time <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null">
+            and ve.update_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+        <if test="vehicleClass == 1">
+            group by type_name
+        </if>
+    </select>
+
+    <select id="maintenanceSum" resultType="java.lang.Long">
+        select ifnull(sum(uri.total_fee),0)
+        from user_repair_info uri
+        left join tenant_vehicle_rel tvr
+        on  uri.plate_number = tvr.plate_number
+        where uri.tenant_id = #{tenantId}
+          and uri.app_repair_state = 5
+          and tvr.org_id = #{orgId}
+          and uri.state = #{state}
+          and tvr.vehicle_class = 1
+        <if test="startTime != null">
+            and uri.update_time <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null">
+            and uri.update_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+    </select>
+
+    <select id="carAccidentFee" resultType="java.lang.String">
+        select
+        ifnull(sum(claim_amount),0)
+        from vehicle_accident va
+        left join tenant_vehicle_rel tvr
+        on va.vehicle_id = tvr.vehicle_code
+        where va.org_id = #{orgId}
+        and tvr.tenant_id = #{tenantId}
+        and tvr.vehicle_class = #{vehicleClass}
+        and va.tenant_id = #{tenantId}
+        <if test="startTime != null">
+            and va.create_time <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null">
+            and va.create_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+    </select>
+
+    <select id="carAnnualFee" resultType="java.lang.String">
+        select
+        ifnull(sum(annualreview_cost),0)
+        from vehicle_annual_review as va
+        left join tenant_vehicle_rel tvr
+        on va.vehicle_id = tvr.vehicle_code
+        where va.org_id = #{orgId}
+        and va.tenant_id = #{tenantId}
+        and tvr.vehicle_class = #{vehicleClass}
+        and tvr.tenant_id = #{tenantId}
+        <if test="startTime != null">
+            and va.create_time <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null">
+            and va.create_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+    </select>
+
+    <select id="driverFee" resultType="java.lang.Long">
+        select ifnull(sum(amount), 0) as amount
+        from claim_expense_info cei
+                 left join tenant_vehicle_rel tvr on cei.plate_number = tvr.plate_number
+        where cei.tenant_id = #{tenantId}
+          and cei.state = 3
+          and cei.org_id = #{orgId}
+          and cei.verify_date <![CDATA[ >= ]]> #{startTime}
+          and cei.verify_date <![CDATA[ <= ]]> #{endTime}
+          and tvr.tenant_id = #{tenantId}
+          and tvr.vehicle_class = 1
+    </select>
+
+    <sql id="fieldStr">
+        o.ORDER_ID AS orderId,
+        ifnull(e.payment_way,0) as paymentWay,
+        s.DEPEND_TIME AS dependDate,
+        g.company_name AS companyName,
+        ifnull(f.pre_total_fee,0) as preTotalFee,
+        (ifnull(f.final_fee,0) - ifnull(f.insurance_fee,0))+ifnull(f.arrive_payment_fee,0) as finalFee,
+        ifnull(f.pre_cash_fee,0) as preCashFee,
+        ifnull(f.PRE_OIL_VIRTUAL_FEE,0) as preOilVirtualFee,
+        ifnull(ext.pontage,0) as pontagePer,
+        ifnull(ext.salary,0) as salary,
+        ifnull(f.pre_etc_fee,0) as preEtcFee,
+        ifnull(f.PRE_OIL_FEE,0) as preOilFee,
+        g.custom_name AS customName,
+        s.SOURCE_NAME AS sourceName,
+        NULL AS customerId,
+        0 AS customerNum,
+        o.source_Region AS sourceRegion,
+        o.des_Region AS desRegion,
+        o.order_Type AS orderType,
+        ifnull(f.COST_PRICE,0) AS costPrice,
+        ifnull(f.INCOME_EXCEPTION_FEE,0) AS incomeExceptionFee,
+        0 AS diffFee,
+        ifnull(fs.GET_AMOUNT,0) AS amount,
+        fs.BILL_NUMBER AS billNumber,
+        NULL AS receiptNumber,
+        o.order_state AS orderState,
+        fs.finance_Sts AS financeSts,
+        ifnull( fs.REAL_INCOME, 0 ) AS realIncome,
+        g.CUSTOM_USER_ID AS customUserId,
+        s.plate_Number AS plateNumber,
+        s.TRAILER_PLATE AS trailerPlate,
+        s.car_driver_id as carDriverId,
+        o.tenant_Id AS tenantId,
+        s.CAR_STATUS AS carStatus,
+        s.vehicle_class as vehicleClass,
+        o.OP_NAME AS opName,
+        f.total_Fee AS totalFee,
+        s.CAR_LENGH AS carLengh,
+        o.ORG_ID AS orgId,
+        o.FROM_ORDER_ID AS fromOrderId,
+        NULL AS receiptNumbers,
+        IFNULL( f.INSURANCE_FEE, 0 ) AS insuranceFee,
+        s.CAR_DEPEND_DATE AS carDependDate,
+        s.CAR_START_DATE AS carStartDate,
+        s.CAR_ARRIVE_DATE AS carArriveDate,
+        CONCAT((
+        SELECT
+        ssd.CODE_NAME
+        FROM
+        sys_static_data ssd
+        WHERE
+        ssd.CODE_TYPE = 'VEHICLE_STATUS'
+        AND ssd.CODE_VALUE = s.CAR_STATUS
+        ),
+        '/',
+        s.CAR_LENGH,
+        '米'
+        ) AS carType,
+        CONCAT( IFNULL( g.WEIGHT, 0 ), '吨/', IFNULL( g.SQUARE, 0 ), '方' ) AS goodsInfo,
+        g.CUSTOM_NUMBER AS customNumber
+    </sql>
+
+
+    <select id="getTableBossBusinessDayInfo"
+            resultType="com.youming.youche.table.domain.workbench.BossWorkbenchDayInfo">
+        SELECT a.tenant_id,
+               a.time,
+               ifnull(sum(a.own_income + a.diversion_income + a.merchants_income), 0) AS businessIncome,
+               ifnull(sum(a.own_cost + a.diversion_cost + a.merchants_cost), 0)       AS businessCost,
+               ifnull(
+                       sum(a.own_income + a.diversion_income + a.merchants_income - a.own_cost - a.diversion_cost -
+                           a.merchants_cost),
+                       0
+                   )                                                                  AS businessProfit
+        FROM (
+                 SELECT total.*
+                 FROM (
+                          SELECT (@i := @i + 1)                     pm,
+                                 tenant_id,
+                                 ifnull(sdd.own_income, 0)       AS own_income,
+                                 ifnull(sdd.diversion_income, 0) AS diversion_income,
+                                 ifnull(sdd.merchants_income, 0) AS merchants_income,
+                                 ifnull(sdd.own_cost, 0)         AS own_cost,
+                                 ifnull(sdd.diversion_cost, 0)   AS diversion_cost,
+                                 ifnull(sdd.merchants_cost, 0)   AS merchants_cost,
+                                 sdd.create_date                 AS time,
+                                 sdd.create_time,
+                                 sdd.department_id
+                          FROM statement_department_day sdd,
+                               (SELECT @i := 0) t
+                          WHERE create_date = DATE_FORMAT(ADDDATE(now(), -1), '%Y-%m-%d')
+                          ORDER BY create_time DESC
+                      ) AS total
+                 GROUP BY total.tenant_id,
+                          total.time,
+                          department_id
+             ) AS a
+        GROUP BY a.tenant_id,
+                 a.time
+    </select>
+
+    <select id="getTableWechatOperationWorkbenchInfo"
+            resultType="com.youming.youche.table.domain.workbench.WechatOperationWorkbenchInfo">
+        SELECT a.tenant_id,
+               a.time,
+               ifnull(sum(a.own_income), 0)             ownIncome,
+               ifnull(sum(a.own_cost), 0)               ownCost,
+               ifnull(sum(a.own_gross_margin), 0)       ownGrossMargin,
+               ifnull(sum(a.diversion_income), 0)       diversionIncome,
+               ifnull(sum(a.diversion_cost), 0)         diversionCost,
+               ifnull(sum(a.diversion_gross_margin), 0) diversionGrossMargin,
+               ifnull(sum(a.merchants_income), 0)       merchantsIncome,
+               ifnull(sum(a.merchants_cost), 0)         merchantsCost,
+               ifnull(sum(a.merchants_gross_margin), 0) merchantsGrossMargin,
+               ifnull(sum(a.wage_fee), 0)               wageFee,
+               ifnull(sum(a.oil_fee), 0)                oilFee,
+               ifnull(sum(a.toll_fee), 0)               tollFee
+        FROM (
+                 SELECT total.*
+                 FROM (
+                          SELECT (@i := @i + 1)                        pm,
+                                 tenant_id,
+                                 ifnull(sdd.own_income, 0)             own_income,
+                                 ifnull(sdd.own_cost, 0)               own_cost,
+                                 ifnull(sdd.own_gross_margin, 0)       own_gross_margin,
+                                 ifnull(sdd.diversion_income, 0)       diversion_income,
+                                 ifnull(sdd.diversion_cost, 0)         diversion_cost,
+                                 ifnull(sdd.diversion_gross_margin, 0) diversion_gross_margin,
+                                 ifnull(sdd.merchants_income, 0)       merchants_income,
+                                 ifnull(sdd.merchants_cost, 0)         merchants_cost,
+                                 ifnull(sdd.merchants_gross_margin, 0) merchants_gross_margin,
+                                 ifnull(socd.subsidy_fee, 0)           wage_fee,
+                                 ifnull(socd.oil_fee, 0)               oil_fee,
+                                 ifnull(socd.toll_fee, 0)              toll_fee,
+                                 sdd.create_date AS                    time,
+                                 sdd.create_time,
+                                 sdd.department_id
+                          FROM statement_department_day sdd
+                                   left join statement_own_cost_day socd on sdd.id = socd.statement_id,
+                               (SELECT @i := 0) t
+                          WHERE create_date = DATE_FORMAT(ADDDATE(now(), -1), '%Y-%m-%d')
+                            and socd.type = 1
+                          ORDER BY create_time DESC
+                      ) AS total
+                 GROUP BY total.tenant_id,
+                          total.time,
+                          department_id
+             ) AS a
+        GROUP BY a.tenant_id,
+                 a.time
+    </select>
+</mapper>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.table.provider.mapper.vehicleReport.VehicleReportMapper">
+
+
+    <select id="" resultType="com.youming.youche.table.dto.vehiclereport.VehicleReportDto">
+        select
+        std.`name` as departmentName,
+        vr.tenant_id as tenantId,
+        vr.current_line as currentLine,
+        vr.car_number as carNumber,
+        vr.mouth as mouth,
+        vr.total_expenses as totalExpenses,
+        vr.vehicle_depreciation as vehicleDepreciation,
+        vr.maintenance_cost as maintenanceCost,
+        vr.maintenance_costs as maintenanceCosts,
+        vr.oil_cost as oilCost,
+        vr.equipment_fuel_consumption as equipmentFuelConsumption,
+        vr.equipment_mileage as equipmentMileage,
+        vr.road_and_bridge_fee as roadAndBridgeFee,
+        vr.vehicle_accident as vehicleAccident,
+        vr.penalty_for_violation as penaltyForViolation,
+        vr.incidental as incidental,
+        vr.annual_vehicle_review as annualVehicleReview,
+        vr.vehicle_insurance as vehicleInsurance,
+        vr.vehicle_revenue as vehicleRevenue,
+        vr.vehicle_gross_profit as vehicleGrossProfit,
+        vr.gross_profit_margin_of_vehicle as grossProfitMarginOfVehicle,
+        vr.create_time as createTime
+        from vehicle_report as vr
+        LEFT JOIN sys_tenant_def std on std.id = vr.tenant_id
+        where vr.tenant_id = #{tenantId}
+        <if test="carNumber != null and carNumber != ''">
+            and vr.car_number like CONCAT('%',#{carNumber},'%')
+        </if>
+        <if test="currentLine != null and currentLine != ''">
+            and vr.current_line like CONCAT('%',#{currentLine},'%')
+        </if>
+        <if test="department != null and department != ''">
+            and vr.department = #{department}
+        </if>
+        <if test="startMonth != null and startMonth != ''">
+            and vr.mouth <![CDATA[ >= ]]>  #{startMonth}
+        </if>
+        <if test="endMonth != null and endMonth != ''">
+            and vr.mouth <![CDATA[ <= ]]> #{endMonth}
+        </if>
+        ORDER BY vr.create_time DESC
+    </select>
+
+    <select id="getTableVehicleList" resultType="com.youming.youche.table.domain.workbench.BossWorkbenchInfo">
+        select
+        a.tenantId,
+        ifnull(sum( a.oil_cost ),0) AS carCostOil,
+        ifnull(sum( a.maintenance_cost + a.maintenance_costs ),0) AS carCostMaintenance,
+        ifnull(sum( a.road_and_bridge_fee ),0) AS carCostEtc,
+        ifnull(sum( a.vehicle_depreciation + a.vehicle_accident + a.penalty_for_violation ),0) AS carCostOther
+        from (
+        SELECT
+        total.*
+        FROM
+        (
+        SELECT
+        ( @i := @i + 1 ) pm,
+        tenant_id as tenantId,
+        car_number,
+        current_line,
+        mouth,
+        oil_cost,
+        maintenance_cost,
+        maintenance_costs,
+        road_and_bridge_fee,
+        vehicle_depreciation,
+        vehicle_accident,
+        penalty_for_violation
+        FROM
+        vehicle_report,
+        ( SELECT @i := 0 ) t
+        ORDER BY
+        create_time DESC
+        ) total
+        GROUP BY
+        total.tenantId,
+        total.car_number,
+        total.current_line,
+        total.mouth
+        ) a group by a.tenantId
+    </select>
+
+    <select id="queryVehicleReportData" resultType="com.youming.youche.table.domain.vehicleReport.VehicleReport">
+        SELECT
+        tenant_vehicle_rel.org_id AS orgId,
+        vr.tenant_id AS tenantid,
+        vr.current_line AS currentline,
+        vr.vehicle_code AS vehicleCode,
+        vr.car_number AS carnumber,
+        vr.mouth AS mouth,
+        vr.vehicle_depreciation AS vehicledepreciation,
+        vr.maintenance_cost AS maintenancecost,
+        vr.maintenance_costs AS maintenancecosts,
+        vr.oil_cost AS oilcost,
+        vr.equipment_fuel_consumption AS equipmentfuelconsumption,
+        vr.equipment_mileage AS equipmentmileage,
+        vr.road_and_bridge_fee AS roadandbridgefee,
+        vr.vehicle_accident AS vehicleaccident,
+        vr.penalty_for_violation AS penaltyforviolation,
+        vr.incidental AS incidental,
+        vr.annual_vehicle_review AS annualvehiclereview,
+        vr.vehicle_insurance AS vehicleinsurance,
+        vr.vehicle_revenue AS vehiclerevenue
+        FROM
+        vehicle_report AS vr
+        LEFT JOIN tenant_vehicle_rel ON vr.vehicle_code = tenant_vehicle_rel.vehicle_code
+        WHERE vr.tenant_id = #{tenantId}
+        and tenant_vehicle_rel.tenant_id = #{tenantId}
+        <if test="carNumber != null and carNumber != ''">
+            and vr.car_number like CONCAT('%',#{carNumber},'%')
+        </if>
+        <if test="currentLine != null and currentLine != ''">
+            and vr.current_line like CONCAT('%',#{currentLine},'%')
+        </if>
+        <if test="department != null and department != ''">
+            and tenant_vehicle_rel.org_id = #{department}
+        </if>
+        <if test="startMonth != null and startMonth != ''">
+            and vr.mouth <![CDATA[ >= ]]>  #{startMonth}
+        </if>
+        <if test="endMonth != null and endMonth != ''">
+            and vr.mouth <![CDATA[ <= ]]> #{endMonth}
+        </if>
+        ORDER BY vr.create_time DESC
+    </select>
+
+</mapper>

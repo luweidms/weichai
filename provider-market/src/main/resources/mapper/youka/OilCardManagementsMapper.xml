@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.youka.OilCardManagementsMapper">
+    <select id="seletcyoukaByAll" resultType="com.youming.youche.market.dto.youca.OilCardManagementDto">
+        SELECT
+        o.id ,
+        o.oil_car_num AS oilCarNum,
+        u.service_name AS companyName,
+        u.service_user_id AS serviceUserId,
+        o.oil_Card_Status AS oilCardStatus,
+        o.pledge_Order_Id AS pledgeOrderId,
+        rel.product_id AS productId,
+        u.service_type serviceType,
+        o.oil_card_type oilCardType,
+        rel.state AS servState,
+        u.service_user_id AS userId,
+        o.card_type AS cardType,
+        o.card_balance AS cardBalance,
+        ov.plateNumber AS bindVehicle
+        FROM
+        oil_card_management o
+        LEFT JOIN service_info u ON u.service_user_id = o.User_id
+        LEFT JOIN ( SELECT a.card_id, GROUP_CONCAT( VEHICLE_NUMBER SEPARATOR ',' ) AS plateNumber FROM
+        oil_card_vehicle_rel a GROUP BY a.card_id ) AS ov ON o.id = ov.CARD_ID
+        LEFT JOIN apply_card_rel rel ON rel.oil_card_num = o.OIL_CAR_NUM
+        AND rel.oil_card_type = o.oil_card_type
+        AND rel.is_recoveryed = 0
+        <where>
+            and o.tenant_id = #{tenantId}
+            <if test="oilCardManagementVo.oilCarNum!=null and oilCardManagementVo.oilCarNum!='' ">
+                and o.oil_car_num like concat('%',#{oilCardManagementVo.oilCarNum},'%')
+            </if>
+
+            <if test="oilCardManagementVo.companyName!=null and oilCardManagementVo.companyName!='' ">
+                and u.service_name like concat('%',#{oilCardManagementVo.companyName},'%')
+            </if>
+
+            <if test="oilCardManagementVo.oilCardStatus!=null and oilCardManagementVo.oilCardStatus!=''">
+                and o.oil_Card_Status = #{oilCardManagementVo.oilCardStatus}
+            </if>
+
+            <if test="oilCardManagementVo.cardType!=null and oilCardManagementVo.cardType &gt;= 0 ">
+                and o.card_type = #{oilCardManagementVo.cardType}
+            </if>
+
+
+            <if test="oilCardManagementVo.oilCardType!=null and oilCardManagementVo.oilCardType &gt;= -1 ">
+                and o.oil_card_type = #{oilCardManagementVo.oilCardType}
+            </if>
+
+
+            <if test="oilCardManagementVo.bindVehicle!=null and oilCardManagementVo.bindVehicle!='' ">
+                and ov.plateNumber like concat('%',#{oilCardManagementVo.bindVehicle},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="oilCardManagementVo.orderByOilCardNum != null and oilCardManagementVo.orderByOilCardNum == 1">
+                ORDER BY o.oil_car_num
+            </when>
+            <otherwise>
+                ORDER BY o.create_time desc
+            </otherwise>
+        </choose>
+    </select>
+    <select id="seletcyoukaByCar" resultType="com.youming.youche.market.dto.youca.TenantVehicleRelDto">
+        select *from(
+        select
+        id,
+        bill_receiver_mobile,
+        bill_receiver_name,
+        bill_receiver_user_id,
+        tenant_id,
+        plate_number,
+        vehicle_code,
+        vehicle_class,
+        create_date
+        from
+        tenant_vehicle_rel
+        where
+        vehicle_class in ( 2, 4 )
+        and trim( bill_receiver_mobile ) != '' union all
+        select
+        id,
+        bill_receiver_mobile,
+        bill_receiver_name,
+        bill_receiver_user_id,
+        tenant_id,
+        plate_number,
+        vehicle_code,
+        vehicle_class,
+        create_date
+        from
+        tenant_vehicle_rel_ver
+        where
+        ver_state = 9
+        and vehicle_class in ( 2, 4 )
+        and trim( bill_receiver_mobile ) != '') as tenant
+        <where>
+            tenant_id =#{tenantId}
+            <if test="tenantVehicleRelVo.billReceiverMobile!=null and tenantVehicleRelVo.billReceiverMobile!=''">
+                and bill_receiver_mobile like concat('%',#{tenantVehicleRelVo.billReceiverMobile},'%')
+            </if>
+            <if test="tenantVehicleRelVo.billReceiverName!=null and tenantVehicleRelVo.billReceiverName!=''">
+                and bill_receiver_name like concat('%',#{tenantVehicleRelVo.billReceiverName},'%')
+            </if>
+            <if test="tenantVehicleRelVo.plateNumber!=null and tenantVehicleRelVo.plateNumber!=''">
+                and plate_number like concat('%',#{tenantVehicleRelVo.plateNumber},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findByOilCardNum" resultType="com.youming.youche.market.domain.youka.OilCardManagement">
+        select *
+        from oil_card_management
+        where oil_car_num = #{oilCarNum}  and tenant_id= #{tenantId}
+    </select>
+    <update id="updateManagement">
+        UPDATE oil_card_management
+        SET card_balance = (CASE oil_car_num WHEN "cardNum" THEN "balance" END)
+        WHERE tenant_id = #{tenantId}
+          AND oil_card_status = 1
+          AND card_type = 1
+          AND oil_car_num IN (AND oil_car_num IN (SELECT REGEXP_SUBSTR('${cardNum}','[^,]+', 1, LEVEL) FROM DUAL
+            CONNECT BY REGEXP_SUBSTR('${cardNum}', '[^,]+', 1, LEVEL) IS NOT NULL)
+    </update>
+    <select id="OilCardList" resultType="com.youming.youche.market.dto.youca.OilCardManagementDto">
+        SELECT o.id,
+               o.oil_car_num     AS oilCarNum,
+               u.service_name    AS companyName,
+               u.service_user_id AS serviceUserId,
+               o.oil_Card_Status AS oilCardStatus,
+               o.pledge_Order_Id AS pledgeOrderId,
+               rel.product_id    AS productId,
+               u.service_type       serviceType,
+               o.oil_card_type      oilCardType,
+               rel.state         AS servState,
+               u.service_user_id AS userId,
+               o.card_type       AS cardType,
+               o.card_balance    AS cardBalance,
+               ov.plateNumber    AS bindVehicle
+        FROM oil_card_management o
+                 LEFT JOIN service_info u ON u.service_user_id = o.User_id
+                 LEFT JOIN (SELECT a.card_id, GROUP_CONCAT(VEHICLE_NUMBER SEPARATOR ',') AS plateNumber
+                            FROM oil_card_vehicle_rel a
+                            GROUP BY a.card_id) AS ov ON o.id = ov.CARD_ID
+                 LEFT JOIN apply_card_rel rel ON rel.oil_card_num = o.OIL_CAR_NUM
+            AND rel.oil_card_type = o.oil_card_type
+            AND rel.is_recoveryed = 0
+        where o.tenant_id = #{tenantId}
+    </select>
+    <select id="getOilCardManagementList" resultType="com.youming.youche.market.domain.youka.OilCardManagement">
+        SELECT oc.oil_car_num    oilCarNum,
+               oc.id             cardId,
+               s.service_user_id serviceUserId
+        FROM oil_card_management oc,
+             service_info s
+        WHERE s.service_user_id = oc.user_id
+          AND s.service_type = 100
+          AND oc.oil_card_status = 1
+          AND oc.tenant_id = #{tenantId}
+    </select>
+    <select id="getOilCardVehicleRelList" resultType="com.youming.youche.market.domain.youka.OilCardVehicleRel">
+        SELECT OIL_CARD_NUM                                as  oilCardNum,
+               GROUP_CONCAT(`VEHICLE_NUMBER` SEPARATOR ',') as vehicleNumber
+        FROM oil_card_vehicle_rel
+        WHERE tenant_id = #{tenantId}
+          <if test="oilCardNums!=null and oilCardNums.size()  &gt; 0">
+              AND OIL_CARD_NUM   IN
+              <foreach collection="oilCardNums" item="num" open="(" separator="," close=")">
+                  #{num}
+              </foreach>
+          </if>
+        GROUP BY OIL_CARD_NUM
+    </select>
+    <select id="getOilCardManagementByCard" resultType="com.youming.youche.market.domain.youka.OilCardManagement">
+        select *
+        from oil_card_management
+        where oil_car_num = #{oilCarNum}
+          and tenant_id = #{tenantId}
+    </select>
+    <select id="getServiceInfo" resultType="com.youming.youche.record.domain.service.ServiceInfo">
+        SELECT SERVICE_USER_ID, SERVICE_NAME
+        from service_info
+        where SERVICE_TYPE = #{cardType}
+          and tenant_id = #{tenantId}
+    </select>
+
+<!--* 40035 * 根据车牌查找有效的油卡集合 */-->
+    <select id="findByPlateNumber" resultType="com.youming.youche.market.dto.youca.OilCardManagementOutDto">
+        SELECT ocm.*,
+        ocv.vehicle_number as plateNumber
+         FROM
+        oil_card_vehicle_rel ocv
+        left join
+        oil_card_management as ocm
+        on ocv.card_id=ocm.id
+       where ocv.tenant_id=#{tenantId}
+       <if test="plateNumber!=null and plateNumber!=''">
+           and  ocv.vehicle_number  like concat('%',#{plateNumber},'%')
+       </if>
+         and ocm.oil_card_status=#{oilCardStatus}
+    </select>
+</mapper>

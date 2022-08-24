@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.apply.ApplyRecordMapper">
+<!--    &lt;!&ndash;查询我邀请的数量接口&ndash;&gt;-->
+<!--    <select id="getInvitationCount" resultType="java.lang.Long">-->
+<!--        SELECT count(1)-->
+<!--        FROM apply_record-->
+<!--        WHERE 1 = 1-->
+<!--          AND apply_record.apply_tenant_id = #{tenantId}-->
+<!--          AND apply_record.state != 0-->
+<!--          AND apply_record.state != 3-->
+<!--          AND apply_record.read_state = 0-->
+<!--          AND apply_record.apply_type = 2-->
+<!--    </select>-->
+<!--    &lt;!&ndash;查询邀请我的数量接口&ndash;&gt;-->
+<!--    <select id="getInvitationCountTO" resultType="java.lang.Long">-->
+<!--        SELECT count(1)-->
+<!--        FROM apply_record-->
+<!--        WHERE 1 = 1-->
+<!--        AND apply_record.apply_tenant_id = #{tenantId}-->
+<!--        AND apply_record.state = 0-->
+<!--        or apply_record.state = 3-->
+<!--        AND apply_record.apply_type = 2-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash;查询我的邀请列表&ndash;&gt;-->
+<!--    <select id="doQueryVehicleApplyRecordAll" resultType="com.youming.youche.system.vo.InvitationVo">-->
+<!--        SELECT-->
+<!--        apply_record.id as id,-->
+<!--        apply_record.id as eid,-->
+<!--        apply_record.busi_id as vehicleCode,-->
+<!--        vehicle_data_info.plate_number as plateNumber,-->
+<!--        apply_record.apply_vehicle_class as applyVehicleClass,-->
+<!--        apply_record.be_apply_tenant_id as beApplyTenantId,-->
+<!--        apply_record.apply_tenant_id as applyTenantId,-->
+<!--        sys_tenant_def.NAME as tenantName,-->
+<!--        sys_tenant_def.link_phone as linkPhone,-->
+<!--        apply_record.create_date as createDate,-->
+<!--        apply_record.apply_remark as applyRemark,-->
+<!--        apply_record.state as state,-->
+<!--        apply_record.read_state as readState,-->
+<!--        apply_record.audit_remark as auditRemark,-->
+<!--        vehicle_data_info.ver_state as verState,-->
+<!--        apply_record.new_apply_id as newApplyId,-->
+<!--        udi.mobile_phone as beApplyDriverMobile,-->
+<!--        udi.linkman as beApplyDriverName,-->
+<!--        apply_record.audit_date as auditDate-->
+<!--        FROM-->
+<!--        apply_record-->
+<!--        LEFT JOIN sys_tenant_def ON apply_record.be_apply_tenant_id = sys_tenant_def.id-->
+<!--        LEFT JOIN user_data_info udi ON udi.id = apply_record.belong_driver_user_id-->
+<!--        LEFT JOIN vehicle_data_info_ver vehicle_data_info ON apply_record.busi_id = vehicle_data_info.vehicle_code-->
+<!--        AND apply_record.his_id = vehicle_data_info.id-->
+<!--        <where>-->
+<!--            <if test="tenantId != null">-->
+<!--                apply_record.apply_tenant_id = #{tenantId}-->
+<!--            </if>-->
+<!--            <if test="applyType != null">-->
+<!--                and apply_record.apply_type = #{applyType}-->
+<!--            </if>-->
+<!--            <if test="plateNumber != null and plateNumber !=''">-->
+<!--                and vehicle_data_info.plate_number like CONCAT('%',#{plateNumber},'%')-->
+<!--            </if>-->
+<!--            <if test="tenantName !=null and tenantName !=''">-->
+<!--                and sys_tenant_def.name like CONCAT('%',#{tenantName},'%')-->
+<!--            </if>-->
+<!--            <if test="linkPhone !=null and linkPhone !=''">-->
+<!--                and sys_tenant_def.link_Phone like CONCAT('%',#{linkPhone},'%')-->
+<!--            </if>-->
+<!--            <if test="applyVehicleClass != null and applyVehicleClass &gt; -1">-->
+<!--                and apply_record.apply_vehicle_class = #{applyVehicleClass}-->
+<!--            </if>-->
+<!--            <if test="state != null and state &gt; -1">-->
+<!--                and apply_record.state = #{state}-->
+<!--            </if>-->
+<!--            <if test="driverMobile != null and driverMobile !=''">-->
+<!--                and udi.mobile_phone like  CONCAT('%',#{driverMobile},'%')-->
+<!--            </if>-->
+<!--            <if test="driverName != null and driverName !=''">-->
+<!--                and udi.LINKMAN like  CONCAT('%',#{driverName},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        ORDER BY apply_record.ID DESC-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash;查询邀请我的列表&ndash;&gt;-->
+<!--    <select id="doQueryVehicleApplyRecordAllTo" resultType="com.youming.youche.system.vo.InvitationVo">-->
+<!--        SELECT-->
+<!--        apply_record.id id,-->
+<!--        apply_record.id eid,-->
+<!--        apply_record.busi_id vehicleCode,-->
+<!--        vehicle_data_info.plate_number plateNumber,-->
+<!--        apply_record.apply_vehicle_class applyVehicleClass,-->
+<!--        apply_record.be_apply_tenant_id beApplyTenantId,-->
+<!--        apply_record.apply_tenant_id applyTenantId,-->
+<!--        sys_tenant_def.NAME tenantName,-->
+<!--        sys_tenant_def.link_phone linkPhone,-->
+<!--        apply_record.create_date createDate,-->
+<!--        apply_record.apply_remark applyRemark,-->
+<!--        apply_record.state state,-->
+<!--        apply_record.read_state readState,-->
+<!--        apply_record.audit_remark auditRemark,-->
+<!--        vehicle_data_info.ver_state verState,-->
+<!--        apply_record.new_apply_id newApplyId,-->
+<!--        udi.mobile_phone beApplyDriverMobile,-->
+<!--        udi.linkman beApplyDriverName,-->
+<!--        apply_record.audit_date auditDate-->
+<!--        FROM-->
+<!--        apply_record-->
+<!--        LEFT JOIN sys_tenant_def ON apply_record.apply_tenant_id = sys_tenant_def.id-->
+<!--        LEFT JOIN user_data_info udi ON udi.id = apply_record.belong_driver_user_id-->
+<!--        LEFT JOIN vehicle_data_info_ver vehicle_data_info ON apply_record.busi_id = vehicle_data_info.vehicle_code-->
+<!--        AND apply_record.his_id = vehicle_data_info.id-->
+<!--        <where>-->
+<!--            <if test="tenantId != null">-->
+<!--                apply_record.be_apply_tenant_id = #{tenantId}-->
+<!--            </if>-->
+<!--            <if test="applyType != null">-->
+<!--                and apply_record.apply_type = #{applyType}-->
+<!--            </if>-->
+<!--            <if test="plateNumber != null and plateNumber !=''">-->
+<!--                and vehicle_data_info.plate_number like CONCAT('%',#{plateNumber},'%')-->
+<!--            </if>-->
+<!--            <if test="tenantName !=null and tenantName !=''">-->
+<!--                and sys_tenant_def.name like CONCAT('%',#{tenantName},'%')-->
+<!--            </if>-->
+<!--            <if test="linkPhone !=null and linkPhone !=''">-->
+<!--                and sys_tenant_def.link_Phone like CONCAT('%',#{linkPhone},'%')-->
+<!--            </if>-->
+<!--            <if test="applyVehicleClass != null and applyVehicleClass &gt; -1">-->
+<!--                and apply_record.apply_vehicle_class = #{applyVehicleClass}-->
+<!--            </if>-->
+<!--            <if test="state != null and state &gt; -1">-->
+<!--                and apply_record.state = #{state}-->
+<!--            </if>-->
+<!--            <if test="driverMobile != null and driverMobile !=''">-->
+<!--                and udi.mobile_phone like CONCAT('%',#{driverMobile},'%')-->
+<!--            </if>-->
+<!--            <if test="driverName != null and driverName !=''">-->
+<!--                and udi.linkman like CONCAT('%',#{driverName},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        ORDER BY apply_record.ID DESC-->
+<!--    </select>-->
+
+<!--    <select id="getApplyRecordList" resultType="com.youming.youche.system.domain.apply.ApplyRecord">-->
+<!--        select * from apply_record-->
+<!--        <where>-->
+<!--            <if test="busiId != null">-->
+<!--                busi_id = #{busiId}-->
+<!--            </if>-->
+<!--            <if test="applyTenantId">-->
+<!--                and apply_tenant_id = #{applyTenantId}-->
+<!--            </if>-->
+<!--            <if test="state">-->
+<!--                and state = #{state}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
+<!--    <select id="getVehicleRecordInfo" resultType="java.util.Map">-->
+<!--        SELECT-->
+<!--                a.id,-->
+<!--                a.state state,-->
+<!--                a.apply_vehicle_class applyVehicleClass-->
+<!--        FROM-->
+<!--                apply_record a-->
+<!--        WHERE-->
+<!--                a.APPLY_TYPE = 2-->
+<!--          AND a.STATE IN (0,3 )-->
+<!--          AND A.BUSI_ID = #{vehicleCode}-->
+<!--          AND a.APPLY_TENANT_ID = #{tenantId}   limit 0,1-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash;查看邀请详情&ndash;&gt;-->
+<!--    <select id="getVehicleApplyRecord" resultType="com.youming.youche.commons.vo.VehicleApplyRecordVo">-->
+<!--        SELECT-->
+<!--                apply_record.id id,-->
+<!--                vehicle_data_info.plate_number plateNumber,-->
+<!--                vehicle_data_info.vehicle_code vehicleCode,-->
+<!--                vehicle_data_info.licence_type licenceType,-->
+<!--                tenant_vehicle_rel.vehicle_class vehicleClass,-->
+<!--                vehicle_data_info.vehicle_length vehicleLength,-->
+<!--                vehicle_data_info.vehicle_status vehicleStatus,-->
+<!--                vehicle_data_info.vehicle_load vehicleLoad,-->
+<!--                vehicle_data_info.light_goods_square lightGoodsSquare,-->
+<!--                apply_record.apply_vehicle_class applyVehicleClass,-->
+<!--                apply_record.be_apply_tenant_id beApplyTenantId,-->
+<!--                apply_record.apply_tenant_id applyTenantId,-->
+<!--                sys_tenant_def.NAME tenantName,-->
+<!--                sys_tenant_def.link_phone linkPhone,-->
+<!--                apply_record.create_date createDate,-->
+<!--                apply_record.apply_remark applyRemark,-->
+<!--                apply_record.state state,-->
+<!--                apply_record.read_state readState,-->
+<!--                apply_record.apply_File_Id applyFileId,-->
+<!--                apply_record.audit_remark auditRemark,-->
+<!--                apply_record.driving_license drivingLicense,-->
+<!--                apply_record.oper_certi operCerti,-->
+<!--                apply_record.bill_receiver_mobile billReceiverMobile,-->
+<!--                apply_record.bill_receiver_name billReceiverName,-->
+<!--                apply_record.bill_receiver_user_id billReceiverUserId,-->
+<!--                apply_record.audit_date auditDate-->
+<!--        FROM-->
+<!--                apply_record-->
+<!--                        LEFT JOIN sys_tenant_def ON apply_record.be_apply_tenant_id = sys_tenant_def.id-->
+<!--                        LEFT JOIN vehicle_data_info_ver vehicle_data_info ON apply_record.busi_id = vehicle_data_info.vehicle_code-->
+<!--                        AND apply_record.his_id = vehicle_data_info.id-->
+<!--                        LEFT JOIN tenant_vehicle_rel ON tenant_vehicle_rel.vehicle_code = vehicle_data_info.vehicle_code-->
+<!--        WHERE-->
+<!--                1 = 1-->
+<!--          AND apply_record.id =#{applyRecord}-->
+<!--        limit 0,1-->
+<!--    </select>-->
+<!--    &lt;!&ndash;统计记录数量&ndash;&gt;-->
+<!--    <select id="getApplyCount" resultType="java.lang.Long">-->
+<!--        SELECT-->
+<!--                count( id )-->
+<!--        FROM-->
+<!--                apply_record-->
+<!--        WHERE-->
+<!--                APPLY_TYPE = 2-->
+<!--          AND apply_tenant_id = #{tenantId}-->
+<!--          AND apply_vehicle_class = #{vehicleClass}-->
+<!--          AND busi_id = #{vehicleCode}-->
+<!--          AND ( state = 0 OR state = 3 )-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash;统计c端车队数量&ndash;&gt;-->
+<!--    <select id="getApplyVehicleCountByDriverUserId" resultType="java.lang.Long">-->
+<!--        SELECT-->
+<!--                count( 1 )-->
+<!--        FROM-->
+<!--                vehicle_data_info,-->
+<!--                apply_record-->
+<!--        <where>-->
+<!--            vehicle_data_info.id = apply_record.BUSI_ID-->
+<!--            AND apply_record.state = 0-->
+<!--            AND apply_record.BE_APPLY_TENANT_ID =-1-->
+<!--            <if test="tenantId != null">-->
+<!--                AND apply_record.APPLY_TENANT_ID = #{tenantId}-->
+<!--            </if>-->
+<!--            <if test="vehicleClass != null">-->
+<!--                AND apply_record.APPLY_VEHICLE_CLASS = #{vehicleClass}-->
+<!--            </if>-->
+<!--            <if test="driverUserId != null">-->
+<!--                AND vehicle_data_info.driver_user_id = #{driverUserId}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
+<!--    <select id="getVehicleApplyRecordNew" resultType="com.youming.youche.system.dto.VehicleApplyRecordDto">-->
+<!--        SELECT-->
+<!--        apply_record.id id,-->
+<!--        vehicle_data_info.plate_number plateNumber,-->
+<!--        vehicle_data_info.vehicle_code vehicleCode,-->
+<!--        vehicle_data_info.licence_type licenceType,-->
+<!--        tenant_vehicle_rel.vehicle_class vehicleClass,-->
+<!--        vehicle_data_info.vehicle_length vehicleLength,-->
+<!--        vehicle_data_info.vehicle_status vehicleStatus,-->
+<!--        vehicle_data_info.vehicle_load vehicleLoad,-->
+<!--        vehicle_data_info.light_goods_square lightGoodsSquare,-->
+<!--        apply_record.apply_vehicle_class applyVehicleClass,-->
+<!--        apply_record.be_apply_tenant_id beApplyTenantId,-->
+<!--        apply_record.apply_tenant_id applyTenantId,-->
+<!--        sys_tenant_def.NAME tenantName,-->
+<!--        sys_tenant_def.link_phone linkPhone,-->
+<!--        apply_record.create_date createDate,-->
+<!--        apply_record.apply_remark applyRemark,-->
+<!--        apply_record.state state,-->
+<!--        apply_record.read_state readState,-->
+<!--        apply_record.apply_File_Id applyFileId,-->
+<!--        apply_record.audit_remark auditRemark,-->
+<!--        apply_record.driving_license drivingLicense,-->
+<!--        apply_record.oper_certi operCerti,-->
+<!--        apply_record.bill_receiver_mobile billReceiverMobile,-->
+<!--        apply_record.bill_receiver_name billReceiverName,-->
+<!--        apply_record.bill_receiver_user_id billReceiverUserId,-->
+<!--        apply_record.audit_date auditDate-->
+<!--        FROM-->
+<!--        apply_record-->
+<!--        LEFT JOIN sys_tenant_def-->
+<!--        <if test="applyRecordId == 0 or applyRecordId == -1">-->
+<!--            ON apply_record.be_apply_tenant_id = sys_tenant_def.id-->
+<!--        </if>-->
+<!--        <if test="applyRecordId == 1">-->
+<!--            ON apply_record.apply_tenant_id = sys_tenant_def.id-->
+<!--        </if>-->
+<!--        LEFT JOIN vehicle_data_info_ver vehicle_data_info ON apply_record.busi_id = vehicle_data_info.vehicle_code-->
+<!--        AND apply_record.his_id = vehicle_data_info.id-->
+<!--        LEFT JOIN tenant_vehicle_rel ON tenant_vehicle_rel.vehicle_code = vehicle_data_info.vehicle_code-->
+<!--        WHERE-->
+<!--        1 = 1-->
+<!--        AND apply_record.id = #{applyRecordId}-->
+<!--    </select>-->
+
+</mapper>

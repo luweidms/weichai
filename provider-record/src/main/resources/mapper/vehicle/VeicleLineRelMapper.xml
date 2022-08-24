@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleLineRelMapper">
+    <!--查询绑定线路-->
+    <select id="getVehiclelineRels" resultType="com.youming.youche.record.domain.vehicle.VehicleLineRel">
+        SELECT
+                r.id AS relId,
+                r.VEHICLE_CODE AS vehicleCode,
+                r.PLATE_NUMBER AS plateNumber,
+                r.LINE_ID AS lineId,
+                r.STATE AS state,
+                r.LINE_CODE_RULE AS lineCodeRule
+        FROM
+                vehicle_line_rel AS r
+            <where>
+                <if test="vehicleCode != null">
+                    r.vehicle_code = #{vehicleCode}
+                </if>
+                <if test="state != null">
+                    and r.state = #{state}
+                </if>
+            </where>
+        ORDER BY
+                r.id ASC
+    </select>
+</mapper>

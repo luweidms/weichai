@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderCostReportMapper">
+
+
+    <select id="selectReport" resultType="com.youming.youche.finance.dto.order.OrderCostReportDto">
+        select rel.id AS id,
+        rel.order_id AS orderId,
+        ifnull(os.plate_number,osh.plate_number) AS plateNumber,
+        ifnull(os.car_driver_man,osh.car_driver_man)AS userName,
+        ifnull(os.car_driver_phone,osh.car_driver_phone) AS linkPhone,
+        ifnull(os.source_name,osh.source_name) AS sourceName,
+        ifnull(os.depend_Time,osh.depend_Time) AS dependTime,
+        rel.sub_time AS subTime,
+        rel.sub_user_name AS subUserName,
+        rel.state AS state,
+        rel.is_audit AS isAudit,
+        rel.sub_time  as subTimes,
+        ifnull(o.source_region,oh.source_region) AS sourceRegion,
+        ifnull(o.des_region,oh.des_region) AS desRegion
+        from order_main_report rel
+        left join order_info o
+        on rel.order_id = o.order_id
+        left join order_scheduler os
+        on os.order_id = o.order_id
+        LEFT JOIN order_info_h oh
+        on rel.ORDER_ID = oh.ORDER_ID
+        LEFT JOIN order_scheduler_h osh
+        on oh.ORDER_ID=osh.ORDER_ID
+        where rel.tenant_id = #{tenantId}
+        <if test="waitDeal">
+            <choose>
+                <when test="lids!=null and lids.size() &gt; 0">
+                    and rel.id in
+                    <foreach collection="lids" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                    and rel.state in (2,3)
+                </when>
+                <otherwise>
+                    and rel.id = ''
+                </otherwise>
+            </choose>
+        </if>
+        <if test="orderId!=null and orderId!=''">
+            and rel.order_id=#{orderId}
+        </if>
+        <if test="plateNumber!=null and plateNumber!=''">
+            and os.plate_number like   concat('%',#{plateNumber},'%')
+            <!-- or osh.plate_number like concat('%',#{plateNumber},'%')-->
+        </if>
+
+        <if test="userName!=null and userName!=''">
+            and os.car_driver_man like concat('%',#{userName},'%')
+            <!--  or osh.car_driver_man like concat('%',#{userName},'%')-->
+        </if>
+
+        <if test="linkPhone!=null and linkPhone!=''">
+            and os.car_driver_phone like concat('%',#{linkPhone},'%')
+            <!--or osh.car_driver_phone like  concat('%',#{linkPhone},'%')-->
+        </if>
+
+        <if test="subUserName!=null and subUserName!=''">
+            and rel.sub_user_name like concat('%',#{subUserName},'%')
+        </if>
+
+        <if test="startTime!=null">
+            and rel.sub_time <![CDATA[ >= ]]>  #{startTime}
+        </if>
+
+        <if test="endTime!=null">
+            and rel.sub_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+
+        <if test="sourceRegion!=null and sourceRegion  &gt; -1">
+            and o.source_region= #{sourceRegion}
+            <!--or oh.source_region= #{sourceRegion}-->
+
+        </if>
+
+        <if test="desRegion !=null and desRegion &gt; -1">
+            and o.des_region = #{desRegion}
+            <!-- or oh.des_region = #{desRegion}   -->
+
+        </if>
+        <if test="waitDeal">
+
+            <choose>
+                <when test="state!=null ">
+                    and rel.state=#{state}
+                </when>
+                <otherwise>
+                    and rel.state <![CDATA[ <> ]]> 4
+                    and rel.state <![CDATA[ <> ]]> 5
+                </otherwise>
+            </choose>
+        </if>
+        <if test="state !=null ">
+            and rel.state=#{state}
+        </if>
+        order by rel.sub_time desc
+    </select>
+
+    <select id="queryOrderCostDetailReports" resultType="com.youming.youche.finance.dto.order.OrderMainReportDto">
+        SELECT
+        m.id as id,
+        r.sub_time as subTime,
+        r.consume_fee as consumeFee,
+        r.type_name as typeName,
+        r.payment_way as paymentWay,
+        r.TYPE_ID as typeId,
+        r.card_no as cardNo,
+        r.oil_mileage as oilMileage,
+        m.tenant_id as  tenantId,
+        m.order_id as orderId,
+        r.file_id1 as fileId1,
+        r.file_id2 as fileId2,
+        r.file_id3 as fileId3,
+        r.file_id4 as fileId4,
+        r.file_id5 as fileId5,
+        r.file_url1 as fileUrl1,
+        r.file_url2 as fileUrl2,
+        r.file_url3 as fileUrl3,
+        r.file_url4 as fileUrl4,
+        r.file_url5 as fileUrl5,
+        os.car_driver_man as userName
+        FROM order_main_report  m
+        LEFT JOIN   order_cost_report t  ON m.order_id = t.order_id
+        LEFT JOIN  order_cost_other_report  r on  m.id= r.rel_id
+        LEFT JOIN order_scheduler os   ON m.order_id = os.order_id
+--         LEFT JOIN  order_cost_detail_report n  on m.id =  n.rel_id
+        WHERE m.tenant_id = #{tenantId}
+        <if test="getVehicleExpenseDto.beginApplyTime1 != null ">
+            and m.sub_time >= #{getVehicleExpenseDto.beginApplyTime1}
+        </if>
+
+        <if test="getVehicleExpenseDto.endApplyTime1 != null ">
+            and m.sub_time <![CDATA[ <= ]]> #{getVehicleExpenseDto.endApplyTime1}
+        </if>
+
+        <if test="paymentWay != null">
+            and  r.payment_way = #{paymentWay}
+        </if>
+
+<!--        <if test="tableTyp!=null and tableTyp!='' ">-->
+<!--            and r.TABLE_TYPE = #{tableTyp}-->
+<!--        </if>-->
+
+        <if test="typeId!=null and typeId!=''">
+            and r.TYPE_ID =#{typeId}
+        </if>
+
+
+        <if test="carDriverMan!=null and carDriverMan!=''">
+            and  os.car_driver_man like concat('%',#{carDriverMan},'%')
+        </if>
+
+        <if test="orderId!=null and orderId!=''">
+          and  m.order_id =#{orderId}
+        </if>
+
+        <if test="plateNumber!=null and plateNumber!=''">
+            and t.PLATE_NUMBER like concat('%',#{plateNumber},'%')
+        </if>
+
+        <if test="cardNo!=null and cardNo!=''">
+           and  r.card_no = #{cardNo}
+        </if>
+
+<!--        <if test="carDriverMan!=null and carDriverMan!=''">-->
+<!--            and r.SUB_USER_NAME like concat('%',#{carDriverMan},'%')-->
+<!--        </if>-->
+
+        order by r.sub_time desc
+    </select>
+
+    <select id="getVehicleOrderFeeByMonth"
+            resultType="com.youming.youche.finance.domain.vehicle.VehicleMiscellaneouFeeDto">
+        SELECT
+            r.type_id AS type,
+            sum( r.consume_fee ) AS applyAmountSum
+        FROM
+            order_main_report m
+            LEFT JOIN order_cost_report t ON m.order_id = t.order_id
+            LEFT JOIN order_cost_other_report r ON m.id = r.rel_id
+        WHERE
+            m.tenant_id = #{tenantId}
+            AND date_format( m.sub_time, '%Y-%m' ) = #{month}
+            AND r.type_id IN ( 64, 65, 62, 63, 67 )
+            AND t.plate_number = #{plateNumber}
+        GROUP BY
+            r.type_id
+    </select>
+
+</mapper>

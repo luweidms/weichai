@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderSchedulerMapper">
+
+    <select id="queryOrderVerifyInfoOut" resultType="com.youming.youche.order.vo.OrderVerifyInfoOut">
+        SELECT
+        o.order_id orderId,
+        s.depend_time dependTime,
+        s.arrive_time arriveTime,
+        s.car_depend_date carDependDate,
+        o.source_region sourceRegion,
+        o.des_region desRegion,
+        s.car_start_date carStartDate,
+        s.car_arrive_date carArriveDate,
+        g.eand eand,
+        g.nand nand,
+        g.eand_des eandDes,
+        g.nand_des nandDes,
+        0 isHis
+        FROM
+        order_info o,
+        order_info_ext ie,
+        order_scheduler s,
+        order_goods g
+        WHERE
+        o.order_id = ie.order_id
+        AND o.order_id = s.order_id
+        AND o.order_id = g.order_id
+        AND o.is_need_bill = 2
+        <if test="dependTime != null">
+            <choose>
+                <when test="isQueryLastOrder">
+                    AND s.depend_time <![CDATA[ <= ]]> #{dependTime}
+                </when>
+                <otherwise>
+                    AND s.depend_time <![CDATA[ >= ]]> #{dependTime}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="orderId != null">
+            AND o.order_id != #{orderId}
+        </if>
+        <if test="userId != null and userId > 0">
+            AND s.car_driver_id = #{userId}
+        </if>
+        <if test="orderStateLT != null and orderStateLT >0">
+            AND o.order_state <![CDATA[ < ]]> #{orderStateLT}
+        </if>
+        ORDER BY s.depend_time
+        <if test="isQueryLastOrder">
+            desc
+        </if>
+        LIMIT 0,1
+    </select>
+
+    <select id="queryOrderVerifyInfoOutH" resultType="com.youming.youche.order.vo.OrderVerifyInfoOut">
+        SELECT
+        o.order_id orderId,
+        s.depend_time dependTime,
+        s.arrive_time arriveTime,
+        s.car_depend_date carDependDate,
+        o.source_region sourceRegion,
+        o.des_region desRegion,
+        s.car_start_date carStartDate,
+        s.car_arrive_date carArriveDate,
+        g.eand eand,
+        g.nand nand,
+        g.eand_des eandDes,
+        g.nand_des nandDes,
+        1 isHis
+        FROM
+        order_info_h o
+        LEFT JOIN (
+        SELECT
+        p.order_id
+        FROM
+        payout_intf p,
+        order_info_h o
+        WHERE
+        o.order_id = p.order_id
+        AND o.order_state = 15
+        AND o.is_need_bill = 2
+        AND p.order_id > 0
+        AND is_automatic = 1
+        GROUP BY
+        p.order_id
+        ) p ON o.order_id = p.order_id,
+        order_info_ext_h ie,
+        order_scheduler_h s,
+        order_goods_h g
+        <if test="dependTime != null">
+            <choose>
+                <when test="isQueryLastOrder">
+                    AND s.depend_time <![CDATA[ <= ]]> #{dependTime}
+                </when>
+                <otherwise>
+                    AND s.depend_time <![CDATA[ >= ]]> #{dependTime}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="orderId != null">
+            AND o.order_id != #{orderId}
+        </if>
+        <if test="userId != null and userId > 0">
+            AND s.car_driver_id = #{userId}
+        </if>
+        <if test="orderStateLT != null and orderStateLT >0">
+            AND o.order_state <![CDATA[ < ]]> #{orderStateLT}
+        </if>
+        AND (
+        o.order_state != 15
+        OR ( o.order_state = 15 AND p.order_id IS NOT NULL ))
+        ORDER BY s.depend_time
+        <if test="isQueryLastOrder">
+            desc
+        </if>
+        LIMIT 0,1
+    </select>
+
+    <select id="getPreOrderSchedulerByUserId" resultType="com.youming.youche.order.domain.order.OrderSchedulerH">
+        SELECT
+            s.*
+        FROM
+        <choose>
+           <when test="isHis">
+               Order_Scheduler_h s,Order_Info_Ext_h e,order_info_h o
+               <if test="selectType == 3">
+                   left join Order_Driver_Switch_Info ds
+                   on ds.order_Id = o.order_Id
+                   and ds.state= 1
+                   AND receive_User_Id =#{userId}
+               </if>
+               where  e.order_Id=s.order_Id and  e.order_Id=o.order_Id
+           </when>
+           <otherwise>
+               Order_Scheduler s,Order_Info_Ext e
+               <if test="selectType == 3">
+                   left join Order_Driver_Switch_Info ds
+                     on ds.order_Id = e.order_Id
+                  and ds.state= 14
+                    AND receive_User_Id = #{userId}
+               </if>
+               where  e.order_Id=s.order_Id
+           </otherwise>
+        </choose>
+        <if test="orderId != null and orderId &gt; 0">
+            and s.order_Id <![CDATA[!= ]]> #{orderId}
+        </if>
+        <choose>
+            <when test="isLastOrder != null and isLastOrder">
+                and s.depend_Time <![CDATA[>= ]]> #{dependTime}
+            </when>
+            <otherwise>
+                and s.depend_Time <![CDATA[<= ]]> #{dependTime}
+            </otherwise>
+        </choose>
+        <if test="isHis">
+            and o.order_State= 14
+        </if>
+        and s.tenant_Id= #{tenantId}
+        <if test="selectType != null and selectType == 2">
+            and  s.copilot_User_Id= #{userId}
+        </if>
+        <if test="selectType != null and selectType ==3 ">
+            and  ds.receive_User_Id= #{userId}
+        </if>
+        <if test="selectType != 2 and selectType != 3">
+            and  s.car_Driver_Id= #{userId}
+        </if>
+        GROUP BY s.order_Id  order by s.depend_Time desc
+    </select>
+
+    <select id="checkLineIsOkByPlateNumber" resultType="com.youming.youche.order.vo.CheckLineIsOkByPlateNumberVo">
+        SELECT
+            i.order_Id AS orderId,
+            IFNULL(s.car_Arrive_Date,DATE_ADD(s.depend_Time,INTERVAL s.arrive_Time * 3600 SECOND)) AS arriveDate
+        FROM
+            Order_Info i,Order_Scheduler s where i.order_Id=s.order_Id
+            and  s.plate_Number = #{plateNumber}
+
+        <if test="fromOrderId != null and fromOrderId > 0">
+            and  s.order_Id != #{fromOrderId}
+        </if>
+            and  s.depend_Time >= #{dependTime}
+        and i.order_State >= 7
+        <if test="orderId != null and orderId > 0">
+            and  s.order_Id != #{orderId}
+        </if>
+        ORDER BY arriveDate DESC
+
+    </select>
+
+    <select id="checkLineIsOkByPlateNumberH" resultType="com.youming.youche.order.vo.CheckLineIsOkByPlateNumberVo">
+        SELECT
+            i.order_Id AS orderId,
+            IFNULL(s.car_Arrive_Date,DATE_ADD(s.depend_Time,INTERVAL s.arrive_Time * 3600 SECOND)) AS arriveDate
+        FROM
+        Order_Info_H i,Order_Scheduler_H s where i.order_Id=s.order_Id
+            and  s.plate_Number = #{plateNumber}
+        <if test="fromOrderId != null and fromOrderId > 0">
+            and  s.order_Id != #{fromOrderId}
+        </if>
+            and  s.depend_Time >= #{dependTime}
+        and i.order_State =14
+        <if test="orderId != null and orderId > 0">
+            and  s.order_Id != #{orderId}
+        </if>
+        ORDER BY arriveDate DESC
+
+    </select>
+
+    <select id="checkLineIsOkByDriverId" resultType="com.youming.youche.order.vo.CheckLineIsOkByPlateNumberVo">
+        SELECT
+            i.order_Id AS orderId,
+            IFNULL(s.car_Arrive_Date,DATE_ADD(s.depend_Time,INTERVAL s.arrive_Time * 3600 SECOND)) AS arriveDate
+        FROM
+        Order_Info i,Order_Scheduler s where i.order_Id=s.order_Id
+        <if test="userId != null and userId > 0">
+            and  s.car_Driver_Id = #{userId}
+            or s.copilot_User_Id = #{userId}
+        </if>
+        <if test="fromOrderId != null and fromOrderId > 0">
+            and  s.order_Id != #{fromOrderId}
+        </if>
+            and  s.depend_Time >= #{dependTime}
+        and i.order_State >= 7
+        <if test="orderId != null and orderId > 0">
+            and  s.order_Id != #{orderId}
+        </if>
+        ORDER BY arriveDate DESC
+
+    </select>
+
+    <select id="checkLineIsOkByDriverIdH" resultType="com.youming.youche.order.vo.CheckLineIsOkByPlateNumberVo">
+        SELECT
+            i.order_Id AS orderId,
+            IFNULL(s.car_Arrive_Date,DATE_ADD(s.depend_Time,INTERVAL s.arrive_Time * 3600 SECOND)) AS arriveDate
+        FROM
+        Order_Info_H i,Order_Scheduler_H s where i.order_Id=s.order_Id
+        <if test="userId != null and userId > 0">
+            and  s.car_Driver_Id = #{userId}
+            or s.copilot_User_Id = #{userId}
+        </if>
+        <if test="fromOrderId != null and fromOrderId > 0">
+            and  s.order_Id != #{fromOrderId}
+        </if>
+            and  s.depend_Time >= #{dependTime}
+        and i.order_State = 14
+        <if test="orderId != null and orderId > 0">
+            and  s.order_Id != #{orderId}
+        </if>
+        ORDER BY arriveDate DESC
+
+    </select>
+
+    <select id="getMonthFirstOrderId" resultType="java.math.BigInteger">
+        SELECT
+        tab.order_id
+        FROM
+        (
+        SELECT
+        o.order_id,
+        s.depend_time
+        FROM
+        order_scheduler s,
+        order_info o,
+        order_info_ext ie
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_id = ie.order_id
+        AND ie.payment_way = 2
+        AND s.vehicle_class = 1
+        AND o.order_state BETWEEN 7
+        AND 14
+        <if test="excludeOrderId != null and excludeOrderId > 0">
+            AND o.order_id != #{excludeOrderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="month != null and month != ''">
+            AND date_format( depend_time, '%y-%m' ) = #{month}
+        </if>
+        UNION ALL
+        SELECT
+        o.order_id,
+        s.depend_time
+        FROM
+        order_scheduler_h s,
+        order_info_h o,
+        order_info_ext_h ie
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_id = ie.order_id
+        AND ie.payment_way = 2
+        AND s.vehicle_class = 1
+        AND o.order_state BETWEEN 7
+        AND 14
+        <if test="excludeOrderId != null and excludeOrderId > 0">
+            AND o.order_id != #{excludeOrderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="month != null and month != ''">
+            AND date_format( depend_time, '%y-%m' ) = #{month}
+        </if>
+        ) tab
+        ORDER BY
+        tab.depend_time
+    </select>
+
+    <select id="queryExpenseOrderIdByTimeNode" resultType="java.math.BigInteger">
+        SELECT
+        o.order_id
+        FROM
+        order_scheduler s,
+        order_info o,
+        order_info_ext ie
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_id = ie.order_id
+        AND ie.payment_way = 2
+        AND s.vehicle_class = 1
+        AND o.order_state BETWEEN 7
+        AND 14
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="month != null and month != ''">
+            AND date_format( depend_time, '%y-%m' ) = #{month}
+        </if>
+        <if test="startDate != null">
+            AND s.depend_time <![CDATA[ > ]]> #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND s.depend_time <![CDATA[ <= ]]> #{endDate}
+        </if>
+        UNION ALL
+        SELECT
+        o.order_id
+        FROM
+        order_scheduler_h s,
+        order_info_h o,
+        order_info_ext_h ie
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_id = ie.order_id
+        AND ie.payment_way = 2
+        AND s.vehicle_class = 1
+        AND o.order_state BETWEEN 7
+        AND 14
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="month != null and month != ''">
+            AND date_format( depend_time, '%y-%m' ) = #{month}
+        </if>
+        <if test="startDate != null">
+            AND s.depend_time <![CDATA[ > ]]> #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND s.depend_time <![CDATA[ <= ]]> #{endDate}
+        </if>
+    </select>
+
+</mapper>

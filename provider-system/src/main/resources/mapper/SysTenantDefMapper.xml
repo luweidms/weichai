@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysTenantDefMapper">
+
+    <select id="selectByPreSaleOrgIdOrAfterSaleOrgId"
+            resultType="com.youming.youche.system.domain.SysTenantDef">
+        SELECT
+        *
+        FROM
+        sys_tenant_def stf
+        WHERE
+        <foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
+            stf.after_sale_org_id = #{item}
+            or
+            stf.pre_sale_org_id = #{item}
+        </foreach>
+    </select>
+
+    <insert id="addSysOperator" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user
+        (name,
+         login_acct,
+         user_info_id,
+         bill_id,
+         user_type,
+         password,
+         try_times,
+         lock_flag,
+         state,
+         remark,
+         op_user_id,
+         tenant_id,
+         tenant_code,
+         address,
+         company_user_id,
+         company_user_name,
+         county_code,
+         link_man,
+         org_type,
+         parent_org_id,
+         province_code,
+         org_name,
+         create_time,
+         update_time,
+         sts,
+         org_data_default,
+         sts_date,
+         region_code,
+         org_id)
+        VALUES (#{sysUser.name},
+                #{sysUser.loginAcct},
+                #{sysUser.userInfoId},
+                #{sysUser.billId},
+                #{sysUser.userType},
+                #{sysUser.password},
+                #{sysUser.tryTimes},
+                #{sysUser.lockFlag},
+                #{sysUser.state},
+                #{sysUser.remark},
+                #{sysUser.opUserId},
+                #{sysUser.tenantId},
+                #{sysUser.tenantCode},
+                #{sysUser.address},
+                #{sysUser.companyUserId},
+                #{sysUser.companyUserName},
+                #{sysUser.countyCode},
+                #{sysUser.linkMan},
+                #{sysUser.orgType},
+                #{sysUser.parentOrgId},
+                #{sysUser.provinceCode},
+                #{sysUser.orgName},
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP,
+                #{sysUser.sts},
+                #{sysUser.orgDataDefault},
+                #{sysUser.stsDate},
+                #{sysUser.regionCode},
+                #{sysUser.orgId})
+    </insert>
+
+    <select id="queryTenant" resultType="com.youming.youche.system.domain.SysTenantDef">
+        SELECT
+        id AS id,
+        tenant_code AS tenantCode,
+        name AS name,
+        short_name AS shortName,
+        province_id AS provinceId,
+        province_name AS provinceName,
+        city_id AS cityId,
+        city_name AS cityName,
+        district_id AS districtId,
+        district_name AS districtName,
+        address AS address,
+        company_province_id AS companyProvinceId,
+        company_province_name AS companyProvinceName,
+        company_city_id AS companyCityId,
+        company_city_name AS companyCityName,
+        company_district_id AS companyDistrictId,
+        company_district_name AS companyDistrictName,
+        company_address AS companyAddress,
+        logo AS logo,
+        link_man AS linkMan,
+        ifnull(mobile_phone,link_phone) AS linkPhone,
+        link_email AS linkEmail,
+        domain AS domain,
+        style AS style,
+        create_time AS createTime,
+        admin_user AS adminUser,
+        actual_controller AS actualController,
+        actual_controller_phone AS actualControllerPhone,
+        identification AS identification,
+        identification_picture AS identificationPicture,
+        business_license AS businessLicense,
+        business_license_no AS businessLicenseNo,
+        frozen_state AS frozenState,
+        staffNumber,
+        annualTurnover,
+        state AS state,
+        state_reason AS stateReason,
+        state_operator_name AS stateOperatorName,
+        pay_date AS payDate,
+        pay_state AS payState,
+        entrance_date AS entranceDate,
+        leave_date AS leaveDate,
+        pre_sale_service_id AS preSaleServiceId,
+        pre_sale_service_name AS preSaleServiceName,
+        after_sale_service_id AS afterSaleServiceId,
+        after_sale_service_name AS afterSaleServiceName,
+        virtual_state AS virtualState,
+        visitRecord,
+        ownCar,
+        otherCar
+        FROM (
+        SELECT def.*,udi.mobile_phone,
+        (SELECT s.staff_number FROM sys_tenant_business_state s WHERE s.tenant_id = def.id) AS staffNumber,
+        (SELECT s.annual_turnover FROM sys_tenant_business_state s WHERE s.tenant_id = def.id) AS annualTurnover,
+        (SELECT COUNT(1) FROM sys_tenant_visit_record record WHERE record.tenant_id = def.id) AS visitRecord,
+        (SELECT COUNT(1) FROM tenant_vehicle_rel rel WHERE rel.tenant_id = def.id AND vehicle_class = 1) AS ownCar,
+        (SELECT COUNT(1) FROM tenant_vehicle_rel rel WHERE rel.tenant_id = def.id AND vehicle_class = 3) AS otherCar
+        FROM sys_tenant_def def
+        left join
+        user_data_info as udi
+        on udi.id = def.admin_user
+        WHERE 1=1
+        AND def.id != 1
+        <if test="tenantQueryIn.startTime != null and tenantQueryIn.startTime != ''">
+            AND def.create_time <![CDATA[ > ]]> #{tenantQueryIn.startTime}
+        </if>
+        <if test="tenantQueryIn.endTime != null and tenantQueryIn.endTime != ''">
+            AND def.create_time <![CDATA[ < ]]> #{tenantQueryIn.endTime}
+        </if>
+        <if test="tenantQueryIn.actualController != null and tenantQueryIn.actualController != ''">
+            AND def.ACTUAL_CONTROLLER like CONCAT('%',#{tenantQueryIn.actualController},'%')
+        </if>
+        <if test="tenantQueryIn.companyName != null and tenantQueryIn.companyName != ''">
+            AND def.NAME like CONCAT('%',#{tenantQueryIn.companyName},'%')
+        </if>
+        <if test="tenantQueryIn.linkPhone != null and tenantQueryIn.linkPhone != ''">
+            AND def.LINK_PHONE = #{tenantQueryIn.linkPhone}
+        </if>
+        <if test="tenantQueryIn.state != null ">
+            AND def.STATE = #{tenantQueryIn.state}
+        </if>
+        <if test="tenantQueryIn.frozenState != null ">
+            AND def.FROZEN_STATE= #{tenantQueryIn.frozenState}
+        </if>
+        <if test="tenantQueryIn.preSaleServiceName != null and tenantQueryIn.preSaleServiceName != '' ">
+            AND def.PRE_SALE_SERVICE_NAME like CONCAT('%',#{tenantQueryIn.preSaleServiceName},'%')
+        </if>
+        <if test="tenantQueryIn.afterSaleServiceName != null and tenantQueryIn.afterSaleServiceName != '' ">
+            AND def.AFTER_SALE_SERVICE_NAME like CONCAT('%',#{tenantQueryIn.afterSaleServiceName},'%')
+        </if>
+        <if test="tenantQueryIn.virtualState != null ">
+            AND def.VIRTUAL_STATE = #{tenantQueryIn.virtualState}
+        </if>
+        <if test="tenantQueryIn.payState != null ">
+            AND def.PAY_STATE = #{tenantQueryIn.payState}
+        </if>
+        <if test="tenantQueryIn.orgId != null">
+            AND ( def.AFTER_SALE_ORG_ID = #{tenantQueryIn.orgId} or def.PRE_SALE_ORG_ID = #{tenantQueryIn.orgId} )
+        </if>
+        ) AS tmp where 1=1
+        <if test="tenantQueryIn.ownCarStart != null and tenantQueryIn.ownCarStart >= 0">
+            AND tmp.ownCar <![CDATA[ >= ]]> #{tenantQueryIn.ownCarStart}
+        </if>
+        <if test="tenantQueryIn.ownCarEnd != null and tenantQueryIn.ownCarEnd >= 0">
+            AND tmp.ownCar <![CDATA[ <= ]]> #{tenantQueryIn.ownCarEnd}
+        </if>
+        <if test="tenantQueryIn.otherCarStart != null and tenantQueryIn.otherCarStart >= 0">
+            AND tmp.otherCar <![CDATA[ >= ]]> #{tenantQueryIn.otherCarStart}
+        </if>
+        <if test="tenantQueryIn.otherCarEnd != null and tenantQueryIn.otherCarEnd >= 0">
+            AND tmp.otherCar <![CDATA[ <= ]]> #{tenantQueryIn.otherCarEnd}
+        </if>
+        order by tmp.id DESC
+    </select>
+
+    <select id="getSysOperatorByUserId" resultType="com.youming.youche.commons.domain.SysUser">
+        SELECT id                AS id,
+               name              AS name,
+               login_acct        AS loginAcct,
+               user_info_id      AS userInfoId,
+               bill_id           AS billId,
+               user_type         AS userType,
+               password          AS password,
+               try_times         AS tryTimes,
+               lock_flag         AS lockFlag,
+               state             AS state,
+               remark            AS remark,
+               op_user_id        AS opUserId,
+               tenant_id         AS tenantId,
+               tenant_code       AS tenantCode,
+               address           AS address,
+               company_user_id   AS companyUserId,
+               company_user_name AS companyUserName,
+               county_code       AS countyCode,
+               link_man          AS linkMan,
+               org_type          AS orgType,
+               parent_org_id     AS parentOrgId,
+               province_code     AS provinceCode,
+               org_name          AS orgName,
+               create_time       AS createTime,
+               update_time       AS updateTime,
+               sts               AS sts,
+               org_data_default  AS orgDataDefault,
+               sts_date          AS stsDate,
+               region_code       AS regionCode,
+               org_id            AS orgId
+        FROM sys_user
+        WHERE user_info_id = #{userId}
+    </select>
+
+    <update id="updateSysOperator">
+        UPDATE sys_user
+        SET password = #{sysUser.password}
+        WHERE id = #{sysUser.id};
+    </update>
+
+    <update id="doVehicleApplyRecordLoseEfficacy">
+        UPDATE apply_record
+        SET AUDIT_REMARK = #{auditRemark},
+        AUDIT_DATE = #{auditDate},
+        STATE = #{stateNew}
+        WHERE APPLY_TYPE = #{applyType}
+        AND STATE = #{stateOld}
+        <if test="applyTenantId != null">
+            AND APPLY_TENANT_ID = #{applyTenantId}
+        </if>
+        <if test="beApplyTenantId != null">
+            AND BE_APPLY_TENANT_ID = #{beApplyTenantId}
+        </if>
+    </update>
+
+    <select id="getSysTenantDefByName" resultType="com.youming.youche.system.domain.SysTenantDef">
+        select *
+        from sys_tenant_def
+        where 1 = 1
+          and name LIKE CONCAT('%', #{name}, '%')
+    </select>
+
+    <update id="updateTenantDefById">
+        UPDATE sys_tenant_def
+        SET tenant_code=#{sysTenantDef.tenantCode},
+            name=#{sysTenantDef.name},
+            short_name=#{sysTenantDef.shortName},
+            province_id=#{sysTenantDef.provinceId},
+            province_name=#{sysTenantDef.provinceName},
+            city_id=#{sysTenantDef.cityId},
+            city_name=#{sysTenantDef.cityName},
+            district_id=#{sysTenantDef.districtId},
+            district_name=#{sysTenantDef.districtName},
+            address=#{sysTenantDef.address},
+            company_address=#{sysTenantDef.companyAddress},
+            logo=#{sysTenantDef.logo},
+            link_man=#{sysTenantDef.linkMan},
+            link_phone=#{sysTenantDef.linkPhone},
+            admin_user=#{sysTenantDef.adminUser},
+            actual_controller=#{sysTenantDef.actualController},
+            actual_controller_phone=#{sysTenantDef.actualControllerPhone},
+            identification=#{sysTenantDef.identification},
+            identification_picture=#{sysTenantDef.identificationPicture},
+            business_license=#{sysTenantDef.businessLicense},
+            business_license_no=#{sysTenantDef.businessLicenseNo},
+            company_qualifications=#{sysTenantDef.companyQualifications},
+            frozen_state=#{sysTenantDef.frozenState},
+            staff_number=#{sysTenantDef.staffNumber},
+            vehicle_number=#{sysTenantDef.vehicleNumber},
+            annual_turnover=#{sysTenantDef.annualTurnover},
+            state=#{sysTenantDef.state},
+            virtual_state=#{sysTenantDef.virtualState},
+            service_fee=#{sysTenantDef.serviceFee},
+            pay_service_fee_date=#{sysTenantDef.payServiceFeeDate},
+            avg_score=#{sysTenantDef.avgScore},
+            delivery_cycle=#{sysTenantDef.deliveryCycle},
+            appoint_entrance_date=#{sysTenantDef.appointEntranceDate},
+            pay_state=#{sysTenantDef.payState},
+            contract_code=#{sysTenantDef.contractCode},
+            create_time=#{sysTenantDef.createTime},
+            update_time=#{sysTenantDef.updateTime},
+            sign_date=#{sysTenantDef.signDate}
+        WHERE id = #{sysTenantDef.id}
+
+    </update>
+
+    <select id="isTenantBindCard" resultType="java.lang.Integer">
+        select count(*)
+        from account_bank_rel abr
+                 left join cmb_bank_account_info cbai
+                           on abr.acct_id = cbai.id
+        where cbai.accLevel = 1
+          and cbai.tenantId = #{tenantId}
+    </select>
+
+    <select id="getTenantIdCount" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM sys_tenant_def WHERE 1=1 and VIRTUAL_STATE =0
+    </select>
+
+    <select id="getTenantId" resultType="java.lang.Long">
+        SELECT id FROM sys_tenant_def WHERE 1=1 and VIRTUAL_STATE=0 ORDER BY id ASC LIMIT #{startLimit}, #{endLimit}
+    </select>
+</mapper>

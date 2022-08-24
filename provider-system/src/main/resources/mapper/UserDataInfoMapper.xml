@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.UserDataInfoMapper">
+
+    <select id="selectByOrgIdAndTenantId" resultType="com.youming.youche.system.dto.OrganizeStaffDto">
+SELECT
+	so.id AS userId,
+	suor.create_time AS createTime,
+	so.login_acct AS loginacct,
+	suor.user_info_id AS userInfoId,
+	tsr.staff_name AS linkman,
+	tsr.staff_position AS staffPosition
+FROM
+	sys_user_org_rel suor
+	INNER JOIN sys_user so ON suor.user_info_id = so.user_info_id
+	INNER JOIN tenant_staff_rel tsr ON so.user_info_id = tsr.user_info_id
+WHERE
+	tsr.state = 1
+	AND suor.tenant_id = #{tenantId}
+	AND tsr.tenant_id = #{tenantId}
+    AND suor.org_id = #{orgId}
+
+
+    </select>
+    <select id="queryDriverAndReceiverInfo"
+            resultType="com.youming.youche.system.dto.DriverAndReceiverInfoOutDto">
+
+		SELECT
+			u.id AS userId,
+			u.MOBILE_PHONE AS mobilePhone,
+			u.LINKMAN AS linkman,
+			r.ID AS receiverId,
+			r.RECEIVER_NAME AS receiverName
+		FROM
+			user_data_info u
+				LEFT JOIN user_receiver_info r ON u.id = r.USER_ID
+        <choose>
+			<when test="includeAllUser">
+				where 1=1
+			</when>
+            <otherwise>
+				where r.ID IS NOT NULL
+			</otherwise>
+		</choose>
+        <if test="phone != null and phone != ''">
+			and u.MOBILE_PHONE like CONCAT('%', #{phone},'%')
+		</if>
+        <if test="linkman != null and linkman != ''">
+			and ( u.LINKMAN like  CONCAT('%',#{linkman},'%') or r.RECEIVER_NAME like CONCAT('%', #{linkman},'%') )
+		</if>
+	</select>
+    <select id="doQueryBackUserList" resultType="com.youming.youche.system.dto.UserDataLinkManDto">
+		SELECT
+			u.LINKMAN AS linkman,
+			u.ID AS userId,
+			u.MOBILE_PHONE mobilPhone,
+			t.CAR_USER_TYPE carUserType
+		FROM
+			user_data_info AS u
+				INNER JOIN tenant_user_rel AS t ON u.ID = t.USER_ID
+		WHERE t.CAR_USER_TYPE = 1
+	     AND t.TENANT_ID = #{user.tenantId}
+		  AND t.STATE = 2
+        <if test="linkman != null and linkman != ''">
+			AND u.LINKMAN LIKE  CONCAT('%',#{linkman},'%')
+		</if>
+        <if test="mobilePhone != null and mobilePhone != ''">
+			AND u.MOBILE_PHONE = #{mobilePhone}
+		</if>
+		UNION
+
+		SELECT
+		s.STAFF_NAME AS linkman,
+		u.ID AS userId,
+		u.MOBILE_PHONE AS mobilPhone,
+		0 AS carUserType
+		FROM
+		user_data_info AS u
+		INNER JOIN tenant_staff_rel AS s ON s.user_info_id = u.ID
+		WHERE s.TENANT_ID = #{user.tenantId}
+		AND s.state = 1
+        <if test="linkman != null and linkman != ''">
+			AND s.STAFF_NAME LIKE CONCAT('%',#{linkman},'%')
+		</if>
+        <if test="mobilePhone != null and mobilePhone != ''">
+			AND u.MOBILE_PHONE = #{mobilePhone}
+		</if>
+
+	</select>
+</mapper>

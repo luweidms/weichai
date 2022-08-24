@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantVehicleCostRelVerMapper">
+
+    <select id="maxId" resultType="java.lang.Long">
+        select max(rel_id) from tenant_vehicle_cost_rel_ver
+    </select>
+
+    <!---->
+    <update id="updTenantVehicleCostRelVer">
+        update tenant_vehicle_cost_rel_ver set ver_state= #{destVerState} where vehicle_code=#{vehicleCode} and ver_state=1 and tenant_id=#{tenantId}
+    </update>
+
+    <select id="getTenantVehicleRelInfoVer" resultType="com.youming.youche.record.dto.TenantVehicleRelInfoDto">
+        SELECT tenant_vehicle_cost_rel_ver.price                       price,
+               tenant_vehicle_cost_rel_ver.loan_Interest               loanInterest,
+               tenant_vehicle_cost_rel_ver.interest_Periods            interestPeriods,
+               tenant_vehicle_cost_rel_ver.pay_Interest_Periods        payInterestPeriods,
+               tenant_vehicle_cost_rel_ver.purchase_Date               purchaseDate,
+               tenant_vehicle_cost_rel_ver.depreciated_Month           depreciatedMonth,
+               tenant_vehicle_cost_rel_ver.collection_Insurance        collectionInsurance,
+               tenant_vehicle_cost_rel_ver.exam_Vehicle_Fee            examVehicleFee,
+               tenant_vehicle_cost_rel_ver.maintain_Fee                maintainFee,
+               tenant_vehicle_cost_rel_ver.repair_Fee                  repairFee,
+               tenant_vehicle_cost_rel_ver.management_cost             managementCost,
+               tenant_vehicle_cost_rel_ver.tyre_Fee                    tyreFee,
+               tenant_vehicle_cost_rel_ver.other_Fee                   otherFee,
+               tenant_vehicle_cost_rel_ver.RESIDUAL                    residual,
+               tenant_vehicle_cost_rel_ver.id                          tenantVehicleCostRelId,
+               tenant_vehicle_cert_rel_ver.annual_Veri_Time            annualVeriTime,
+               tenant_vehicle_cert_rel_ver.seasonal_Veri_Time          seasonalVeriTime,
+               tenant_vehicle_cert_rel_ver.maintain_Dis                maintainDis,
+               tenant_vehicle_cert_rel_ver.maintain_Warn_Dis           maintainWarnDis,
+               tenant_vehicle_cert_rel_ver.prev_Maintain_Time          prevMaintainTime,
+               tenant_vehicle_cert_rel_ver.registration_Time           registrationTime,
+               tenant_vehicle_cert_rel_ver.registration_Numble         registrationNumble,
+               tenant_vehicle_cert_rel_ver.id                          tenantVehicleCertRelId,
+               tenant_vehicle_cert_rel_ver.annual_veri_time_end        annualVeriTimeEnd,
+               tenant_vehicle_cert_rel_ver.seasonal_veri_time_end      seasonalVeriTimeEnd,
+               tenant_vehicle_cert_rel_ver.insurance_Time              insuranceTime,
+               tenant_vehicle_cert_rel_ver.insurance_time_end          insuranceTimeEnd,
+               tenant_vehicle_cert_rel_ver.insurance_Code              insuranceCode,
+               tenant_vehicle_cert_rel_ver.busi_insurance_Time         busiInsuranceTime,
+               tenant_vehicle_cert_rel_ver.busi_insurance_time_end     busiInsuranceTimeEnd,
+               tenant_vehicle_cert_rel_ver.busi_insurance_Code         busiInsuranceCode,
+               tenant_vehicle_cert_rel_ver.other_insurance_Time        otherInsuranceTime,
+               tenant_vehicle_cert_rel_ver.other_insurance_time_end    otherInsuranceTimeEnd,
+               tenant_vehicle_cert_rel_ver.other_insurance_Code        otherInsuranceCode,
+               tenant_vehicle_cert_rel_ver.vehicle_Validity_Time_Begin vehicleValidityTimeBegin,
+               tenant_vehicle_cert_rel_ver.vehicle_Validity_Time       vehicleValidityTime,
+               tenant_vehicle_cert_rel_ver.operate_Validity_Time_Begin operateValidityTimeBegin,
+               tenant_vehicle_cert_rel_ver.operate_Validity_Time       operateValidityTime
+        FROM tenant_vehicle_cost_rel_ver,
+             tenant_vehicle_cert_rel_ver
+        WHERE tenant_vehicle_cost_rel_ver.rel_id = tenant_vehicle_cert_rel_ver.rel_id
+          AND tenant_vehicle_cost_rel_ver.vehicle_code = #{vehicleCode}
+          AND tenant_vehicle_cert_rel_ver.vehicle_code = #{vehicleCode}
+          AND tenant_vehicle_cost_rel_ver.tenant_id = #{tenantId}
+          AND tenant_vehicle_cert_rel_ver.tenant_id = #{tenantId}
+          AND tenant_vehicle_cost_rel_ver.rel_id = #{relId}
+          AND tenant_vehicle_cost_rel_ver.ver_state = #{verState}
+          AND tenant_vehicle_cert_rel_ver.ver_state = #{verState}
+    </select>
+</mapper>

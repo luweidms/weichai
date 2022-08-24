@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.OilCardVehicleRelMapper">
+
+<!--通过车牌号码查询油卡-->
+    <select id="findByPlateNumber" resultType="com.youming.youche.order.domain.OilCardManagement">
+        SELECT ocm.*
+        FROM  oil_card_vehicle_rel ocv
+        left join oil_card_management as ocm on ocv.CARD_ID=ocm.id
+        where ocv.VEHICLE_NUMBER=#{plateNumber}
+          and ocv.TENANT_ID=#{tenantId}
+          and ocm.OIL_CARD_STATUS=1
+    </select>
+
+</mapper>

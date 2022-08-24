@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OilRechargeAccountMapper">
+
+    <select id="queryOilAccountDetails" resultType="com.youming.youche.order.dto.OilRechargeAccountDto">
+        SELECT
+        SUM(IFNULL(OIL_BALANCE,0)+
+        IFNULL(RECHARGE_OIL_BALANCE,0)) oilBalance,
+        '同心智行' as tenantTypeName,
+        oa.source_tenant_id AS tenantId,
+        s.link_phone as billId,
+        s.`name` AS tenantName,
+        oa.user_id AS userId
+        FROM
+        order_account oa,
+        sys_tenant_def s
+        WHERE oa.source_tenant_id=s.id
+        AND user_id=#{userId}
+        <if test="tenantName!=null and tenantName!=''">
+            AND s.name like concat('%',#{tenantName},'%')
+        </if>
+        <if test="billId!=null and billId!=''">
+            s.link_phone like concat('%',#{billId},'%')
+        </if>
+        <if test="userType>0">
+            AND oa.user_type=#{userType}
+        </if>
+        GROUP BY oa.user_id,oa.source_tenant_id
+    </select>
+    <select id="doQuery"  resultType="com.youming.youche.order.dto.OilRechargeAccountDto">
+        SELECT
+        a.id as id,
+        a.op_id as opId,
+        a.source_pingan_acc_id as sourcePinganAccId ,
+        a.vehicle_affiliation as vehicleAffiliation ,
+        a.op_name as opName,
+        a.create_time as creaTeime,
+        a.channel_type as channelType ,
+        a.update_op_id as updateOpId,
+        a.update_time as updateTime,
+        a.source_user_id as sourceUserId,
+        a.tenant_id as tenantId ,
+        a.state as state,
+        a.pingan_acc_id as pinganAccId,
+        a.source_type as sourceType,
+        a.account_type as accountType,
+        a.user_id as userId,
+        sum(ifnull(a.account_balance,0)) as account_balance,
+        sum(ifnull(a.distributed_amount,0)) as distributed_amount  FROM
+        (SELECT *,CASE WHEN source_type=5 THEN 1
+        WHEN source_type=3 THEN 2 ELSE source_type END AS sort
+        FROM oil_recharge_account_details WHERE state=1 AND source_type!=4
+         <if test="sourceTypes!=null and sourceTypes.length &gt; 0">
+             and source_type in
+             <foreach collection="sourceTypes" index="index" item="type" open="(" separator="," close=")">
+                 #{type}
+             </foreach>
+         </if>
+         AND user_id=#{userId}) a
+          group by a.PINGAN_ACC_ID,a.sort ORDER BY a.sort ASC ,a.update_time DESC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.ServiceInvitationMapper">
+
+    <select id="queryCooperationList" resultType="com.youming.youche.market.dto.facilitator.CooperationDto">
+        SELECT
+            sp.PRODUCT_NAME AS productName,
+            sp.IS_BILL_ABILITY AS isBillAbility,
+            sid.FLOAT_BALANCE AS floatBalance,
+            sid.FIXED_BALANCE AS fixedBalance,
+            sid.SERVICE_CHARGE AS serviceCharge,
+            sid.FLOAT_BALANCE_BILL AS floatBalanceBill,
+            sid.FIXED_BALANCE_BILL AS fixedBalanceBill,
+            sid.SERVICE_CHARGE_BILL AS serviceChargeBill,
+            sid.LOCALE_BALANCE_STATE AS localeBalanceState,
+            opp.OIL_PRICE AS oilPrice,
+            sp.SERVICE_USER_ID AS serviceUserId,
+            sp.id AS productId,
+            sp.address,
+            sp.province_id AS provinceId,
+            sp.city_id AS cityId,
+            sp.county_id AS countyId
+        FROM
+            service_invitation si
+                INNER JOIN service_invitation_dtl sid ON sid.INVITE_ID = si.id
+                INNER JOIN service_product sp ON sp.id = sid.product_id
+                LEFT JOIN oil_price_province opp ON opp.province_id = sp.province_id
+        <where>
+            and si.id = #{id}
+        </where>
+    </select>
+    <select id="queryBusinessInvitation"
+            resultType="com.youming.youche.market.vo.facilitator.ServiceInvitationVxVo">
+        SELECT
+            si.id AS id,
+            si.tenant_id AS tenantId,
+            std. NAME AS name,
+            sp.product_name AS productName,
+            std.ACTUAL_CONTROLLER AS linkman,
+            std.ACTUAL_CONTROLLER_PHONE AS linkPhone,
+            count(sid.id) AS productNum,
+            si.cooperation_type AS cooperationType,
+            si.auth_state AS authState,
+            si.create_date AS createDate
+        FROM
+            service_info s
+                INNER JOIN user_data_info u ON u.id = s.service_user_id
+                INNER JOIN service_invitation si ON si.service_user_id = u.id
+                LEFT JOIN service_invitation_dtl sid ON sid.invite_id = si.id
+                LEFT JOIN service_product sp ON sid.product_id = sp.id
+                LEFT JOIN sys_tenant_def std ON std.id = si.tenant_id
+        WHERE
+            1 = 1
+          AND s.service_user_id = #{user.userInfoId}
+        <if test="tenantName != null and tenantName != ''">
+            and std.name like  CONCAT('%',#{tenantName},'%')
+        </if>
+        <if test="cooperationType != null and cooperationType.size() &gt;  0">
+            and si.cooperation_type in
+            <foreach collection="cooperationType" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="authState != null and authState.size() &gt; 0">
+            and si.auth_state in
+            <foreach collection="authState" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY
+            si.id
+        ORDER BY
+            si.id DESC
+    </select>
+</mapper>

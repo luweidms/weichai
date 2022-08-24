@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.market.provider.mapper.facilitator.ServiceInfoMapper">
+    <sql id="addServiceInfo">
+        (`SERVICE_USER_ID` ,`COMPANY_ADDRESS`, `SERVICE_NAME`, `SERVICE_TYPE`, `STATE`, `OP_ID`,
+            `OP_DATE`, `CREATE_DATE`, `IS_BILL_ABILITY`, `AUTH_MAN_ID`, `AUTH_MAN_NAME`, `AUTH_DATE`,
+            `AUTH_FLAG`, `AUTH_REASON`, `IS_AUTH`, `TENANT_ID`, `LOGO_ID`, `LOGO_URL`, `AGENT_COLLECTION`)
+    </sql>
+    <insert id="saveServiceInfo">
+        insert
+        into
+        service_info
+        <include refid="addServiceInfo"></include>
+        VALUES
+        (#{serviceUserId},#{companyAddress},#{serviceName},#{serviceType},#{state},#{opId},#{opDate},#{createDate},#{isBillAbility},
+        #{authManId},#{authManName},#{authDate},#{authFlag},#{authReason},#{isAuth},#{tenantId},#{logoId},#{logoUrl},#{agentCollection})
+    </insert>
+    <select id="queryFacilitator" resultType="com.youming.youche.market.domain.facilitator.Facilitator">
+        SELECT
+        u.id AS serviceUserId,
+        u.MOBILE_PHONE AS loginAcct,
+        ser.SERVICE_NAME AS serviceName,
+        ser.CREATE_time AS createDate,
+        ser.SERVICE_TYPE AS serviceType,
+        u.LINKMAN AS linkman,
+        u.MOBILE_PHONE AS linkPhone,
+        te.id AS tenantId,
+        te. NAME AS tenantName,
+        te.ACTUAL_CONTROLLER AS tenantLinkMan,
+        te.ACTUAL_CONTROLLER_PHONE AS tenantLinkPhone,
+        ser.STATE AS state,
+        ser.AUTH_FLAG AS authFlag,
+        ser.AUTH_REASON AS authReason,
+        ser.AUTH_MAN_NAME AS authManName,
+        ser.IS_AUTH AS authState,
+        count(sp.id) AS productNum
+        FROM
+        user_data_info u
+        INNER JOIN service_info ser ON ser.service_USER_ID = u.id
+        INNER JOIN sys_tenant_def te ON ser.TENANT_ID = te.id
+        LEFT JOIN service_product sp ON sp.service_USER_ID = ser.service_USER_ID
+        <where>
+            <if test="serviceInfoQueryCriteria.loginAcct != null and  serviceInfoQueryCriteria.loginAcct != ''">
+                and u.MOBILE_PHONE like CONCAT('%',#{serviceInfoQueryCriteria.loginAcct},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.serviceName != null and serviceInfoQueryCriteria.serviceName != ''">
+                and ser.service_Name like CONCAT('%',#{serviceInfoQueryCriteria.serviceName},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.linkman !=null and serviceInfoQueryCriteria.linkman != ''">
+                and u.linkman like CONCAT('%',#{serviceInfoQueryCriteria.linkman},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.tenantName != null and serviceInfoQueryCriteria.tenantName != ''">
+                and te.NAME like CONCAT('%',#{serviceInfoQueryCriteria.tenantName},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.tenantLinkMan != null and  serviceInfoQueryCriteria.tenantLinkMan != ''">
+                and te.ACTUAL_CONTROLLER like CONCAT('%',#{serviceInfoQueryCriteria.tenantLinkMan},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.tenantCall != null and serviceInfoQueryCriteria.tenantCall != ''">
+                and te.ACTUAL_CONTROLLER_PHONE like CONCAT('%',#{serviceInfoQueryCriteria.tenantCall},'%')
+            </if>
+            <if test="serviceInfoQueryCriteria.beginTime !=null and serviceInfoQueryCriteria.beginTime != ''">
+                and ser.CREATE_TIME <![CDATA[ >= ]]> CONCAT(#{serviceInfoQueryCriteria.beginTime},' 00:00:00')
+            </if>
+            <if test="serviceInfoQueryCriteria.endTime !=null and serviceInfoQueryCriteria.endTime != ''">
+                and ser.CREATE_TIME <![CDATA[<= ]]> CONCAT(#{serviceInfoQueryCriteria.endTime},' 23:59:59')
+            </if>
+            <if test="serviceInfoQueryCriteria.authState != null">
+                <if test="serviceInfoQueryCriteria.authState &gt;= 0">
+                    and ser.IS_AUTH = #{serviceInfoQueryCriteria.authState}
+                </if>
+            </if>
+            <if test="serviceInfoQueryCriteria.state != null">
+                <if test="serviceInfoQueryCriteria.state &gt;= 0">
+                    and ser.STATE = #{serviceInfoQueryCriteria.state}
+                </if>
+            </if>
+            <if test="serviceInfoQueryCriteria.whoseTenant != null">
+                <if test="serviceInfoQueryCriteria.whoseTenant == 1">
+                    and ser.TENANT_ID = 1
+                </if>
+            </if>
+            <if test="serviceInfoQueryCriteria != null">
+                <if test="serviceInfoQueryCriteria.whoseTenant == 2">
+                    and ser.TENANT_ID != 1
+                </if>
+            </if>
+            <if test="serviceInfoQueryCriteria.serviceType != null ">
+                <if test="serviceInfoQueryCriteria.serviceType &gt;= 0">
+                    and ser.SERVICE_TYPE = #{serviceInfoQueryCriteria.serviceType}
+                </if>
+            </if>
+
+        </where>
+        GROUP BY u.MOBILE_PHONE ORDER BY ser.CREATE_TIME DESC
+    </select>
+    <select id="getServiceInfo" resultType="com.youming.youche.market.vo.facilitator.ServiceInfoBasisVo">
+        SELECT s.login_Acct        as loginAcct,
+               u.linkman           as linkman,
+               ser.service_Name    as serviceName,
+               u.Id                as id,
+               ser.service_Type    as serviceType,
+               ser.is_Bill_Ability as isBillAbility
+        FROM sys_user s,
+             User_Data_Info u,
+             Service_Info ser
+        WHERE s.user_info_Id = u.Id
+          AND u.Id = ser.service_User_Id
+          AND ser.service_User_Id = #{userId}
+    </select>
+    <select id="queryServiceInfoPage" resultType="com.youming.youche.market.vo.facilitator.ServiceInfoFleetVo">
+        SELECT tr.id AS relId,
+        u.id AS serviceUserId,
+        s.LOGIN_ACCT AS loginAcct,
+        ser.SERVICE_NAME AS serviceName,
+        ser.COMPANY_ADDRESS AS companyAddress,
+        ser.tenant_id AS sourceTenantId,
+        u.LINKMAN AS linkman,
+        ser.SERVICE_TYPE AS serviceType,
+        count(tpl.id) AS productNum,
+        tr.STATE AS state,
+        tr.AUTH_STATE AS authState,
+        tr.auth_REASON AS authReason,
+        tr.is_auth AS isAuth,
+        tr.INVITATION_STATE AS invitationState
+        FROM sys_user s
+        INNER JOIN user_data_info u ON s.user_info_id = u.id
+        INNER JOIN service_info ser ON ser.service_USER_ID = u.id
+        INNER JOIN tenant_service_rel tr ON tr.service_USER_ID = ser.service_USER_ID
+        AND tr.tenant_id = #{user.tenantId}
+        LEFT JOIN service_product sp ON sp.service_USER_ID = ser.service_USER_ID
+        left join tenant_product_rel tpl ON tpl.product_id = sp.id and tpl.tenant_id = #{user.tenantId}
+        <where>
+            (
+            tr.INVITATION_STATE IS NULL
+            OR tr.INVITATION_STATE = 1
+            OR tr.INVITATION_STATE = 2
+            )
+            <if test="serviceInfoFleetDto.loginAcct != null and serviceInfoFleetDto.loginAcct != ''">
+                and s.login_acct like CONCAT('%',#{serviceInfoFleetDto.loginAcct},'%')
+            </if>
+            <if test="serviceInfoFleetDto.serviceName != null and serviceInfoFleetDto.serviceName != '' ">
+                and ser.service_Name like CONCAT('%',#{serviceInfoFleetDto.serviceName},'%')
+            </if>
+            <if test="serviceInfoFleetDto.linkman != null and serviceInfoFleetDto.linkman != ''">
+                and u.linkman like CONCAT('%',#{serviceInfoFleetDto.linkman},'%')
+            </if>
+            <if test="serviceInfoFleetDto.serviceType != null and serviceInfoFleetDto.serviceType &gt;= 0">
+                and ser.service_Type = #{serviceInfoFleetDto.serviceType}
+            </if>
+            <if test="serviceInfoFleetDto.state != null and serviceInfoFleetDto.state &gt;= 0">
+                and tr.state = #{serviceInfoFleetDto.state}
+            </if>
+            <if test="serviceInfoFleetDto.authState != null and serviceInfoFleetDto.authState &gt;= 0">
+                and tr.auth_State = #{serviceInfoFleetDto.authState}
+            </if>
+            <if test="serviceInfoFleetDto.isAuth != null and serviceInfoFleetDto.isAuth &gt;= 0">
+                and tr.is_auth = #{serviceInfoFleetDto.isAuth}
+            </if>
+        </where>
+        GROUP BY s.LOGIN_ACCT
+        order by tr.id desc
+    </select>
+    <select id="queryServiceInvitation"
+            resultType="com.youming.youche.market.vo.facilitator.ServiceInvitationVo">
+        SELECT
+        s.service_user_id AS serviceUserId,
+        si.id,
+        s.service_name AS serviceName,
+        s.service_type AS serviceType,
+        u.linkman AS linkman,
+        count(sid.id) AS productNum,
+        si.CREATE_DATE AS createDate,
+        si.auth_State AS authState,
+        si.auth_reason AS authReason,
+        u.MOBILE_PHONE AS loginAcct
+        FROM
+        service_info s
+        INNER JOIN user_data_info u ON u.id = s.service_user_id
+        INNER JOIN service_invitation si ON si.service_user_id = u.id
+        AND si.tenant_id = #{user.tenantId}
+        LEFT JOIN service_invitation_dtl sid ON sid.invite_id = si.id
+        <where>
+            AND si.cooperation_type = 1
+            <if test="serviceInvitationDto.serviceName != null and serviceInvitationDto.serviceName != ''">
+                and s.service_name like CONCAT('%',#{serviceInvitationDto.serviceName},'%')
+            </if>
+            <if test="serviceInvitationDto.serviceType != null and serviceInvitationDto.serviceType  &gt; 0">
+                and s.service_type = #{serviceInvitationDto.serviceType}
+            </if>
+            <if test="serviceInvitationDto.linkman != null and serviceInvitationDto.linkman != ''">
+                and u.linkman like CONCAT('%',#{serviceInvitationDto.linkman},'%')
+            </if>
+            <if test="serviceInvitationDto.loginAcct != null and serviceInvitationDto.loginAcct != ''">
+                and u.MOBILE_PHONE like CONCAT('%',#{serviceInvitationDto.loginAcct},'%')
+            </if>
+            <if test="serviceInvitationDto.applyDateBegin != null and serviceInvitationDto.applyDateBegin != ''">
+                and si.CREATE_TIME <![CDATA[ >= ]]>  CONCAT(#{serviceInvitationDto.applyDateBegin},' 00:00:00')
+            </if>
+            <if test="serviceInvitationDto.applyDateEnd != null and serviceInvitationDto.applyDateEnd != ''">
+                and si.CREATE_TIME <![CDATA[ <=  ]]> CONCAT(#{serviceInvitationDto.applyDateEnd},' 23:59:59')
+            </if>
+            <if test="serviceInvitationDto.authState != null and serviceInvitationDto.authState &gt; 0 ">
+                and si.auth_state = #{serviceInvitationDto.authState}
+            </if>
+        </where>
+        group by si.id  order by si.id desc
+    </select>
+
+    <select id="getTableManagerCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ifnull(std.id, su.tenant_id) as tenant_id,
+        su.user_info_id user_info_id,
+        (
+        SELECT
+        count( * )
+        FROM
+        (
+        SELECT
+        tr.id AS relId,
+        u.id AS serviceUserId,
+        s.LOGIN_ACCT AS loginAcct,
+        ser.SERVICE_NAME AS serviceName,
+        ser.COMPANY_ADDRESS AS companyAddress,
+        ser.tenant_id AS sourceTenantId,
+        u.LINKMAN AS linkman,
+        ser.SERVICE_TYPE AS serviceType,
+        count( tpl.id ) AS productNum,
+        tr.STATE AS state,
+        tr.AUTH_STATE AS authState,
+        tr.auth_REASON AS authReason,
+        tr.is_auth AS isAuth,
+        tr.INVITATION_STATE AS invitationState
+        FROM
+        sys_user s
+        INNER JOIN user_data_info u ON s.user_info_id = u.id
+        INNER JOIN service_info ser ON ser.service_USER_ID = u.id
+        INNER JOIN tenant_service_rel tr ON tr.service_USER_ID = ser.service_USER_ID
+        AND tr.tenant_id = ifnull(std.id, su.tenant_id)
+        LEFT JOIN service_product sp ON sp.service_USER_ID = ser.service_USER_ID
+        LEFT JOIN tenant_product_rel tpl ON tpl.product_id = sp.id
+        AND tpl.tenant_id = ifnull(std.id, su.tenant_id)
+        WHERE
+        ( tr.INVITATION_STATE IS NULL OR tr.INVITATION_STATE = 1 OR tr.INVITATION_STATE = 2 )
+        GROUP BY
+        s.LOGIN_ACCT
+        ORDER BY
+        tr.id DESC
+        ) TOTAL
+        ) AS count
+        FROM
+        sys_user su left join sys_tenant_def std on std.admin_user = su.user_info_id
+        ) AS top
+        WHERE
+        top.tenant_id IS NOT NULL
+    </select>
+    <select id="queryServiceInfo" resultType="com.youming.youche.market.vo.facilitator.ServiceInfoFleetVo">
+        SELECT tr.id AS relId,
+               tr.tenant_id as tenantId,
+               u.id AS serviceUserId,
+               s.LOGIN_ACCT AS loginAcct,
+               ser.SERVICE_NAME AS serviceName,
+               ser.COMPANY_ADDRESS AS companyAddress,
+               ser.tenant_id AS sourceTenantId,
+               u.LINKMAN AS linkman,
+               ser.SERVICE_TYPE AS serviceType,
+               count(tpl.id) AS productNum,
+               tr.STATE AS state,
+               tr.AUTH_STATE AS authState,
+               tr.auth_REASON AS authReason,
+               tr.is_auth AS isAuth,
+               tr.INVITATION_STATE AS invitationState,
+               tr.create_time as createTime
+        FROM sys_user s
+                 INNER JOIN user_data_info u ON s.user_info_id = u.id
+                 INNER JOIN service_info ser ON ser.service_USER_ID = u.id
+                 INNER JOIN tenant_service_rel tr ON tr.service_USER_ID = ser.service_USER_ID
+                 LEFT JOIN service_product sp ON sp.service_USER_ID = ser.service_USER_ID
+                 left join tenant_product_rel tpl ON tpl.product_id = sp.id
+        where  (
+                       tr.INVITATION_STATE IS NULL
+                       OR tr.INVITATION_STATE = 1
+                       OR tr.INVITATION_STATE = 2
+                   )
+        GROUP BY tr.id
+        order by tr.id desc
+    </select>
+</mapper>

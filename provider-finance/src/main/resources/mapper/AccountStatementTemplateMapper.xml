@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.AccountStatementTemplateMapper">
+
+    <sql id="base_column">
+        id, channel_type, create_date, op_id, op_name, state, tenant_id, update_date, update_op_id, ver
+    </sql>
+
+    <select id="getTemplateByVer" resultType="com.youming.youche.finance.domain.AccountStatementTemplate">
+        select <include refid="base_column" /> from account_statement_template where ver = #{ver} and tenant_id = #{tenantId} and state = 1
+    </select>
+
+    <select id="getLastTemplatByTenant" resultType="com.youming.youche.finance.domain.AccountStatementTemplate">
+        select <include refid="base_column" /> from account_statement_template where state = 1 and tenant_id = #{tenantId} order by ver desc limit 1
+    </select>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.service.ServiceInfoMapper">
+
+    <select id="getServiceInfoList" resultType="java.util.Map">
+        SELECT
+        si.service_user_id AS serviceUserId,
+        si.service_name AS serviceName
+        FROM
+        service_info si
+        LEFT JOIN tenant_service_rel tsr ON si.service_user_id = tsr.service_user_id
+        WHERE
+        si.service_type = #{serviceType}
+        AND si.state = 1
+        <if test="tenantId != null and tenantId > 0">
+            AND tsr.tenant_id = #{tenantId}
+        </if>
+        GROUP BY
+        si.service_user_id,si.service_name
+    </select>
+
+    <select id="getObjectById" resultType="com.youming.youche.record.domain.service.ServiceInfo">
+        SELECT
+            SERVICE_NAME AS serviceName
+        FROM
+            service_info
+        WHERE
+            SERVICE_USER_ID = #{serviceUserId}
+    </select>
+
+</mapper>

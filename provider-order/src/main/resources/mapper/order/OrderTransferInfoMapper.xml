@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderTransferInfoMapper">
+
+    <sql id="hqlHead">
+        select
+            i.order_Id as orderId ,i.source_Region as sourceRegion,i.des_Region as desRegion,t.transfer_Date as transferDate
+             ,t.transfer_Tenant_Name as transferTenantName,s.depend_Time as dependTime,t.total_Fee as totalFee,g.source as source
+             ,g.des as des ,t.TRANSFER_ORDER_STATE as transferOrderState,t.plate_number as plateNumber,t.TRANSFER_ORDER_ID as transferOrderId
+             ,s.tenant_id tenantId
+    </sql>
+    <sql id="hqlWhere">
+        where t.order_Id=i.order_Id and i.order_Id=s.order_Id and g.order_Id=i.order_Id
+        and t.accept_Tenant_Id=#{tenantId}
+        <if test="orderTransferInfoDto.orderId!=null and orderTransferInfoDto.orderId!=''">
+            and i.order_Id=#{orderTransferInfoDto.orderId}
+        </if>
+        <if test="orderTransferInfoDto.transferTenantName!=null and orderTransferInfoDto.transferTenantName!=''">
+            and t.transfer_Tenant_Name=#{orderTransferInfoDto.transferTenantName}
+        </if>
+        <if test="orderTransferInfoDto.sourceProvince!=null and orderTransferInfoDto.sourceProvince!=''">
+            and i.source_Province=#{orderTransferInfoDto.sourceProvince}
+        </if>
+        <if test="orderTransferInfoDto.sourceRegion!=null and orderTransferInfoDto.sourceRegion!=''">
+            and i.source_Region=#{orderTransferInfoDto.sourceRegion}
+        </if>
+        <if test="orderTransferInfoDto.sourceCounty!=null and orderTransferInfoDto.sourceCounty!=''">
+            and i.source_County=#{orderTransferInfoDto.sourceCounty}
+        </if>
+        <if test="orderTransferInfoDto.desProvince!=null and orderTransferInfoDto.desProvince!=''">
+            and i.des_Province=#{orderTransferInfoDto.desProvince}
+        </if>
+        <if test="orderTransferInfoDto.desRegion!=null and orderTransferInfoDto.desRegion!=''">
+            and i.des_Region=#{orderTransferInfoDto.desRegion}
+        </if>
+        <if test="orderTransferInfoDto.desCounty!=null and orderTransferInfoDto.desCounty!=''">
+            and i.des_County=#{orderTransferInfoDto.desCounty}
+        </if>
+        <if test="orderTransferInfoDto.transferOrderState!=null and orderTransferInfoDto.transferOrderState.length>0">
+            and t.transfer_Order_State in
+            <foreach collection="orderTransferInfoDto.transferOrderStates" index="index" item="orderState" open="(" separator="," close=")">
+                #{orderState}
+            </foreach>
+        </if>
+        <if test="orderTransferInfoDto.plateNumber!=null and orderTransferInfoDto.plateNumber!=''">
+            and t.plate_number like concat('%',#{orderTransferInfoDto.plateNumber},'%')
+        </if>
+    </sql>
+    <select id="queryOrderTransferInfoList" resultType="com.youming.youche.order.dto.OrderTransferInfoDto">
+            SELECT *FROM (
+            <include refid="hqlHead"/>
+            ,0 isHis from Order_Transfer_Info t,Order_Info i,Order_Scheduler s,Order_Goods g
+            <include refid="hqlWhere"/>
+            UNION
+            <include refid="hqlHead"/>
+            ,1 isHis from Order_Transfer_Info t,Order_Info_h i,Order_Scheduler_h s,Order_Goods_h g
+            <include refid="hqlWhere"/>
+        ) tmp ORDER BY tmp.transferOrderState ASC,tmp.transferDate DESC
+    </select>
+</mapper>

@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderReportMapper">
+
+    <resultMap id="VehiclesListDto" type="com.youming.youche.order.dto.VehiclesListDto">
+        <association property="tenantVehicleRel" javaType="com.youming.youche.order.domain.tenant.TenantVehicleRel">
+            <id column="a_id" property="id" />
+            <result column="a_vehicleCode" property="vehicleCode" />
+            <result column="a_tenantId" property="tenantId" />
+            <result column="a_userId" property="userId" />
+            <result column="a_plateNumber" property="plateNumber" />
+            <result column="a_createTime" property="createTime" />
+            <result column="a_opId" property="opId" />
+            <result column="a_verifySys" property="verifySys" />
+            <result column="a_orgId" property="orgId" />
+            <result column="a_rootOrgId" property="rootOrgId" />
+            <result column="a_verifyReason" property="verifyReason" />
+            <result column="a_auditDate" property="auditDate" />
+            <result column="a_isWorking" property="isWorking" />
+            <result column="a_managerRemark" property="managerRemark" />
+            <result column="a_vehicleClass" property="vehicleClass" />
+            <result column="a_settlementTime" property="settlementTime" />
+            <result column="a_retResult" property="retResult" />
+            <result column="a_retDate" property="retDate" />
+            <result column="a_retDateil" property="retDateil" />
+            <result column="a_attachedRootOrgId" property="attachedRootOrgId" />
+            <result column="a_attachedProvince" property="attachedProvince" />
+            <result column="a_attachedRegion" property="attachedRegion" />
+            <result column="a_attachedAddr" property="attachedAddr" />
+            <result column="a_loadEmptyOilCost" property="loadEmptyOilCost" />
+            <result column="a_loadFullOilCost" property="loadFullOilCost" />
+            <result column="a_attachedRootOrgTwoId" property="attachedRootOrgTwoId" />
+            <result column="a_isUseCarOilCost" property="isUseCarOilCost" />
+            <result column="a_beforeOrder" property="beforeOrder" />
+            <result column="a_currOrder" property="currOrder" />
+            <result column="a_attachedMan" property="attachedMan" />
+            <result column="a_attachedManId" property="attachedManId" />
+            <result column="a_attachedManPhone" property="attachedManPhone" />
+            <result column="a_contractPicId" property="contractPicId" />
+            <result column="a_contractPicUrl" property="contractPicUrl" />
+            <result column="a_vehiclePictureState" property="vehiclePictureState" />
+            <result column="a_drivingLicenseState" property="drivingLicenseState" />
+            <result column="a_shareFlg" property="shareFlg" />
+            <result column="a_sourceTenantId" property="sourceTenantId" />
+            <result column="a_state" property="state" />
+            <result column="a_authState" property="authState" />
+            <result column="a_auditContent" property="auditContent" />
+            <result column="a_vehiclePicture" property="vehiclePicture" />
+            <result column="a_drivingLicense" property="drivingLicense" />
+            <result column="a_adriverLicense" property="adriverLicense" />
+            <result column="a_operCerti" property="operCerti" />
+            <result column="a_drivingLicenseSn" property="drivingLicenseSn" />
+            <result column="a_adriverLicenseCopy" property="adriverLicenseCopy" />
+            <result column="a_isAuth" property="isAuth" />
+            <result column="a_linkUserId" property="linkUserId" />
+            <result column="a_driverUserId" property="driverUserId" />
+            <result column="a_billReceiverMobile" property="billReceiverMobile" />
+            <result column="a_billReceiverUserId" property="billReceiverUserId" />
+            <result column="a_billReceiverName" property="billReceiverName" />
+            <result column="a_investContractFilePicUrl" property="investContractFilePicUrl" />
+            <result column="a_investContractFilePic" property="investContractFilePic" />
+            <result column="a_attachContractFilePicattach" property="attachContractFilePicattach" />
+            <result column="a_driverCTime" property="driverCTime" />
+            <result column="a_updateTime" property="updateTime" />
+            <result column="a_attachContractFilePic" property="attachContractFilePic" />
+            <result column="a_createDate" property="createDate" />
+            <result column="a_retDetail" property="retDetail" />
+            <result column="a_verifySts" property="verifySts" />
+        </association>
+        <association property="vehicleDataInfo" javaType="com.youming.youche.record.domain.vehicle.VehicleDataInfo">
+            <id column="bid" property="id" />
+            <result column="b_userId" property="userId" />
+            <result column="b_plateNumber" property="plateNumber" />
+            <result column="b_vehicleLength" property="vehicleLength" />
+            <result column="b_vehicleLoad" property="vehicleLoad" />
+            <result column="b_vehicleAddress" property="vehicleAddress" />
+            <result column="b_vehicleType" property="vehicleType" />
+            <result column="b_brandModel" property="brandModel" />
+            <result column="b_vehicleStatus" property="vehicleStatus" />
+            <result column="b_contactNumber" property="contactNumber" />
+            <result column="b_linkman" property="linkman" />
+            <result column="b_identifcationCard" property="identifcationCard" />
+            <result column="b_equipmentCode" property="equipmentCode" />
+            <result column="b_createDate" property="createDate" />
+            <result column="b_opId" property="opId" />
+            <result column="b_opDate" property="opDate" />
+            <result column="b_idType" property="idType" />
+            <result column="b_equipmentCardnb" property="equipmentCardnb" />
+            <result column="b_equipmentEmpowrnb" property="equipmentEmpowrnb" />
+            <result column="b_equipmentSetcommand" property="equipmentSetcommand" />
+            <result column="b_equipmentName" property="equipmentName" />
+            <result column="b_vehiclePicture" property="vehiclePicture" />
+            <result column="b_locationServ" property="locationServ" />
+            <result column="b_vehicleTariler" property="vehicleTariler" />
+            <result column="b_drivingLicense" property="drivingLicense" />
+            <result column="b_adrivingLicense" property="adrivingLicense" />
+            <result column="b_operCerti" property="operCerti" />
+            <result column="b_oftenRun" property="oftenRun" />
+            <result column="b_oftenRpovince" property="oftenRpovince" />
+            <result column="b_oftenRegion" property="oftenRegion" />
+            <result column="b_oftenCountry" property="oftenCountry" />
+            <result column="b_lightGoodsSquare" property="lightGoodsSquare" />
+            <result column="b_idenPicture" property="idenPicture" />
+            <result column="b_vehiclePicUrl" property="vehiclePicUrl" />
+            <result column="b_identifcationCardUrl" property="identifcationCardUrl" />
+            <result column="b_drivingLicenseUrl" property="drivingLicenseUrl" />
+            <result column="b_adriverLicenseUrl" property="adriverLicenseUrl" />
+            <result column="b_operCertiUrl" property="operCertiUrl" />
+            <result column="b_sourceFlag" property="sourceFlag" />
+            <result column="b_driverUserId" property="driverUserId" />
+            <result column="b_tenantId" property="tenantId" />
+            <result column="b_vinNo" property="vinNo" />
+            <result column="b_oilWear" property="oilWear" />
+            <result column="b_carOwner" property="carOwner" />
+            <result column="b_carPhone" property="carPhone" />
+            <result column="b_carRemark" property="carRemark" />
+            <result column="b_affilateCustodian" property="affilateCustodian" />
+            <result column="b_etcCardNumber" property="etcCardNumber" />
+            <result column="b_etcAmount" property="etcAmount" />
+            <result column="b_licenceType" property="licenceType" />
+            <result column="b_vehicleAffiliation" property="vehicleAffiliation" />
+            <result column="b_engineNo" property="engineNo" />
+            <result column="b_custodialPendingsStatus" property="custodialPendingsStatus" />
+            <result column="b_carVersion" property="carVersion" />
+            <result column="b_vehicleValidityTime" property="vehicleValidityTime" />
+            <result column="b_operateValidityTime" property="operateValidityTime" />
+            <result column="b_adriverLicenseCopyUrl" property="adriverLicenseCopyUrl" />
+            <result column="b_drivingLicenseSn" property="drivingLicenseSn" />
+            <result column="b_adriverLicenseCopy" property="adriverLicenseCopy" />
+            <result column="b_copilotDriverId" property="copilotDriverId" />
+            <result column="b_followDriverId" property="followDriverId" />
+            <result column="b_authState" property="authState" />
+            <result column="b_auditContent" property="auditContent" />
+            <result column="b_orderId" property="orderId" />
+            <result column="b_lastOrderDate" property="lastOrderDate" />
+            <result column="b_isAuth" property="isAuth" />
+            <result column="b_operCertiId" property="operCertiId" />
+            <result column="b_rentAgreementId" property="rentAgreementId" />
+            <result column="b_rentAgreementUrl" property="rentAgreementUrl" />
+            <result column="b_drivingLicenseOwner" property="drivingLicenseOwner" />
+            <result column="b_attachUserMobile" property="attachUserMobile" />
+            <result column="b_attachUserName" property="attachUserName" />
+            <result column="b_attachUserId" property="attachUserId" />
+<!--            <result column="attach_id" property="updateTime" />-->
+<!--            <result column="attach_url" property="updateTime" />-->
+            <result column="b_completeness" property="completeness" />
+            <result column="b_quickFlag" property="quickFlag" />
+            <result column="b_specialOperCertFileId" property="specialOperCertFileId" />
+            <result column="b_specialOperCertFileUrl" property="specialOperCertFileUrl" />
+            <result column="b_netState" property="netState" />
+            <result column="b_maintenanceDis" property="maintenanceDis" />
+            <result column="b_lastMaintenanceDate" property="lastMaintenanceDate" />
+            <result column="b_vehicleLengthName" property="vehicleLengthName" />
+            <result column="b_vehicleStatusName" property="vehicleStatusName" />
+            <result column="b_createTime" property="createTime" />
+            <result column="b_updateTime" property="updateTime" />
+            <result column="b_vehicleModel" property="vehicleModel" />
+<!--            <result column="adriver_license" property="updateTime" />-->
+<!--            <result column="affiliate_custodian" property="updateTime" />-->
+<!--            <result column="custodial_pending_status" property="updateTime" />-->
+<!--            <result column="equipment_empowernb" property="updateTime" />-->
+<!--            <result column="identification_card" property="updateTime" />-->
+<!--            <result column="identification_card_url" property="updateTime" />-->
+<!--            <result column="often_province" property="updateTime" />-->
+            <result column="b_vehicleTariler" property="vehicleTariler" />
+            <result column="b_idle" property="idle" />
+        </association>
+        <association property="tenantVehicleCostRel" javaType="com.youming.youche.record.domain.tenant.TenantVehicleCostRel">
+            <id column="cid" property="id" />
+            <result column="c_relId" property="relId" />
+            <result column="c_vehicleCode" property="vehicleCode" />
+            <result column="c_tenantId" property="tenantId" />
+            <result column="c_userId" property="userId" />
+            <result column="c_plateNumber" property="plateNumber" />
+            <result column="c_createTime" property="createTime" />
+            <result column="c_opId" property="opId" />
+            <result column="c_vehicleRent" property="vehicleRent" />
+            <result column="c_managementCost" property="managementCost" />
+            <result column="c_collectionInsurance" property="collectionInsurance" />
+            <result column="c_carLoan" property="carLoan" />
+            <result column="c_insuranceFee" property="insuranceFee" />
+            <result column="c_tyreFee" property="tyreFee" />
+            <result column="c_examVehicleFee" property="examVehicleFee" />
+            <result column="c_maintainFee" property="maintainFee" />
+            <result column="c_repairFee" property="repairFee" />
+            <result column="c_otherFee" property="otherFee" />
+            <result column="c_purchaseDate" property="purchaseDate" />
+            <result column="c_depreciatedMonth" property="depreciatedMonth" />
+            <result column="c_price" property="price" />
+            <result column="c_loanInterest" property="loanInterest" />
+            <result column="c_interestPeriods" property="interestPeriods" />
+            <result column="c_payInterestPeriods" property="payInterestPeriods" />
+            <result column="c_state" property="state" />
+            <result column="c_residual" property="residual" />
+            <result column="c_updateTime" property="updateTime" />
+<!--            <result column="create_date" property="" />-->
+        </association>
+        <association property="tenantVehicleCertRel" javaType="com.youming.youche.order.domain.tenant.TenantVehicleCertRel">
+            <id column="did" property="id" />
+            <result column="d_relId" property="relId" />
+            <result column="d_vehicleCode" property="vehicleCode" />
+            <result column="d_tenantId" property="tenantId" />
+            <result column="d_userId" property="userId" />
+            <result column="d_plateNumber" property="plateNumber" />
+            <result column="d_createTime" property="createTime" />
+            <result column="d_opId" property="opId" />
+            <result column="d_prevMaintainTime" property="prevMaintainTime" />
+            <result column="d_insuranceCode" property="insuranceCode" />
+            <result column="d_seasonalVeriTime" property="seasonalVeriTime" />
+            <result column="d_annualVeriTime" property="annualVeriTime" />
+            <result column="d_insuranceCode" property="insuranceCode" />
+            <result column="d_maintainDis" property="maintainDis" />
+            <result column="d_maintainWarnDis" property="maintainWarnDis" />
+            <result column="d_registrationTime" property="registrationTime" />
+            <result column="d_registrationNumble" property="registrationNumble" />
+            <result column="d_remarkForVailidity" property="remarkForVailidity" />
+            <result column="d_state" property="state" />
+            <result column="d_annualVeriTimeEnd" property="annualVeriTimeEnd" />
+            <result column="d_seasonallVeriTimeEnd" property="seasonallVeriTimeEnd" />
+            <result column="d_insuranceTimeEnd" property="insuranceTimeEnd" />
+            <result column="d_busiInsuranceTime" property="busiInsuranceTime" />
+            <result column="d_busiInsuranceTimeEnd" property="busiInsuranceTimeEnd" />
+            <result column="d_busiInsuranceCode" property="busiInsuranceCode" />
+            <result column="d_otherInsuranceTime" property="otherInsuranceTime" />
+            <result column="d_otherInsuranceTimeEnd" property="otherInsuranceTimeEnd" />
+            <result column="d_otherInsuranceCode" property="otherInsuranceCode" />
+            <result column="d_vehicleValidityTimeBegin" property="vehicleValidityTimeBegin" />
+            <result column="d_operateValidityTimeBegin" property="operateValidityTimeBegin" />
+            <result column="d_vehicleValidityTime" property="vehicleValidityTime" />
+            <result column="d_operateValidityTime" property="operateValidityTime" />
+            <result column="d_updateTime" property="updateTime" />
+            <result column="d_createDate" property="createDate" />
+            <result column="d_seasonalVeriTimeEnd" property="seasonalVeriTimeEnd" />
+        </association>
+    </resultMap>
+
+    <select id="queryOrderOilEnRouteUse" resultType="java.lang.Long">
+        SELECT s.ORDER_ID
+        FROM order_oil_depot_scheme s,
+        order_info o,
+        order_scheduler os
+        WHERE s.ORDER_ID = o.ORDER_ID AND o.ORDER_ID= os.ORDER_ID
+        AND o.ORDER_STATE  <![CDATA[ >= ]]> #{orderState}
+        AND o.ORDER_STATE <![CDATA[ < ]]> #{orderStateOther}
+        AND (os.VEHICLE_CLASS =#{vehicleClass} OR (
+        <if test="vehicleClassOther!=null and vehicleClassOther.size &gt; 0">
+            os.VEHICLE_CLASS in
+            <foreach collection="vehicleClassOther" index="index" item="class" open="(" separator="," close=")">
+                #{class}
+            </foreach>
+        </if>
+        AND (o.TO_TENANT_ID IS NULL OR o.TO_TENANT_ID <![CDATA[ <= ]]> 0) ))
+        AND os.CAR_DRIVER_ID =#{userId} AND s.OIL_DEPOT_ID =#{oilId} GROUP BY s.ORDER_ID LIMIT 0,1
+    </select>
+    <select id="selectOr" resultMap="VehiclesListDto">
+        select a.id as  a_id,
+        a.vehicle_code as a_vehicleCode,
+        a.tenant_id as a_tenantId,
+        a.user_id as a_userId,
+        a.plate_number as a_plateNumber,
+        a.create_time as a_createTime,
+        a.op_id as a_opId,
+        a.verify_sys as a_verifySys,
+        a.org_id as a_orgId,
+        a.root_org_id as a_rootOrgId,
+        a.verify_reason as a_verifyReason,
+        a.audit_date as a_auditDate,
+        a.is_working as a_isWorking,
+        a.manager_remark as a_managerRemark,
+        a.vehicle_class as a_vehicleClass,
+        a.settlement_time as a_settlementTime,
+        a.ret_result as a_retResult,
+        a.ret_date as a_retDate,
+        a.ret_dateil as a_retDateil,
+        a.attached_root_org_id as a_attachedRootOrgId,
+        a.attached_province as a_attachedProvince,
+        a.attached_region as a_attachedRegion,
+        a.attached_addr as a_attachedAddr,
+        a.load_empty_oil_cost as a_loadEmptyOilCost,
+        a.load_full_oil_cost as a_loadFullOilCost,
+        a.attached_root_org_two_id as a_attachedRootOrgTwoId,
+        a.is_use_car_oil_cost as a_isUseCarOilCost,
+        a.before_order as a_beforeOrder,
+        a.curr_order as a_currOrder,
+        a.attached_man as a_attachedMan,
+        a.attached_man_id as a_attachedManId,
+        a.attached_man_phone as a_attachedManPhone,
+        a.contract_pic_id as a_contractPicId,
+        a.contract_pic_url as a_contractPicUrl,
+        a.vehicle_picture_state as a_vehiclePictureState,
+        a.driving_license_state as a_drivingLicenseState,
+        a.share_flg as a_shareFlg,
+        a.source_tenant_id as a_sourceTenantId,
+        a.state as a_state,
+        a.auth_state as a_authState,
+        a.audit_content as a_auditContent,
+        a.vehicle_picture as a_vehiclePicture,
+        a.driving_license as a_drivingLicense,
+        a.adriver_license as a_adriverLicense,
+        a.oper_certi as a_operCerti,
+        a.driving_license_sn as a_drivingLicenseSn,
+        a.adriver_license_copy as a_adriverLicenseCopy,
+        a.is_auth as a_isAuth,
+        a.link_user_id as a_linkUserId,
+        a.driver_user_id as a_driverUserId,
+        a.bill_receiver_mobile as a_billReceiverMobile,
+        a.bill_receiver_user_id as a_billReceiverUserId,
+        a.bill_receiver_name as a_billReceiverName,
+        a.invest_contract_file_pic_url as a_investContractFilePicUrl,
+        a.invest_contract_file_pic as a_investContractFilePic,
+        a.attach_contract_file_picattach as a_attachContractFilePicattach,
+        a.driver_c_time as a_driverCTime,
+        a.update_time as a_updateTime,
+        a.attach_contract_file_pic as a_attachContractFilePic,
+        a.create_date as a_createDate,
+        a.ret_detail as a_retDetail,
+        a.verify_sts as a_verifySts,
+
+        b.id as b_id,
+        b.user_id as b_userId,
+        b.plate_number as b_plateNumber,
+        b.vehicle_length as b_vehicleLength,
+        b.vehicle_load as b_vehicleLoad,
+        b.vehicle_address as b_vehicleAddress,
+        b.vehicle_type as b_vehicleType,
+        b.brand_model as b_brandModel,
+        b.vehicle_status as b_vehicleStatus,
+        b.contact_number as b_contactNumber,
+        b.linkman as b_linkman,
+        b.identifcation_card as b_identifcationCard,
+        b.equipment_code as b_equipmentCode,
+        b.create_date as b_createDate,
+        b.op_id as b_opId,
+        b.op_date as b_opDate,
+        b.id_type as b_idType,
+        b.equipment_cardnb as b_equipmentCardnb,
+        b.equipment_empowrnb as b_equipmentEmpowrnb,
+        b.equipment_setcommand as b_equipmentSetcommand,
+        b.equipment_name as b_equipmentName,
+        b.vehicle_picture as b_vehiclePicture,
+        b.location_serv as b_locationServ,
+        b.vehicle_tariler as b_vehicleTariler,
+        b.driving_license as b_drivingLicense,
+        b.adriving_license as b_adrivingLicense,
+        b.oper_certi as b_operCerti,
+        b.often_run as b_oftenRun,
+        b.often_rpovince as b_oftenRpovince,
+        b.often_region as b_oftenRegion,
+        b.often_country as b_oftenCountry,
+        b.light_goods_square as b_lightGoodsSquare,
+        b.iden_picture as b_idenPicture,
+        b.vehicle_pic_url as b_vehiclePicUrl,
+        b.identifcation_card_url as b_identifcationCardUrl,
+        b.driving_license_url as b_drivingLicenseUrl,
+        b.adriver_license_url as b_adriverLicenseUrl,
+        b.oper_certi_url as b_operCertiUrl,
+        b.source_flag as b_sourceFlag,
+        b.driver_user_id as b_driverUserId,
+        b.tenant_id as b_tenantId,
+        b.vin_no as b_vinNo,
+        b.oil_wear as b_oilWear,
+        b.car_owner as b_carOwner,
+        b.car_phone as b_carPhone,
+        b.car_remark as b_carRemark,
+        b.affilate_custodian as b_affilateCustodian,
+        b.etc_card_number as b_etcCardNumber,
+        b.etc_amount as b_etcAmount,
+        b.licence_type as b_licenceType,
+        b.vehicle_Affiliation as b_vehicleAffiliation,
+        b.engine_no as b_engineNo,
+        b.custodial_pendings_status as custodialPendingsStatus,
+        b.car_version as b_carVersion,
+        b.vehicle_validity_time as b_vehicleValidityTime,
+        b.operate_validity_time as b_operateValidityTime,
+        b.adriver_license_copy_url as b_adriverLicenseCopyUrl,
+        b.driving_license_sn as b_drivingLicenseSn,
+        b.adriver_license_copy as b_adriverLicenseCopy,
+        b.copilot_driver_id as b_copilotDriverId,
+        b.follow_driver_id as b_followDriverId,
+        b.auth_state as b_authState,
+        b.audit_content as b_auditContent,
+        b.order_id as b_orderId,
+        b.last_order_date as b_lastOrderDate,
+        b.is_auth as b_isAuth,
+        b.oper_certi_id as b_operCertiId,
+        b.rent_agreement_id as b_rentAgreementId,
+        b.rent_agreement_url as b_rentAgreementUrl,
+        b.driving_license_owner as b_drivingLicenseOwner,
+        b.attach_user_mobile as b_attachUserMobile,
+        b.attach_user_name as b_attachUserName,
+        b.attach_user_id as b_attachUserId,
+        b.completeness as b_completeness,
+        b.quick_flag as b_quickFlag,
+        b.special_oper_cert_file_id as b_specialOperCertFileId,
+        b.special_oper_cert_file_url as b_specialOperCertFileUrl,
+        b.net_state as b_netState,
+        b.maintenance_dis as b_maintenanceDis,
+        b.last_maintenance_date as b_lastMaintenanceDate,
+        b.vehicle_length_name as b_vehicleLengthName,
+        b.vehicle_status_name as b_vehicleStatusName,
+        b.create_time as b_createTime,
+        b.update_time as b_updateTime,
+        b.vehicle_model as b_vehicleModel,
+        b.vehicle_trailer as b_vehicleTariler,
+        b.idle as b_idle
+        <if test="all">
+            ,c.id as c_id,
+            c.rel_id as c_relId,
+            c.vehicle_code as c_vehicleCode,
+            c.tenant_id as c_tenantId,
+            c.user_id as c_userId,
+            c.plate_number as c_plateNumber,
+            c.create_time as c_createTime,
+            c.op_id as c_opId,
+            c.vehicle_rent as c_vehicleRent,
+            c.management_cost as c_managementCost,
+            c.collection_insurance as c_collectionInsurance,
+            c.car_loan as c_carLoan,
+            c.insurance_fee as c_insuranceFee,
+            c.tyre_fee as c_tyreFee,
+            c.exam_vehicle_fee as c_examVehicleFee,
+            c.maintain_fee as c_maintainFee,
+            c.repair_fee as c_repairFee,
+            c.other_fee as c_otherFee,
+            c.purchase_date as c_purchaseDate,
+            c.depreciated_month as c_depreciatedMonth,
+            c.price as c_price,
+            c.loan_interest as c_loanInterest,
+            c.interest_periods as c_interestPeriods,
+            c.pay_interest_periods as c_payInterestPeriods,
+            c.state as c_state,
+            c.residual as c_residual,
+            c.update_time as c_updateTime,
+
+            d.id as d_id,
+            d.rel_id as d_relId,
+            d.vehicle_code as d_vehicleCode,
+            d.tenant_id as d_tenantId,
+            d.user_id as d_userId,
+            d.plate_number as d_plateNumber,
+            d.create_time as d_createTime,
+            d.op_id as d_opId,
+            d.prev_maintain_time as d_prevMaintainTime,
+            d.insurance_time as d_insuranceCode,
+            d.seasonal_veri_time as d_seasonalVeriTime,
+            d.annual_veri_time as d_annualVeriTime,
+            d.insurance_code as d_insuranceCode,
+            d.maintain_dis as d_maintainDis,
+            d.maintain_warn_dis as d_maintainWarnDis,
+            d.registration_time as d_registrationTime,
+            d.registration_numble as d_registrationNumble,
+            d.remark_for_vailidity as d_remarkForVailidity,
+            d.state as d_state,
+            d.annual_veri_time_end as d_annualVeriTimeEnd,
+            d.seasonall_veri_time_end as d_seasonallVeriTimeEnd,
+            d.insurance_time_end as d_insuranceTimeEnd,
+            d.busi_insurance_time as d_busiInsuranceTime,
+            d.busi_insurance_time_end as d_busiInsuranceTimeEnd,
+            d.busi_insurance_code as d_busiInsuranceCode,
+            d.other_insurance_time as d_otherInsuranceTime,
+            d.other_insurance_time_end as d_otherInsuranceTimeEnd,
+            d.other_insurance_code as d_otherInsuranceCode,
+            d.vehicle_validity_time_begin as d_vehicleValidityTimeBegin,
+            d.operate_validity_time_begin as d_operateValidityTimeBegin,
+            d.vehicle_validity_time as d_vehicleValidityTime,
+            d.operate_validity_time as d_operateValidityTime,
+            d.update_time as d_updateTime,
+            d.create_date as d_createDate,
+            d.seasonal_veri_time_end as d_seasonalVeriTimeEnd
+            from tenant_vehicle_rel a, vehicle_data_info b,tenant_vehicle_cost_rel c,tenant_vehicle_cert_rel d
+            where a.vehicle_code=b.vehicle_code and a.rel_id = c.rel_id and a.rel_id = d.rel_id
+        </if>
+        <if test="all == false">
+            from Tenant_vehicle_rel a, Vehicle_data_info b where a.vehicle_code=b.id
+        </if>
+<!--        <if test="tenantId != null and tenantId >0 ">-->
+<!--            and a.tenant_id=#{tenantId}-->
+<!--        </if>-->
+
+        and a.driver_user_id=#{userId}
+        <!-- and a.tenant_id=#{tenantId} -->
+    </select>
+</mapper>

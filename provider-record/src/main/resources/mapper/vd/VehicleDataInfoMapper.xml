@@ -1,0 +1,1311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.vehicle.VehicleDataInfoMapper">
+
+    <!--查询车辆的基础信息-->
+    <select id="getTenantVehicleInfo" resultType="com.youming.youche.record.dto.VehicleInfoDto">
+        SELECT tenant_vehicle_rel.plate_number                   plateNumber,
+               tenant_vehicle_rel.load_empty_oil_cost            loadEmptyOilCost,
+               tenant_vehicle_rel.load_full_oil_cost             loadFullOilCost,
+               tenant_vehicle_rel.is_use_car_oil_cost            isUseCarOilCost,
+               tenant_vehicle_rel.vehicle_class                  vehicleClass,
+               tenant_vehicle_rel.org_id                         orgId,
+               tenant_vehicle_rel.user_id                        userId,
+               tenant_vehicle_rel.id                             relId,
+               tenant_vehicle_rel.is_auth                        isAuth,
+               tenant_vehicle_rel.auth_state                     authState,
+               tenant_vehicle_rel.share_flg                      shareFlg,
+               tenant_vehicle_rel.link_user_id                   linkUserId,
+               tenant_vehicle_rel.bill_receiver_mobile           billReceiverMobile,
+               tenant_vehicle_rel.bill_receiver_user_id          billReceiverUserId,
+               tenant_vehicle_rel.bill_receiver_name             billReceiverName,
+               tenant_vehicle_rel.invest_contract_file_pic       investContractFilePic,
+               tenant_vehicle_rel.attach_contract_file_picattach attachContractFileicattach,
+               tenant_vehicle_rel.driver_user_id                 driverUserId,
+               vehicle_data_info.copilot_driver_id               copilotDriverId,
+               vehicle_data_info.vehicle_validity_time           vehicleValidityTime,
+               vehicle_data_info.follow_driver_id                followDriverId,
+               vehicle_data_info.operate_validity_time           operateValidityTime,
+               vehicle_data_info.licence_type                    licenceType,
+               vehicle_data_info.vehicle_length                  vehicleLength,
+               vehicle_data_info.vehicle_status                  vehicleStatus,
+               vehicle_data_info.light_goods_square              lightGoodsSquare,
+               vehicle_data_info.vehicle_load                    vehicleLoad,
+               vehicle_data_info.vin_no                          vinNo,
+               vehicle_data_info.oper_certi                      operCerti,
+               vehicle_data_info.oper_certi_id                   operCertiId,
+               vehicle_data_info.oper_certi_url                  operCertiUrl,
+               vehicle_data_info.driving_license_owner           drivingLicenseOwner,
+               vehicle_data_info.engine_no                       engineNo,
+               vehicle_data_info.rent_agreement_id               rentAgreementId,
+               vehicle_data_info.rent_agreement_url              rentAgreementUrl,
+               vehicle_data_info.vehicle_picture                 vehiclePicture,
+               vehicle_data_info.vehicle_pic_url                 vehiclePicUrl,
+               vehicle_data_info.driving_license                 drivingLicense,
+               vehicle_data_info.driving_license_url             drivingLicenseUrl,
+               vehicle_data_info.adriver_license_copy            adriverLicenseCopy,
+               vehicle_data_info.adriver_license_copy_url        adriverLicenseCopyUrl,
+               vehicle_data_info.driving_License_Sn              drivingLicenseSn,
+               vehicle_data_info.special_oper_cert_file_id       specialOperCertFileId,
+               vehicle_data_info.special_oper_cert_file_url      specialOperCertFileUrl,
+               vehicle_data_info.oper_certi_id                   operCertiId,
+               vehicle_data_info.brand_model                     brandModel,
+               vehicle_data_info.vehicle_model                   vehicleModel,
+               vehicle_data_info.etc_card_number                 etcCardNumber,
+               vehicle_data_info.equipment_code                  equipmentCode,
+               vehicle_data_info.attach_id     as                attachId,
+               vehicle_data_info.attach_url    as                attachUrl,
+               vehicle_data_info.location_serv as                locationServ,
+               def.id                                            tenantId,
+               def.NAME                                          tenantName,
+               def.link_man                                      linkMan,
+               def.link_phone                                    linkPhone,
+               udi.linkman                                       driverName,
+               udi.mobile_phone                                  driverPhone,
+               vehicle_data_info.id                              vehicleCode
+        FROM vehicle_data_info
+                 LEFT JOIN tenant_vehicle_rel ON vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+            AND tenant_vehicle_rel.vehicle_class = #{vehicleClass}
+                 LEFT JOIN sys_tenant_def def ON def.id = tenant_vehicle_rel.tenant_id
+                 LEFT JOIN user_data_info udi ON udi.id = vehicle_data_info.driver_user_id
+        WHERE vehicle_data_info.id = #{vehicleCode} and tenant_vehicle_rel.tenant_id= #{tenantId}
+    </select>
+
+    <!--查询车辆的历史基础信息-->
+    <select id="getAllVehicleInfoVerHis" resultType="com.youming.youche.record.dto.VehicleInfoDto">
+        SELECT tenant_vehicle_rel_ver.plate_number                   plateNumber,
+               tenant_vehicle_rel_ver.load_empty_oil_cost            loadEmptyOilCost,
+               tenant_vehicle_rel_ver.load_full_oil_cost             loadFullOilCost,
+               tenant_vehicle_rel_ver.is_use_car_oil_cost            isUseCarOilCost,
+               tenant_vehicle_rel_ver.vehicle_class                  vehicleClass,
+               tenant_vehicle_rel_ver.org_id                         orgId,
+               tenant_vehicle_rel_ver.user_id                        userId,
+               tenant_vehicle_rel_ver.rel_id                          relId,
+               tenant_vehicle_rel_ver.share_flg                      shareFlg,
+               tenant_vehicle_rel_ver.link_user_id                   linkUserId,
+               tenant_vehicle_rel_ver.bill_receiver_mobile           billReceiverMobile,
+               tenant_vehicle_rel_ver.bill_receiver_user_id          billReceiverUserId,
+               tenant_vehicle_rel_ver.bill_receiver_name             billReceiverName,
+               tenant_vehicle_rel_ver.invest_contract_file_pic       investContractFilePic,
+               tenant_vehicle_rel_ver.driver_user_id                 driverUserId,
+        vehicle_data_info_ver.copilot_driver_id               copilotDriverId,
+        vehicle_data_info_ver.vehicle_validity_time           vehicleValidityTime,
+        vehicle_data_info_ver.follow_driver_id                followDriverId,
+        vehicle_data_info_ver.operate_validity_time           operateValidityTime,
+        vehicle_data_info_ver.licence_type                    licenceType,
+        vehicle_data_info_ver.vehicle_length                  vehicleLength,
+        vehicle_data_info_ver.vehicle_status                  vehicleStatus,
+        vehicle_data_info_ver.light_goods_square              lightGoodsSquare,
+        vehicle_data_info_ver.vehicle_load                    vehicleLoad,
+        vehicle_data_info_ver.vin_no                          vinNo,
+        vehicle_data_info_ver.oper_certi                      operCerti,
+        vehicle_data_info_ver.oper_certi_id                   operCertiId,
+        vehicle_data_info_ver.oper_certi_url                  operCertiUrl,
+        vehicle_data_info_ver.driving_license_owner           drivingLicenseOwner,
+        vehicle_data_info_ver.engine_no                       engineNo,
+        vehicle_data_info_ver.rent_agreement_id               rentAgreementId,
+        vehicle_data_info_ver.rent_agreement_url              rentAgreementUrl,
+        vehicle_data_info_ver.vehicle_picture                 vehiclePicture,
+        vehicle_data_info_ver.vehicle_pic_url                 vehiclePicUrl,
+        vehicle_data_info_ver.driving_license                 drivingLicense,
+        vehicle_data_info_ver.driving_license_url             drivingLicenseUrl,
+        vehicle_data_info_ver.adriver_license_copy            adriverLicenseCopy,
+        vehicle_data_info_ver.adriver_license_copy_url        adriverLicenseCopyUrl,
+        vehicle_data_info_ver.driving_License_Sn              drivingLicenseSn,
+        vehicle_data_info_ver.special_oper_cert_file_id       specialOperCertFileId,
+        vehicle_data_info_ver.special_oper_cert_file_url      specialOperCertFileUrl,
+        vehicle_data_info_ver.oper_certi_id                   operCertiId,
+        vehicle_data_info_ver.brand_model                     brandModel,
+        vehicle_data_info_ver.vehicle_model                   vehicleModel,
+        vehicle_data_info_ver.etc_card_number                 etcCardNumber,
+        vehicle_data_info_ver.equipment_code                  equipmentCode,
+        vehicle_data_info_ver.attach_id     as                attachId,
+        vehicle_data_info_ver.attach_url    as                attachUrl,
+        vehicle_data_info_ver.location_serv as                locationServ,
+        vehicle_data_info_ver.vehicle_code                              vehicleCode
+        FROM vehicle_data_info_ver
+        LEFT JOIN tenant_vehicle_rel_ver
+        ON vehicle_data_info_ver.vehicle_code = tenant_vehicle_rel_ver.vehicle_Code
+        WHERE vehicle_data_info_ver.vehicle_code = #{vehicleCode}
+        and tenant_vehicle_rel_ver.tenant_id= #{tenantId}
+        ORDER BY
+        vehicle_data_info_ver.id DESC
+        <!-- and tenant_vehicle_rel_ver.tenant_id= #{tenantId}  AND tenant_vehicle_rel_ver.vehicle_class = #{vehicleClass}-->
+    </select>
+    <!--根据车牌号判断车辆是否注册-->
+    <select id="getVehicleIsRegister" resultType="java.util.Map">
+        SELECT m.id                 vehicleCode,
+               m.licence_Type       licenceType,
+               m.vehicle_Length     vehicleLength,
+               m.vehicle_Status     vehicleStatus,
+               m.vehicle_Load       vehicleLoad,
+               m.light_Goods_Square lightGoodsSquare,
+               d.id                 tenantId,
+               d.link_phone         linkPhone,
+               d.ADMIN_USER         adminUser,
+               d.NAME               tenantName,
+               m.vehicle_picture    vehiclePicture,
+               m.driver_user_id     dirverUserId,
+               u.linkman            linkman,
+               u.mobile_phone       mobilePhone
+        FROM vehicle_data_info m
+                 LEFT JOIN user_data_info u ON u.id = m.driver_user_id
+                 LEFT JOIN tenant_vehicle_rel ON tenant_vehicle_rel.VEHICLE_CODE = m.id
+            AND tenant_vehicle_rel.VEHICLE_CLASS = #{vehicleClass}
+                 LEFT JOIN sys_tenant_def d ON d.id = tenant_vehicle_rel.tenant_id
+        WHERE m.plate_Number = #{plateNumber}  order by m.id  DESC limit 0,1
+
+    </select>
+
+    <!--统计-->
+    <select id="getVehicleCountByDriverUserId" resultType="java.lang.Long">
+        SELECT count(1)
+        FROM vehicle_data_info,
+             tenant_vehicle_rel
+        WHERE vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+          AND vehicle_data_info.driver_user_id = #{driverUserId}
+          AND tenant_vehicle_rel.tenant_Id = #{tenantId}
+    </select>
+    <!--查询历史档案-->
+    <select id="doQueryVehicleAllHis" resultType="com.youming.youche.record.vo.HistoricalArchivesVo">
+        SELECT
+        vdiVer.id as hisId,
+        vdiVer.vehicle_code as vehicleCode,
+        vdiVer.plate_number as plateNumber,
+        vdiVer.licence_type as licenceType,
+        vdiVer.vehicle_length as vehicleLength,
+        vdiVer.vehicle_status as vehicleStatus,
+        ownVer.vehicle_class as vehicleClass,
+        ownVer.rel_id as relId,
+        udi.linkman as linkman,
+        udi.mobile_phone as driverPhone,
+        std.id AS tenantId,
+        std.name as tenantName,
+        std.link_phone as linkPhone
+        FROM
+        tenant_vehicle_rel_ver ownVer,
+        vehicle_data_info_ver vdiVer
+        LEFT JOIN user_data_info udi ON udi.id = vdiVer.driver_user_id
+        LEFT JOIN sys_tenant_def std ON std.id = vdiVer.tenant_id
+        <where>
+            vdiVer.id = ownVer.vehicle_his_id
+            <if test="tenantId != null">
+                AND ownVer.tenant_id = #{tenantId}
+            </if>
+            <if test="verState !=null">
+                AND ownVer.ver_state = #{verState}
+            </if>
+            <if test="plateNumber != null and plateNumber !=''">
+<!--                and vdiVer.plate_number like '$%{plateNumber }%'-->
+                and vdiVer.plate_number like CONCAT('%',#{plateNumber},'%')
+            </if>
+            <if test="linkManName != null and linkManName !=''">
+                and std.link_man like CONCAT('%',#{linkManName},'%')
+
+            </if>
+            <if test="tenantName !=null and tenantName !=''">
+                and std.name like CONCAT('%',#{tenantName},'%')
+            </if>
+            <if test="linkPhone !=null and linkPhone !=''">
+                and std.link_phone like CONCAT('%',#{linkPhone},'%')
+            </if>
+            <if test="linkman != null and linkman !=''">
+                and udi.linkman like CONCAT('%',#{linkman},'%')
+            </if>
+            <if test="mobilePhone != null and mobilePhone !=''">
+                and udi.mobile_phone like CONCAT('%',#{mobilePhone},'%')
+            </if>
+            <if test="vehicleLength != null  and vehicleLength != ''">
+                and vdiVer.vehicle_length = #{vehicleLength}
+            </if>
+            <if test="vehicleStatus != null and vehicleStatus &gt; -1">
+                and vdiVer.vehicle_status = #{vehicleStatus}
+            </if>
+            <if test="vehicleClass != null and vehicleClass &gt; -1">
+                and ownVer.vehicle_class = #{vehicleClass}
+            </if>
+        </where>
+        ORDER BY
+        vdiVer.id DESC
+    </select>
+
+    <!--我的邀请查看详情-->
+    <select id="getShareVehicle" resultType="com.youming.youche.record.vo.VehicleDataInfoVo">
+        SELECT vehicle_data_info.plate_number              plateNumber,
+               tenant_vehicle_rel.load_Empty_Oil_Cost      loadEmptyOilCost,
+               tenant_vehicle_rel.load_Full_Oil_Cost       loadFullOilCost,
+               tenant_vehicle_rel.is_Use_Car_Oil_Cost      isUseCarOilCost,
+               tenant_vehicle_rel.vehicle_Class            vehicleClass,
+               tenant_vehicle_rel.org_Id                   orgId,
+               tenant_vehicle_rel.user_Id                  userId,
+               tenant_vehicle_rel.id                       relId,
+               tenant_vehicle_rel.is_auth                  isAuth,
+               tenant_vehicle_rel.auth_state               authState,
+               tenant_vehicle_rel.share_flg                shareFlg,
+               tenant_vehicle_rel.link_user_id             linkUserId,
+               vehicle_data_info.driver_user_id            driverUserId,
+               vehicle_data_info.copilot_Driver_Id         copilotDriverId,
+               vehicle_data_info.vehicle_Validity_Time     vehicleValidityTime,
+               vehicle_data_info.follow_Driver_Id          followDriverId,
+               vehicle_data_info.operate_Validity_Time     operateValidityTime,
+               vehicle_data_info.licence_Type              licenceType,
+               vehicle_data_info.vehicle_Length            vehicleLength,
+               vehicle_data_info.vehicle_Status            vehicleStatus,
+               vehicle_data_info.light_Goods_Square        lightGoodsSquare,
+               vehicle_data_info.vehicle_Load              vehicleLoad,
+               vehicle_data_info.vin_No                    vinNo,
+               vehicle_data_info.oper_Certi                operCerti,
+               vehicle_data_info.engine_No                 engineNo,
+               vehicle_data_info.vehicle_picture           vehiclePicture,
+               vehicle_data_info.driving_license           drivingLicense,
+               vehicle_data_info.driving_license_url       drivingLicenseUrl,
+               vehicle_data_info.adriver_license_copy      adriverLicenseCopy,
+               vehicle_data_info.driving_License_Sn        drivingLicenseSn,
+               vehicle_data_info.etc_Card_Number           etcCardNumber,
+               vehicle_data_info.equipment_Code            equipmentCode,
+               vehicle_data_info.SPECIAL_OPER_CERT_FILE_ID specialOperCertFileId,
+               vehicle_data_info.oper_certi_id             operCertiId,
+               def.id                                      tenantId,
+               def.NAME                                    tenantName,
+               def.link_man                                linkMan,
+               def.link_phone                              linkPhone,
+               vehicle_data_info.id                        vehicleCode
+        FROM vehicle_data_info
+                 LEFT JOIN tenant_vehicle_rel ON vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+                 LEFT JOIN tenant_vehicle_rel rel ON vehicle_data_info.id = rel.vehicle_Code
+            AND vehicle_data_info.plate_number = rel.plate_number
+            AND rel.vehicle_class = 1
+                 LEFT JOIN sys_tenant_def def ON def.id = rel.tenant_id
+        WHERE 1 = 1
+          AND vehicle_data_info.id = #{vhicleCode}
+          and tenant_vehicle_rel.tenant_id = #{tenantId}
+    </select>
+
+    <!--查询最大id-->
+    <select id="maxId" resultType="java.lang.Long">
+        select max(id)
+        from vehicle_data_info
+    </select>
+
+    <select id="getVehicleDataInfo" resultType="com.youming.youche.record.domain.vehicle.VehicleDataInfo">
+        SELECT id                    AS id,
+               plate_number          AS plateNumber,
+               maintenance_dis       AS maintenanceDis,
+               last_maintenance_date AS lastMaintenanceDate,
+               brand_model           AS brandModel,
+               vehicle_model         AS vehicleModel
+        FROM vehicle_data_info
+        WHERE plate_number = #{plateNumber}
+    </select>
+
+    <select id="selectPlateNumberById" resultType="java.lang.String">
+        SELECT plate_number
+        FROM vehicle_data_info
+        WHERE id = #{vhicleCode}
+    </select>
+
+    <select id="getDriverAllRelVehicleList" resultType="com.youming.youche.record.domain.vehicle.VehicleDataInfo">
+        SELECT vdi.id                         as id,
+               vdi.user_id                    as userId,
+               vdi.plate_number               as plateNumber,
+               vdi.vehicle_length             as vehicleLength,
+               vdi.vehicle_load               as vehicleLoad,
+               vdi.vehicle_address            as vehicleAddress,
+               vdi.vehicle_type               as vehicleType,
+               vdi.brand_model                as brandModel,
+               vdi.vehicle_status             as vehicleStatus,
+               vdi.contact_number             as contactNumber,
+               vdi.linkman                    as linkman,
+               vdi.identifcation_card         as identifcationCard,
+               vdi.equipment_code             as equipmentCode,
+               vdi.create_date                as createDate,
+               vdi.op_id                      as opId,
+               vdi.op_date                    as opDate,
+               vdi.id_type                    as idType,
+               vdi.equipment_cardnb           as equipmentCardnb,
+               vdi.equipment_empowrnb         as equipmentEmpowrnb,
+               vdi.equipment_setcommand       as equipmentSetcommand,
+               vdi.equipment_name             as equipmentName,
+               vdi.vehicle_picture            as vehiclePicture,
+               vdi.location_serv              as locationServ,
+               vdi.vehicle_tariler            as vehicleTariler,
+               vdi.driving_license            as drivingLicense,
+               vdi.oper_certi                 as operCerti,
+               vdi.adriving_license           as oftenRun,
+               vdi.often_run                  as oftenRpovince,
+               vdi.often_rpovince             as oftenRegion,
+               vdi.often_country              as oftenCountry,
+               vdi.light_goods_square         as lightGoodsSquare,
+               vdi.iden_picture               as idenPicture,
+               vdi.vehicle_pic_url            as vehiclePicUrl,
+               vdi.identifcation_card_url     as identifcationCardUrl,
+               vdi.driving_license_url        as drivingLicenseUrl,
+               vdi.adriver_license_url        as adriverLicenseUrl,
+               vdi.oper_certi_url             as operCertiUrl,
+               vdi.driver_user_id             as driverUserId,
+               vdi.tenant_id                  as tenantId,
+               vdi.vin_no                     as vinNo,
+               vdi.oil_wear                   as oilWear,
+               vdi.car_owner                  as carOwner,
+               vdi.car_phone                  as carPhone,
+               vdi.car_remark                 as carRemark,
+               vdi.affilate_custodian         as affilateCustodian,
+               vdi.etc_card_number            as etcCardNumber,
+               vdi.etc_amount                 as etcAmount,
+               vdi.licence_type               as licenceType,
+               vdi.vehicle_Affiliation        as vehicleAffiliation,
+               vdi.engine_no                  as engineNo,
+               vdi.custodial_pendings_status  as custodialPendingsStatus,
+               vdi.car_version                as carVersion,
+               vdi.vehicle_validity_time      as vehicleValidityTime,
+               vdi.operate_validity_time      as operateValidityTime,
+               vdi.adriver_license_copy_url   as adriverLicenseCopyUrl,
+               vdi.driving_license_sn         as drivingLicenseSn,
+               vdi.adriver_license_copy       as adriverLicenseCopy,
+               vdi.copilot_driver_id          as copilotDriverId,
+               vdi.follow_driver_id           as followDriverId,
+               vdi.audit_content              as authState,
+               vdi.order_id                   as orderId,
+               vdi.last_order_date            as lastOrderDate,
+               vdi.is_auth                    as isAuth,
+               vdi.oper_certi_id              as operCertiId,
+               vdi.rent_agreement_id          as rentAgreementId,
+               vdi.rent_agreement_url         as rentAgreementUrl,
+               vdi.driving_license_owner      as drivingLicenseOwner,
+               vdi.attach_user_mobile         as attachUserMobile,
+               vdi.attach_user_name           as attachUserName,
+               vdi.attach_user_id             as attachUserId,
+               vdi.completeness               as completeness,
+               vdi.quick_flag                 as quickFlag,
+               vdi.audit_content              AS auditContent,
+               vdi.special_oper_cert_file_id  as specialOperCertFileId,
+               vdi.special_oper_cert_file_url as specialOperCertFileUrl,
+               vdi.net_state                  as netState,
+               vdi.maintenance_dis            as maintenanceDis,
+               vdi.vehicle_length_name        as vehicleLengthName,
+               vdi.vehicle_status_name        as vehicleStatusName,
+               vdi.create_time                as createTime,
+               vdi.update_time                as updateTime
+        FROM vehicle_data_info vdi
+                 LEFT JOIN
+             (SELECT tvr.VEHICLE_CODE
+              FROM tenant_vehicle_rel tvr
+              WHERE tvr.DRIVER_USER_ID = #{driverUserId}
+              GROUP BY tvr.VEHICLE_CODE) AS driverRel
+             ON vdi.id = driverRel.VEHICLE_CODE
+        WHERE driverRel.VEHICLE_CODE IS NOT NULL
+        ORDER BY vdi.CREATE_DATE DESC
+    </select>
+
+    <update id="doUpdateVehicleObjectLine">
+        UPDATE vehicle_object_line
+        SET SOURCE_PROVINCE = NULL,
+            SOURCE_REGION   = NULL,
+            SOURCE_COUNTY   = NULL,
+            DES_PROVINCE    = NULL,
+            DES_REGION      = NULL,
+            DES_COUNTY      = NULL,
+            CARRIAGE_PRICE  = NULL
+        WHERE vehicle_Code = #{vehicleCode}
+    </update>
+
+    <update id="doUpdateVehicleLineRelByVehicleCode">
+        UPDATE vehicle_line_rel r
+        SET r.STATE = 0
+        WHERE r.vehicle_Code = #{vehicleCode}
+    </update>
+
+
+       <update id="doUpdateVehicleLineRelVerByVehicleCode">
+             UPDATE vehicle_line_rel_ver r
+            SET r.VER_STATE = 0
+            WHERE
+                r.vehicle_Code=#{vehicleCode}
+       </update>
+
+    <delete id="doDelVehicleOrderPositionInfo">
+        DELETE FROM
+         VEHICLE_ORDER_POSITION_INFO
+        WHERE VEHICLE_CODE=#{vehicleCode}
+    </delete>
+
+    <select id="existsDriver" resultType="java.lang.Integer">
+        select count(1) from tenant_user_rel where user_id=#{userId} and tenant_id=#{tenantId}
+        <if test="carUserType>0">
+            and car_user_type=#{carUserType}
+        </if>
+    </select>
+    <select id="doQueryAllShareVehicle" resultType="com.youming.youche.record.vo.VehicleDataInfoiVo">
+        SELECT
+        tm.id managementId,
+        ascriptionVer.vehicle_class vehicleClass,
+        vehicle_data_info.id vehicleCode,
+        vehicle_data_info.plate_number plateNumber,
+        vehicle_data_info.licence_type licenceType,
+        vehicle_data_info.vehicle_length vehicleLength,
+        vehicle_data_info.vehicle_status vehicleStatus,
+        vehicle_data_info.last_order_date lastOrderDate,
+        vehicle_data_info.order_id orderId,
+        vehicle_data_info.driver_user_id driverUserId,
+        user_data_info.linkman linkman,
+        user_data_info.mobile_phone mobilePhone,
+        sys_tenant_def.id tenantId,
+        sys_tenant_def. NAME tenantName,
+        sys_tenant_def.link_phone linkPhone,
+        position.province_id provinceId,
+        position.city_id cityId,
+        position.county_id countyId
+        FROM
+        vehicle_data_info
+        LEFT JOIN tenant_vehicle_rel ascriptionVer ON vehicle_data_info.id = ascriptionVer.vehicle_code
+        AND vehicle_data_info.plate_number = ascriptionVer.plate_number
+        AND ascriptionVer.vehicle_Class = 1
+        LEFT JOIN sys_tenant_def ON ascriptionVer.tenant_id = sys_tenant_def.id
+        LEFT JOIN user_data_info ON vehicle_data_info.driver_user_id = user_data_info.id
+        LEFT JOIN vehicle_order_position_info position ON vehicle_data_info.id = position.vehicle_code
+        LEFT JOIN trailer_management tm on tm.tenant_id = sys_tenant_def.id
+        <where>
+            AND (
+            ascriptionVer.vehicle_code IS NULL
+            OR (
+            SELECT
+            count(1)
+            FROM
+            tenant_vehicle_rel l
+            WHERE
+            l.vehicle_code = vehicle_data_info.id
+            AND l.vehicle_class = 1
+            ) = 0
+            OR (
+            ascriptionVer.share_flg = 1
+            AND ascriptionVer.VEHICLE_CLASS = 1
+            )
+            )
+            <if test="flg" >
+                and vehicle_data_info.id in (select vehicle_code from vehicle_object_line line
+                <where>
+                    <if test="vehicleDataInfoiDto.provinceId != null and vehicleDataInfoiDto.provinceId &gt; -1">
+                        and line.source_province = #{vehicleDataInfoiDto.provinceId}
+                    </if>
+                    <if test="vehicleDataInfoiDto.cityId != null and vehicleDataInfoiDto.cityId &gt; -1">
+                        and line.source_region = #{vehicleDataInfoiDto.cityId}
+                    </if>
+                    <if test="vehicleDataInfoiDto.provinceIdDes != null and vehicleDataInfoiDto.provinceIdDes &gt; -1">
+                        and line.des_province = #{vehicleDataInfoiDto.provinceIdDes}
+                    </if>
+                    <if test="vehicleDataInfoiDto.cityIdDes &gt; -1">
+                        and line.des_region = #{vehicleDataInfoiDto.cityIdDes}
+                    </if>
+                </where>
+                )
+            </if>
+            <if test="vehicleDataInfoiDto.plateNumber != null and  vehicleDataInfoiDto.plateNumber != ''">
+                and vehicle_data_info.plate_number like CONCAT('%',#{vehicleDataInfoiDto.plateNumber},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.linkManName != null and vehicleDataInfoiDto.linkManName != ''">
+                and sys_tenant_def.link_man like CONCAT('%',#{vehicleDataInfoiDto.linkManName},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.linkPhone != null and vehicleDataInfoiDto.linkPhone != ''">
+                and sys_tenant_def.link_phone like CONCAT('%',#{vehicleDataInfoiDto.linkPhone},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.linkman != null and vehicleDataInfoiDto.linkman != ''">
+                and user_data_info.linkman like CONCAT('%',#{vehicleDataInfoiDto.linkman},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.mobilePhone != null and vehicleDataInfoiDto.mobilePhone != ''">
+                and user_data_info.mobile_phone like CONCAT('%',#{vehicleDataInfoiDto.mobilePhone},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.tenantName != null and vehicleDataInfoiDto.tenantName != ''">
+                and sys_tenant_def.name like CONCAT('%',#{vehicleDataInfoiDto.tenantName},'%')
+            </if>
+            <if test="vehicleDataInfoiDto.vehicleLength != null and vehicleDataInfoiDto.vehicleLength != '' and vehicleDataInfoiDto.vehicleLength != -1">
+                and vehicle_data_info.vehicle_length = #{vehicleDataInfoiDto.vehicleLength}
+            </if>
+            <if test="vehicleDataInfoiDto.vehicleStatus != null and  vehicleDataInfoiDto.vehicleStatus &gt; -1">
+                and vehicle_data_info.vehicle_status = #{vehicleDataInfoiDto.vehicleStatus}
+            </if>
+            <if test="vehicleDataInfoiDto.startTime != null and vehicleDataInfoiDto.startTime != ''">
+                and vehicle_data_info.last_order_date  <![CDATA[ >= ]]> #{vehicleDataInfoiDto.startTime}
+            </if>
+            <if test="vehicleDataInfoiDto.endTime != null and vehicleDataInfoiDto.endTime != ''">
+                and vehicle_data_info.last_order_date <![CDATA[ <= ]]> #{vehicleDataInfoiDto.endTime}
+            </if>
+            <if test="vehicleDataInfoiDto.currProvinceId != null and  vehicleDataInfoiDto.currProvinceId &gt; -1">
+                and position.province_id =#{vehicleDataInfoiDto.currProvinceId}
+            </if>
+            <if test="vehicleDataInfoiDto.currCityId != null and vehicleDataInfoiDto.currCityId &gt; -1">
+                and position.city_id = #{vehicleDataInfoiDto.currCityId}
+            </if>
+        </where>
+        and vehicle_data_info.auth_state = 2  group by vehicle_data_info.plate_number order by vehicle_data_info.id desc
+    </select>
+
+    <!--获取车辆相关的司机信息-->
+    <select id="getVehicleDriver" resultType="com.youming.youche.record.vo.VehicleDriverVo">
+        SELECT
+                udi.linkman linkman,
+                udi.mobile_phone mobilePhone,
+                std.NAME tenantName
+        FROM
+                tenant_vehicle_rel tvr
+                        LEFT JOIN user_data_info udi ON tvr.driver_user_id = udi.id
+                        LEFT JOIN sys_tenant_def std ON tvr.tenant_id = std.id
+        WHERE
+                PLATE_NUMBER = #{plateNumber}
+          AND tvr.driver_user_id IS NOT NULL
+    </select>
+    <select id="getTenantVehicleInfoOBMS" resultType="com.youming.youche.record.dto.OBMSVehicleInfoDto">
+
+        select
+        vehicle_data_info.plate_number plateNumber,
+        vehicle_data_info.auth_state authState,
+        vehicle_data_info.audit_content auditContent,
+        vehicle_data_info.is_auth isAuth,
+        vehicle_data_info.driver_user_id driverUserId,
+        vehicle_data_info.copilot_Driver_Id copilotDriverId,
+        vehicle_data_info.vehicle_Validity_Time vehicleValidityTime,
+        vehicle_data_info.follow_Driver_Id followDriverId,
+        vehicle_data_info.operate_Validity_Time operateValidityTime,
+        vehicle_data_info.licence_Type licenceType,
+        vehicle_data_info.vehicle_Length vehicleLength,
+        vehicle_data_info.vehicle_Status vehicleStatus,
+        vehicle_data_info.light_Goods_Square lightGoodsSquare,
+        vehicle_data_info.vehicle_Load vehicleLoad,
+        vehicle_data_info.vin_No vinNo,
+        vehicle_data_info.oper_Certi operCerti,
+        vehicle_data_info.driving_license_owner drivingLicenseOwner,
+        vehicle_data_info.engine_No engineNo,
+        vehicle_data_info.rent_agreement_id rentAgreementId,
+        vehicle_data_info.rent_agreement_url rentAgreementUrl,
+        vehicle_data_info.vehicle_picture vehiclePicture,
+        vehicle_data_info.vehicle_pic_url vehiclePicUrl,
+        vehicle_data_info.driving_license drivingLicense,
+        vehicle_data_info.driving_license_url drivingLicenseUrl,
+        vehicle_data_info.adriver_license_copy adriverLicenseCopy,
+        vehicle_data_info.adriver_license_copy_url adriverLicenseCopyUrl,
+        vehicle_data_info.SPECIAL_OPER_CERT_FILE_ID specialOperCertFileId,
+        vehicle_data_info.driving_License_Sn drivingLicenseSn,
+        vehicle_data_info.oper_certi operCerti,
+        vehicle_data_info.brand_model brandModel,
+        vehicle_data_info.id vehicleCode,
+        vehicle_data_info.ATTACH_USER_MOBILE attachUserMobile,
+        vehicle_data_info.ATTACH_USER_NAME attachUserName,
+        vehicle_data_info.ATTACH_USER_ID attachUserId,
+        vehicle_data_info.tenant_id tenantId,
+        tenant_vehicle_rel.share_flg shareFlg
+        from vehicle_data_info
+        left join tenant_vehicle_rel
+        on vehicle_data_info.id=tenant_vehicle_rel.vehicle_code
+        and tenant_vehicle_rel.vehicle_class=#{vehicleClass}
+        where  vehicle_data_info.id=#{vehicleCode}
+    </select>
+    <select id="getShareVehicleDataInfo" resultType="com.youming.youche.record.vo.VehicleDataInfoVo">
+        SELECT
+            vehicle_data_info.plate_number plateNumber,
+            tenant_vehicle_rel.load_Empty_Oil_Cost loadEmptyOilCost,
+            tenant_vehicle_rel.load_Full_Oil_Cost loadFullOilCost,
+            tenant_vehicle_rel.is_Use_Car_Oil_Cost isUseCarOilCost,
+            tenant_vehicle_rel.vehicle_Class vehicleClass,
+            tenant_vehicle_rel.org_Id orgId,
+            tenant_vehicle_rel.user_Id userId,
+            tenant_vehicle_rel.id relId,
+            tenant_vehicle_rel.is_auth isAuth,
+            tenant_vehicle_rel.auth_state authState,
+            tenant_vehicle_rel.share_flg shareFlg,
+            tenant_vehicle_rel.link_user_id linkUserId,
+            vehicle_data_info.driver_user_id driverUserId,
+            vehicle_data_info.copilot_Driver_Id copilotDriverId,
+            vehicle_data_info.vehicle_Validity_Time vehicleValidityTime,
+            vehicle_data_info.follow_Driver_Id followDriverId,
+            vehicle_data_info.operate_Validity_Time operateValidityTime,
+            vehicle_data_info.licence_Type licenceType,
+            vehicle_data_info.vehicle_Length vehicleLength,
+            vehicle_data_info.vehicle_Status vehicleStatus,
+            vehicle_data_info.light_Goods_Square lightGoodsSquare,
+            vehicle_data_info.vehicle_Load vehicleLoad,
+            vehicle_data_info.vin_No vinNo,
+            vehicle_data_info.oper_Certi operCerti,
+            vehicle_data_info.engine_No engineNo,
+            vehicle_data_info.vehicle_picture vehiclePicture,
+            vehicle_data_info.driving_license drivingLicense,
+            vehicle_data_info.adriver_license_copy adriverLicenseCopy,
+            vehicle_data_info.driving_License_Sn drivingLicenseSn,
+            vehicle_data_info.etc_Card_Number etcCardNumber,
+            vehicle_data_info.equipment_Code equipmentCode,
+            vehicle_data_info.SPECIAL_OPER_CERT_FILE_ID specialOperCertFileId,
+            vehicle_data_info.oper_certi_id operCertiId,
+            def.id tenantId,
+            def.NAME tenantName,
+            def.link_man linkMan,
+            def.link_phone linkPhone,
+            vehicle_data_info.id vehicleCode,
+            vehicle_data_info.driving_license_owner drivingLicenseOwner,
+            vehicle_data_info.brand_model brandModel,
+            vehicle_data_info.vehicle_model  vehicleModel
+        FROM
+            vehicle_data_info
+                LEFT JOIN tenant_vehicle_rel ON vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+                LEFT JOIN tenant_vehicle_rel rel ON vehicle_data_info.id = rel.vehicle_Code
+                AND vehicle_data_info.plate_number = rel.plate_number
+                AND rel.vehicle_class =1
+                LEFT JOIN sys_tenant_def def ON def.id = rel.tenant_id
+        WHERE
+            1 = 1
+          AND vehicle_data_info.id =#{vhicleCode}  order by vehicle_data_info.id desc limit  1
+    </select>
+    <select id="getVehicle" resultType="com.youming.youche.record.domain.vehicle.VehicleDataInfo">
+        SELECT b.*
+        FROM Tenant_Vehicle_Rel a,
+        Vehicle_Data_Info b
+        WHERE a.vehicle_Code = b.id
+        and b.driver_User_Id = #{userId}
+        <if test="tenantId != null">
+            and a.tenant_Id = #{tenantId}
+        </if>
+    </select>
+    <select id="getVehicleDataInfoPlateNumber" resultType="com.youming.youche.record.vo.VehicleDataInfoiVo">
+        SELECT
+            *
+        FROM
+            vehicle_data_info info
+            LEFT JOIN tenant_vehicle_rel rel ON info.id = rel.vehicle_code
+        WHERE
+            rel.plate_number LIKE concat('%',#{plateNumber}, "%" )
+    </select>
+    <select id="getVehicleByPlateNumerVx" resultType="com.youming.youche.record.dto.VehicleDataInfoVxDto">
+        SELECT
+            vehicle.driver_user_id driverUserId,
+            vehicle.id vehicleCode,
+            rel.vehicle_class vehicleClass,
+            def.id tenantId,
+            def. NAME tenantName,
+            USER .linkman linkman,
+            USER .mobile_phone mobilePhone
+        FROM
+            vehicle_data_info vehicle
+                LEFT JOIN tenant_vehicle_rel rel ON vehicle.id = rel.vehicle_code
+                AND vehicle.plate_number = rel.plate_number
+                LEFT JOIN sys_tenant_def def ON def.id = vehicle.tenant_id
+                LEFT JOIN user_data_info USER ON USER .id = vehicle.driver_user_id
+        WHERE
+            vehicle.plate_number = #{plateNumber}
+          AND
+            IF (
+            rel.vehicle_class = 1,
+            vehicle.auth_state = 2
+          AND (
+            rel.auth_state = 2
+           OR rel.auth_state IS NULL
+            ),
+            1 = 1
+            )
+        ORDER BY
+            vehicle_class ASC limit 0,1
+    </select>
+    <select id="getVehicleByPlateNumer" resultType="com.youming.youche.record.dto.VehicleDataInfoVxVo">
+        SELECT
+            b.PLATE_NUMBER,
+            d.LINKMAN,
+            d.MOBILE_PHONE,
+            b.VEHICLE_LENGTH,
+            b.VEHICLE_STATUS,
+            a.VEHICLE_CLASS,
+            b.TENANT_ID,
+            c. NAME,
+            b.DRIVER_USER_ID,
+            b.VEHICLE_CODE,
+            a.LOAD_EMPTY_OIL_COST loadEmptyOilCost,
+            a.LOAD_FULL_OIL_COST loadFullOilCost,
+            a.IS_USE_CAR_OIL_COST isUseCarOilCost,
+            a.AUTH_STATE authState,
+            b.AUTH_STATE sysAuthState,
+            b.LICENCE_TYPE,
+            df.LINKMAN copilot_linkman,
+            df.mobile_phone linkman_mobile_phone,
+            b.copilot_driver_id,
+            a.TENANT_ID tmpTenantId,
+            c.LINK_PHONE AS tenantLinkPhone,
+            a.VEHICLE_CLASS vehicleFlag,
+            a.BILL_RECEIVER_MOBILE billReceiverMobile,
+            a.BILL_RECEIVER_USER_ID billReceiverUserId,
+            a.BILL_RECEIVER_NAME billReceiverName
+        FROM
+            (
+                SELECT
+                    PLATE_NUMBER,
+                    VEHICLE_CODE,
+                    TENANT_ID,
+                    VEHICLE_LENGTH,
+                    VEHICLE_STATUS,
+                    DRIVER_USER_ID,
+                    LICENCE_TYPE,
+                    COPILOT_DRIVER_ID,
+                    AUTH_STATE,
+                    COUNT(*) AS flag
+                FROM
+                    (
+                        SELECT
+                            vv.PLATE_NUMBER,
+                            vv.id VEHICLE_CODE,
+                            vv.TENANT_ID,
+                            vv.VEHICLE_LENGTH,
+                            vv.VEHICLE_STATUS,
+                            ifnull(
+                                    ifnull(
+                                            rel.DRIVER_USER_ID,
+                                            zyrel.DRIVER_USER_ID
+                                        ),
+                                    ptrel.DRIVER_USER_ID
+                                ) DRIVER_USER_ID,
+                            vv.LICENCE_TYPE,
+                            vv.COPILOT_DRIVER_ID,
+                            vv.AUTH_STATE
+                        FROM
+                            vehicle_data_info vv
+                                LEFT JOIN tenant_vehicle_rel rel ON vv.id = rel.VEHICLE_CODE
+                                AND rel.tenant_id = #{tenantId}
+                                LEFT JOIN tenant_vehicle_rel zyrel ON vv.id = zyrel.VEHICLE_CODE
+                                AND zyrel.VEHICLE_CLASS = 1
+                                LEFT JOIN tenant_vehicle_rel ptrel ON vv.id = ptrel.VEHICLE_CODE
+                                AND ptrel.tenant_id = 1
+                        WHERE
+                            vv.PLATE_NUMBER LIKE CONCAT( '%',#{plateNumber}, '%' )
+                        UNION ALL
+                        SELECT
+                            vdi.PLATE_NUMBER,
+                            vdi.id VEHICLE_CODE,
+                            vdi.TENANT_ID,
+                            vdi.VEHICLE_LENGTH,
+                            vdi.VEHICLE_STATUS,
+                            rel.DRIVER_USER_ID,
+                            vdi.LICENCE_TYPE,
+                            vdi.COPILOT_DRIVER_ID,
+                            vdi.AUTH_STATE
+                        FROM
+                            vehicle_return_info vri
+                                LEFT JOIN vehicle_data_info vdi ON vri.PLATE_NUMBER = vdi.PLATE_NUMBER
+                                LEFT JOIN tenant_vehicle_rel rel ON vri.PLATE_NUMBER = rel.PLATE_NUMBER
+                                AND rel.tenant_id = #{tenantId}
+                        WHERE
+                            vdi.PLATE_NUMBER IS NOT NULL
+                          AND vri.PLATE_NUMBER LIKE CONCAT( '%',#{plateNumber}, '%' )
+                          AND TIMESTAMPDIFF(HOUR, NOW(), vri.BEGIN_DATE) > 0
+                    ) AS final
+                GROUP BY
+                    PLATE_NUMBER,
+                    VEHICLE_CODE,
+                    TENANT_ID,
+                    VEHICLE_LENGTH,
+                    VEHICLE_STATUS,
+                    DRIVER_USER_ID,
+                    LICENCE_TYPE,
+                    COPILOT_DRIVER_ID,
+                    AUTH_STATE
+            ) b
+                LEFT JOIN tenant_vehicle_rel a ON b.vehicle_code = a.vehicle_code
+                LEFT JOIN sys_tenant_def c ON b.TENANT_ID = c.ID
+                LEFT JOIN user_data_info d ON b.DRIVER_USER_ID = d.ID
+                LEFT JOIN user_data_info df ON b.copilot_driver_id = df.id
+                LEFT JOIN (
+                SELECT
+                    PLATE_NUMBER
+                FROM
+                    vehicle_return_info kvri
+                WHERE
+                    kvri.STATE = 1
+                  AND TIMESTAMPDIFF(HOUR, NOW(), kvri.BEGIN_DATE) >= 0
+                GROUP BY
+                    kvri.PLATE_NUMBER
+            ) kkv ON b.PLATE_NUMBER = kkv.PLATE_NUMBER
+        WHERE
+            (
+                    (
+                            a.TENANT_ID = #{tenantId}
+                            OR a.vehicle_code IS NULL
+                            OR (
+                                   SELECT
+                                       count(1)
+                                   FROM
+                                       tenant_vehicle_rel l
+                                   WHERE
+                                       l.vehicle_code = 1
+                                     AND l.vehicle_class = 1
+                               ) = 0
+                        )
+                    OR (kkv.PLATE_NUMBER IS NOT NULL)
+                    OR (
+                                (
+                                    SELECT
+                                        count(1)
+                                    FROM
+                                        tenant_vehicle_rel l
+                                    WHERE
+                                        l.vehicle_code = b.vehicle_code
+                                      AND l.tenant_id = #{tenantId}
+                                ) = 0
+                            AND a.share_flg = 1
+                            AND a.VEHICLE_CLASS = 1
+                        )
+                )
+          AND
+            IF (
+                    (
+                            (
+                                SELECT
+                                    count(1)
+                                FROM
+                                    tenant_vehicle_rel r
+                                WHERE
+                                    r.vehicle_code = b.vehicle_code
+                                  AND r.tenant_id = #{tenantId}
+                            ) > 0
+                        ),
+                    a.TENANT_ID = #{tenantId},
+                    1 = 1
+                )
+        ORDER BY
+            b.flag DESC
+    </select>
+    <select id="doQueryCarDriver" resultType="com.youming.youche.record.dto.DriverDataInfoDto">
+        SELECT
+            u.MOBILE_PHONE,
+            u.LINKMAN as linkman,
+            r.CAR_USER_TYPE,
+            u.TENANT_ID,
+            def. NAME,
+            def.link_man as linkMan,
+            def.link_phone,
+            (
+                SELECT
+                    count(*)
+                FROM
+                    tenant_vehicle_rel
+                WHERE
+                    tenant_vehicle_rel.tenant_Id = r.TENANT_ID
+                  AND tenant_vehicle_rel.DRIVER_USER_ID = r.user_id
+            ) AS vehicleNum,
+            r.STATE,
+            r.HAS_VER,
+            u.id,
+            r.create_date,
+            r.id relId,
+            r.state_reason,
+            r.AUTH_MAN_ID,
+            r.AUTH_ORG_ID,
+            u.identification,
+            u.DRIVER_LICENSE_EXPIRED_TIME,
+            u.QC_CERTI_EXPIRED_TIME
+        FROM
+            user_data_info u
+                LEFT JOIN sys_tenant_def def ON def.ID = u.TENANT_ID
+                LEFT JOIN TENANT_USER_REL r ON r.USER_ID = u.ID
+        WHERE
+            r.TENANT_ID = #{tenantId}
+          AND u.user_type IN (1,3)
+        <if test="loginAcct != null and loginAcct != ''">
+            AND u.MOBILE_PHONE =  #{loginAcct}
+        </if>
+         ORDER BY r.id DESC
+    </select>
+
+    <select id="getVehicleByPlateNumerPage" resultType="com.youming.youche.record.dto.VehicleDataInfoVxVo">
+        select * from (
+        SELECT
+            b.PLATE_NUMBER,
+            d.LINKMAN,
+            d.MOBILE_PHONE,
+            b.VEHICLE_LENGTH,
+            b.VEHICLE_STATUS,
+            a.VEHICLE_CLASS,
+            b.TENANT_ID,
+            c.NAME,
+            b.DRIVER_USER_ID,
+            b.VEHICLE_CODE,
+            a.LOAD_EMPTY_OIL_COST loadEmptyOilCost,
+            a.LOAD_FULL_OIL_COST loadFullOilCost,
+            a.IS_USE_CAR_OIL_COST isUseCarOilCost,
+            a.AUTH_STATE authState,
+            b.AUTH_STATE sysAuthState,
+            b.LICENCE_TYPE,
+            df.LINKMAN copilot_linkman,
+            df.mobile_phone linkman_mobile_phone,
+            b.copilot_driver_id,
+            a.TENANT_ID tmpTenantId,
+            c.LINK_PHONE AS tenantLinkPhone,
+            a.VEHICLE_CLASS vehicleFlag,
+            a.BILL_RECEIVER_MOBILE billReceiverMobile,
+            a.BILL_RECEIVER_USER_ID billReceiverUserId,
+            a.BILL_RECEIVER_NAME billReceiverName
+        FROM
+            (
+                SELECT
+                    PLATE_NUMBER,
+                    VEHICLE_CODE,
+                    TENANT_ID,
+                    VEHICLE_LENGTH,
+                    VEHICLE_STATUS,
+                    DRIVER_USER_ID,
+                    LICENCE_TYPE,
+                    COPILOT_DRIVER_ID,
+                    AUTH_STATE,
+                    COUNT(*) AS flag
+                FROM
+                    (
+                        SELECT
+                            vv.PLATE_NUMBER,
+                            vv.id VEHICLE_CODE,
+                            rel.TENANT_ID,
+                            vv.VEHICLE_LENGTH,
+                            vv.VEHICLE_STATUS,
+                            ifnull(
+                                    ifnull(
+                                            rel.DRIVER_USER_ID,
+                                            zyrel.DRIVER_USER_ID
+                                        ),
+                                    ptrel.DRIVER_USER_ID
+                                ) DRIVER_USER_ID,
+                            vv.LICENCE_TYPE,
+                            vv.COPILOT_DRIVER_ID,
+                            vv.AUTH_STATE
+                        FROM
+                            vehicle_data_info vv
+                                LEFT JOIN tenant_vehicle_rel rel ON vv.id = rel.VEHICLE_CODE
+                                AND rel.tenant_id = #{tenantId}
+                                LEFT JOIN tenant_vehicle_rel zyrel ON vv.id = zyrel.VEHICLE_CODE
+                                AND (zyrel.VEHICLE_CLASS = 1 OR zyrel.VEHICLE_CLASS = 2 OR zyrel.VEHICLE_CLASS = 3)
+                                LEFT JOIN tenant_vehicle_rel ptrel ON vv.id = ptrel.VEHICLE_CODE
+                                AND ptrel.tenant_id = 1
+                        WHERE
+                            vv.PLATE_NUMBER LIKE CONCAT( '%',#{plateNumber}, '%' )
+                        UNION ALL
+                        SELECT
+                            vdi.PLATE_NUMBER,
+                            vdi.id VEHICLE_CODE,
+                            rel.TENANT_ID,
+                            vdi.VEHICLE_LENGTH,
+                            vdi.VEHICLE_STATUS,
+                            rel.DRIVER_USER_ID,
+                            vdi.LICENCE_TYPE,
+                            vdi.COPILOT_DRIVER_ID,
+                            vdi.AUTH_STATE
+                        FROM
+                            vehicle_return_info vri
+                                LEFT JOIN vehicle_data_info vdi ON vri.PLATE_NUMBER = vdi.PLATE_NUMBER
+                                LEFT JOIN tenant_vehicle_rel rel ON vri.PLATE_NUMBER = rel.PLATE_NUMBER
+                                AND rel.tenant_id = #{tenantId}
+                        WHERE
+                            vdi.PLATE_NUMBER IS NOT NULL
+                          AND vri.PLATE_NUMBER LIKE CONCAT( '%',#{plateNumber}, '%' )
+                          AND TIMESTAMPDIFF(HOUR, NOW(), vri.BEGIN_DATE) > 0
+                    ) AS final
+                GROUP BY
+                    PLATE_NUMBER,
+                    VEHICLE_CODE,
+                    TENANT_ID,
+                    VEHICLE_LENGTH,
+                    VEHICLE_STATUS,
+                    DRIVER_USER_ID,
+                    LICENCE_TYPE,
+                    COPILOT_DRIVER_ID,
+                    AUTH_STATE
+            ) b
+                LEFT JOIN tenant_vehicle_rel a ON b.vehicle_code = a.vehicle_code
+                LEFT JOIN sys_tenant_def c ON b.TENANT_ID = c.ID
+                LEFT JOIN user_data_info d ON b.DRIVER_USER_ID = d.ID
+                LEFT JOIN user_data_info df ON b.copilot_driver_id = df.id
+                LEFT JOIN (
+                SELECT
+                    PLATE_NUMBER
+                FROM
+                    vehicle_return_info kvri
+                WHERE
+                    kvri.STATE = 1
+                  AND TIMESTAMPDIFF(HOUR, NOW(), kvri.BEGIN_DATE) >= 0
+                GROUP BY
+                    kvri.PLATE_NUMBER
+            ) kkv ON b.PLATE_NUMBER = kkv.PLATE_NUMBER
+        WHERE
+            (
+                    (
+                            a.TENANT_ID = #{tenantId}
+                            OR a.vehicle_code IS NULL
+                            OR (
+                                   SELECT
+                                       count(1)
+                                   FROM
+                                       tenant_vehicle_rel l
+                                   WHERE
+                                       l.vehicle_code = 1
+                                     AND (l.vehicle_class = 1 OR l.vehicle_class = 2 OR l.vehicle_class = 3)
+                               ) = 0
+                        )
+                    OR (kkv.PLATE_NUMBER IS NOT NULL)
+                    OR (
+                                (
+                                    SELECT
+                                        count(1)
+                                    FROM
+                                        tenant_vehicle_rel l
+                                    WHERE
+                                        l.vehicle_code = b.vehicle_code
+                                      AND l.tenant_id = #{tenantId}
+                                ) = 0
+                            AND a.share_flg = 1
+                            AND (a.VEHICLE_CLASS = 1 OR a.VEHICLE_CLASS = 2 OR a.VEHICLE_CLASS = 3)
+                        )
+                )
+          AND
+            IF (
+                    (
+                            (
+                                SELECT
+                                    count(1)
+                                FROM
+                                    tenant_vehicle_rel r
+                                WHERE
+                                    r.vehicle_code = b.vehicle_code
+                                  AND r.tenant_id = #{tenantId}
+                            ) > 0
+                        ),
+                    a.TENANT_ID = #{tenantId},
+                    1 = 1
+                )
+        ORDER BY
+            b.flag DESC
+            ) tt where tt.TENANT_ID = #{tenantId}
+    </select>
+
+    <select id="getVehicleByDriverUserId" resultType="java.util.Map">
+        SELECT
+            rel.auth_state authState,
+            rel.audit_content auditContent,
+            rel.is_auth isAuth,
+            vehicle.auth_state sysAuthState,
+            vehicle.audit_content sysAuditContent,
+            vehicle.is_auth sysIsAuth
+        FROM
+            vehicle_data_info vehicle
+            LEFT JOIN tenant_vehicle_rel rel ON vehicle.id = rel.vehicle_code
+            AND vehicle.plate_number = rel.plate_number
+            AND rel.vehicle_class = 1
+        WHERE
+            vehicle.driver_user_id = #{driverUserId}
+    </select>
+
+    <select id="getOrderCountByVehicleCode" resultType="com.youming.youche.record.dto.OrderCountDto">
+        SELECT
+        o.tenant_id AS tenantId,
+        count( o.tenant_id ) AS cont
+        FROM
+        order_info o,
+        order_scheduler s
+        WHERE
+        o.order_id = s.order_id
+        AND s.vehicle_code = #{vehicleCode}
+        AND ( o.to_tenant_id IS NULL OR o.to_tenant_id <![CDATA[ <= ]]> 0 )
+        AND s.vehicle_class IN ( 2, 3, 4 )
+        GROUP BY
+        o.tenant_id
+    </select>
+
+    <select id="getOrderCountHByVehicleCode" resultType="com.youming.youche.record.dto.OrderCountDto">
+        SELECT
+        o.tenant_id AS tenantId,
+        count( o.tenant_id ) AS cont
+        FROM
+        order_info o,
+        order_scheduler_h s
+        WHERE
+        o.order_id = s.order_id
+        AND s.vehicle_code = #{vehicleCode}
+        AND ( o.to_tenant_id IS NULL OR o.to_tenant_id <![CDATA[ <= ]]> 0 )
+        AND s.vehicle_class IN ( 2, 3, 4 )
+        AND o.order_state = 14
+        GROUP BY
+        o.tenant_id
+    </select>
+
+    <select id="getOrderCountLByVehicleCode" resultType="java.lang.Long">
+        SELECT
+            count( 1 )
+        FROM
+            order_info o,
+            order_scheduler s
+        WHERE
+            o.order_id = s.order_id
+            AND s.vehicle_code = #{vehicleCode}
+            AND o.to_tenant_id IS NULL
+            AND s.vehicle_class = 1
+            AND o.tenant_id = #{tenantId}
+    </select>
+
+    <select id="getOrderCountLHByVehicleCode" resultType="java.lang.Long">
+        SELECT
+            count( 1 )
+        FROM
+            order_info o,
+            order_scheduler_h s
+        WHERE
+            o.order_id = s.order_id
+            AND s.vehicle_code = #{vehicleCode}
+            AND o.to_tenant_id IS NULL
+            AND s.vehicle_class = 1
+            AND o.tenant_id = #{tenantId}
+            AND o.order_state = 14
+    </select>
+
+    <select id="doQueryTenantByVehicleCodeApp" resultType="com.youming.youche.record.dto.QueryTenantDto">
+        SELECT
+        rel.id relId,
+        rel.vehicle_class vehicleClass,
+        rel.create_time createDate,
+        IFNULL( rel.BILL_RECEIVER_MOBILE, '' ) AS billReceiverMobile,
+        IFNULL( rel.BILL_RECEIVER_NAME, '' ) AS billReceiverName,
+        def.id tenantId,
+        def.NAME tenantName,
+        def.link_man linkMan,
+        def.link_phone linkPhone
+        FROM
+        tenant_vehicle_rel rel,
+        sys_tenant_def def
+        WHERE
+        rel.tenant_id = def.id
+        AND rel.vehicle_code = #{vehicleCode}
+        AND rel.tenant_id <![CDATA[ <> ]]> 1
+    </select>
+
+    <select id="getTenantVehicleInfoApp" resultType="com.youming.youche.record.dto.VehicleInfoAppDto">
+        SELECT
+            vehicle_data_info.plate_number plateNumber,
+            tenant_vehicle_rel.id relId,
+            tenant_vehicle_rel.auth_state authState,
+            tenant_vehicle_rel.audit_content auditContent,
+            tenant_vehicle_rel.is_auth isAuth,
+            vehicle_data_info.auth_state sysAuthState,
+            vehicle_data_info.audit_content sysAuditContent,
+            vehicle_data_info.is_auth sysIsAuth,
+            vehicle_data_info.driver_user_id driverUserId,
+            vehicle_data_info.copilot_Driver_Id copilotDriverId,
+            vehicle_data_info.vehicle_Validity_Time vehicleValidityTime,
+            vehicle_data_info.follow_Driver_Id followDriverId,
+            vehicle_data_info.operate_Validity_Time operateValidityTime,
+            vehicle_data_info.licence_Type licenceType,
+            IFNULL( vehicle_data_info.vehicle_Length, '' ) vehicleLength,
+            IFNULL( vehicle_data_info.vehicle_Status, '' ) vehicleStatus,
+            IFNULL( vehicle_data_info.light_Goods_Square, '' ) lightGoodsSquare,
+            IFNULL( vehicle_data_info.vehicle_Load, '' ) vehicleLoad,
+            IFNULL( vehicle_data_info.vin_No, '' ) vinNo,
+--             vehicle_data_info.oper_Certi operCerti,
+            vehicle_data_info.engine_No engineNo,
+            vehicle_data_info.driving_license_owner drivingLicenseOwner,
+            vehicle_data_info.vehicle_picture vehiclePicture,
+            vehicle_data_info.vehicle_pic_url vehiclePicUrl,
+            vehicle_data_info.driving_license drivingLicense,
+            vehicle_data_info.driving_license_url drivingLicenseUrl,
+            vehicle_data_info.adriver_license_copy adriverLicenseCopy,
+            vehicle_data_info.adriver_license_copy_url adriverLicenseCopyUrl,
+            vehicle_data_info.driving_License_Sn drivingLicenseSn,
+            vehicle_data_info.oper_certi operCerti,
+            vehicle_data_info.oper_certi_id operCertiId,
+            vehicle_data_info.oper_certi_url operCertiUrl,
+            vehicle_data_info.brand_model brandModel,
+            vehicle_data_info.ATTACH_USER_MOBILE billReceiverMobile,
+            vehicle_data_info.ATTACH_USER_NAME billReceiverName,
+            vehicle_data_info.ATTACH_USER_ID billReceiverUserId,
+            vehicle_data_info.SPECIAL_OPER_CERT_FILE_ID specialOperCertFileId,
+            vehicle_data_info.SPECIAL_OPER_CERT_FILE_URL specialOperCertFileUrl,
+            vehicle_data_info.id vehicleCode,
+            tenant_vehicle_rel.vehicle_class vehicleClass
+        FROM
+            vehicle_data_info
+            LEFT JOIN tenant_vehicle_rel ON vehicle_data_info.id = tenant_vehicle_rel.vehicle_Code
+            AND vehicle_data_info.plate_number = tenant_vehicle_rel.plate_number
+            AND tenant_vehicle_rel.vehicle_class = 1
+        WHERE
+            vehicle_data_info.id = #{vehicleCode}
+    </select>
+
+    <select id="doQueryVehicleByDriver" resultType="com.youming.youche.record.dto.QueryVehicleByDriverDto">
+        SELECT
+        vehicle.id vehicleCode,
+        vehicle.plate_number plateNumber,
+        vehicle.vehicle_length vehicleLength,
+        vehicle.vehicle_status vehicleStatus,
+        vehicle.vehicle_load vehicleLoad,
+        vehicle.light_goods_square lightGoodsSquare,
+        vehicle.vehicle_pic_url vehiclePicUrl,
+        vehicle.licence_type licenceType,
+        rel.auth_state authState,
+        rel.audit_content auditContent,
+        rel.is_auth isAuth,
+        vehicle.is_auth sysIsAuth,
+        vehicle.auth_state sysAuthState,
+        vehicle.audit_content sysAuditContent,
+        rel.id relId,
+        ( SELECT count( 1 ) FROM tenant_vehicle_rel l WHERE l.vehicle_code = vehicle.id AND tenant_id <![CDATA[ <> ]]> 1 ) cooperationCount,
+        rel.share_flg shareFlg,
+        rel.vehicle_class vehicleClass
+        FROM
+        (
+        SELECT
+        vdi.*
+        FROM
+        vehicle_data_info vdi
+        LEFT JOIN ( SELECT PLATE_NUMBER FROM tenant_vehicle_rel WHERE DRIVER_USER_ID = #{driverUserId} GROUP BY PLATE_NUMBER ) vehicleRel ON vdi.PLATE_NUMBER = vehicleRel.PLATE_NUMBER
+        WHERE
+        vehicleRel.PLATE_NUMBER IS NOT NULL
+        ) AS vehicle
+        LEFT JOIN ( SELECT * FROM tenant_vehicle_rel tvr WHERE DRIVER_USER_ID = #{driverUserId} AND tvr.VEHICLE_CLASS = 1 ) AS rel ON vehicle.PLATE_NUMBER = rel.PLATE_NUMBER
+    </select>
+
+    <select id="doQueryOrderListApp" resultType="com.youming.youche.record.domain.service.ServiceRepairOrder">
+        select
+            app.id id ,
+            app.order_code orderCode ,
+            app.order_sn orderSn ,
+            app.work_type workType ,
+            app.create_date createDate ,
+            app.total_Amount totalAmount,
+            app.repair_start_time repairStartTime,
+            app.out_Factory_Time outFactoryTime,
+            app.shop_name shopName,
+            app.car_no carNo,
+            app.order_status orderStatus
+        from service_repair_order app
+        <!-- 申请维保 -->
+        LEFT JOIN service_product sp ON app.shop_id = sp.station_id
+        and sp.product_type = 3
+        WHERE app.tenant_id=#{tenantId}
+        and app.contract_mobile=#{carDriverPhone}
+        <choose>
+            <when test="orderStatus == 1">
+                and (app.order_status = 1  or app.order_status = 5  or app.order_status = 9)
+            </when>
+            <when test="orderStatus == 4">
+                and (app.order_status = 4  or app.order_status = 8)
+            </when>
+            <when test="orderStatus == 11">
+                and (app.order_status = 11)
+            </when>
+            <when test="orderStatus == 12">
+                and (app.order_status = 12)
+            </when>
+        </choose>
+        order by app.id desc
+
+    </select>
+
+    <select id="getVehicleDataAll"
+            resultType="com.youming.youche.record.dto.vehicle.VehicleReportVehicleDataDto">
+        SELECT
+            vdi.id AS vehicleCode,
+            vdi.plate_number AS plateNumber,
+            tvr.vehicle_class AS vehicleClass,
+            tvr.tenant_id AS tenantId
+        FROM
+            tenant_vehicle_rel tvr
+            LEFT JOIN vehicle_data_info vdi ON tvr.vehicle_code = vdi.id
+    </select>
+
+</mapper>

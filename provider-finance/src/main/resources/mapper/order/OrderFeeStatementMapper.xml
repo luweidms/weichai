@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderFeeStatementMapper">
+
+    <select id="queryFeeByBillNumber" resultType="com.youming.youche.finance.domain.order.OrderFeeStatement">
+        SELECT
+            ID AS id,
+            source_check_amount AS sourceCheckAmount,
+            tenant_id AS tenantId,
+            order_id AS orderId
+        FROM
+            order_fee_statement
+        WHERE
+            bill_number= #{billNumber}
+    </select>
+
+    <update id="updateFeeByHId">
+        UPDATE order_fee_statement
+        SET finance_sts = #{orderFeeStatement.financeSts},
+        get_amount = #{orderFeeStatement.getAmount}
+        <if test="orderFeeStatement.realIncome != null and orderFeeStatement.realIncome > 0">
+            ,real_income = #{orderFeeStatement.realIncome}
+        </if>
+        WHERE
+        id = #{orderFeeStatement.id}
+    </update>
+
+    <select id="getOrderIdsByBill" resultType="java.lang.Long">
+        SELECT
+            order_id
+        FROM
+            order_fee_statement
+        WHERE
+            bill_number IN (${billNumbers}) UNION ALL
+        SELECT
+            order_id
+        FROM
+            order_fee_statement_h
+        WHERE
+            bill_number IN (${billNumbers})
+    </select>
+
+    <update id="updateFeeByFields">
+        UPDATE order_fee_statement o,
+        order_fee e
+        SET o.finance_sts = 3
+        WHERE
+            e.order_id = o.order_id
+            AND o.bill_number IN (${billNumbers})
+            AND o.finance_sts NOT IN (1,2)
+    </update>
+
+    <update id="updateGoBackStatusByBillNumber0">
+        UPDATE order_fee_statement
+        SET FINANCE_STS = 0,
+        REAL_INCOME = 0,
+        BILL_NUMBER = NULL
+        WHERE
+            bill_number = #{billNumber}
+    </update>
+
+    <update id="updateGoBackStatusByBillNumber1">
+        UPDATE order_fee_statement
+        SET finance_sts = 0,
+        real_income = 0,
+        receipt_number = ''
+        WHERE
+            bill_number = #{billNumber}
+    </update>
+
+    <update id="updateGoBackStatusByBillNumber2">
+        UPDATE order_fee_statement
+        SET finance_sts = 3,
+        get_amount = source_check_amount,
+        get_amout_date = NULL,
+        real_income = 0
+        WHERE
+            bill_number = #{billNumber}
+    </update>
+
+    <select id="getOrderFeeStatementByBillNumber" resultType="java.lang.Long">
+        SELECT
+            sum( a.checkamount )
+        FROM
+            (
+            SELECT
+                sum( source_check_amount ) AS checkamount
+            FROM
+                order_fee_statement
+            WHERE
+                bill_number = #{billNumber} UNION ALL
+            SELECT
+                sum( source_check_amount ) AS checkamount
+            FROM
+                order_fee_statement_h
+            WHERE
+            bill_number = #{billNumber}
+            ) a
+    </select>
+
+    <select id="getFeeStatementByOrderIds"
+            resultType="com.youming.youche.finance.domain.order.OrderFeeStatement">
+        SELECT
+            id AS id,
+            finance_sts AS financests,
+            order_id AS orderid,
+            bill_number AS billnumber
+        FROM
+            order_fee_statement
+        WHERE
+            order_id IN (${orderIds})
+    </select>
+
+    <select id="checkOrderCreateBill" resultType="java.util.Map">
+        SELECT
+        g.ORDER_ID AS orderId,
+        case when trim(o.CHECK_NAME) != '' then o.CHECK_NAME else g.COMPANY_NAME end as checkName
+        FROM order_goods g ,order_fee_statement o
+        WHERE
+        o.ORDER_ID = g.ORDER_ID
+        AND (g.order_id in(${orderIds}) OR o.bill_number=#{billNumber}) And g.TENANT_ID=#{tenantId}
+        GROUP BY g.order_id
+        union all
+        SELECT
+        g.ORDER_ID AS orderId,
+        case when trim(o.CHECK_NAME) != '' then o.CHECK_NAME else g.COMPANY_NAME end as checkName
+        FROM order_goods_h g ,order_fee_statement_h o
+        WHERE o.ORDER_ID = g.ORDER_ID
+        AND (g.order_id in(${orderIds}) OR o.bill_number=#{billNumber}) And g.TENANT_ID=#{tenantId}
+        GROUP BY g.order_id
+    </select>
+
+    <update id="updateBillNumberByOrderIds">
+        UPDATE order_fee_statement
+        SET bill_number = #{billNumber},
+        bill_number_date = now(),
+        finance_sts = 0
+        WHERE
+            order_id IN (${orderIds})
+            AND (
+            bill_number IS NULL
+            OR bill_number = '')
+    </update>
+
+    <select id="getOrderNumBuBillNumber" resultType="java.lang.Integer">
+        SELECT
+            sum( orders.ordernum )
+        FROM
+            ((
+                SELECT
+                    count(*) AS ordernum
+                FROM
+                    order_fee_statement
+                WHERE
+                    bill_number = #{billNumber}) UNION ALL
+                (
+                SELECT
+                    count(*) AS ordernum
+                FROM
+                    order_fee_statement_h
+            WHERE
+            bill_number = #{billNumber})) AS orders
+    </select>
+
+    <select id="queryBillNumberByOrderIdsAndBillNumber" resultType="java.lang.Integer">
+        SELECT
+            COUNT( 1 )
+        FROM
+            order_fee_statement
+        WHERE
+            order_id IN (${orderIds})
+            AND bill_number = #{billNumber}
+    </select>
+
+    <update id="updateBillNumberByOrderIdsAndBillNumber">
+        UPDATE order_fee_statement
+        SET bill_number = NULL
+        WHERE
+            order_id IN (${orderIds})
+            AND bill_number = #{billNumber}
+    </update>
+
+    <update id="updateOrderDiffByOrderId">
+        UPDATE order_fee_statement
+        SET confirm_amount = #{confirmAmount},
+        confirm_diff_amount = #{diffFeeSum},
+        update_time = #{updateTime},
+        update_op_id = #{userId}
+        WHERE
+            order_id = #{orderId}
+    </update>
+
+</mapper>

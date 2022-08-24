@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.TenantAgentServiceRelMapper">
+
+    <select id="getSumQuotaAmtListByTenantId" resultType="com.youming.youche.order.dto.SumQuotaAmtDto">
+        SELECT
+            SUM(quotaAmt) AS totalQuotaAmt,
+            SUM(useQuotaAmt) AS totalUseQuotaAmt
+        FROM
+            (
+                SELECT
+                    1 type,
+                    s.service_name serviceName,
+                    rel.quota_amt quotaAmt,
+                    rel.use_quota_amt useQuotaAmt,
+                    s.service_user_id serviceUserId
+                FROM
+                    tenant_agent_service_rel rel,
+                    (
+                        SELECT
+                            a.ID,
+                            b.SERVICE_NAME,
+                            b.SERVICE_USER_ID
+                        FROM
+                            agent_service_info a,
+                            service_info b
+                        WHERE
+                            a.SERVICE_USER_ID = b.SERVICE_USER_ID
+                          AND a.agent_Service_Type = #{agentServiceType}
+                    ) s
+                WHERE
+                    s.ID = rel.AGENT_ID
+                  AND rel.tenant_id = #{tenantId}
+                UNION
+                (
+                    SELECT
+                        2 type,
+                        s.service_name serviceName,
+                        rel.quota_amt quotaAmt,
+                        rel.use_quota_amt useQuotaAmt,
+                        s.service_user_id serviceUserId
+                    FROM
+                        service_info s,
+                        tenant_service_rel rel
+                    WHERE
+                        s.service_user_id = rel.service_user_id
+                      AND rel.tenant_id = #{tenantId}
+                )
+            ) tmp
+    </select>
+</mapper>

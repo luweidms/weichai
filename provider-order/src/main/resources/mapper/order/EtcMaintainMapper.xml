@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.EtcMaintainMapper">
+<select id="queryEtcMaintainByVehicleCode" resultType="com.youming.youche.order.domain.order.EtcMaintain">
+    SELECT *  FROM etc_maintain e
+    <where>
+        e.vehicle_code = #{vehicleCode}
+        <if test="tenantId!=null and tenantId>0">
+            AND e.tenant_id = #{tenantId}
+        </if>
+        <if test="state!=null and state>=0">
+            and e.state =#{state}
+        </if>
+
+    </where>
+</select>
+</mapper>

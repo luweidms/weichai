@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderDiffInfoMapper">
+
+    <select id="getOrderDiffList" resultType="com.youming.youche.finance.domain.order.OrderDiffInfo">
+        SELECT
+            ID AS id,
+            ORDER_ID AS orderId,
+            DIFF_FEE AS diffFee,
+            DIFF_DESC AS diffDesc,
+            DIFF_TYPE AS diffType,
+            CREATOR_ID AS creatorId,
+            CREATOR_NAME AS creatorName,
+            CREATE_TIME AS createTime,
+            OPER_ID AS operId,
+            OPER_DATE AS operDate,
+            TENANT_ID AS tenantId
+        FROM
+            order_diff_info
+        WHERE
+            ORDER_ID = #{orderId}
+    </select>
+
+    <select id="getDiffFeeByOrderIds" resultType="java.util.Map">
+        SELECT
+            order_id AS orderId,
+            SUM( DIFF_FEE ) AS diffFee
+        FROM
+            order_diff_info
+        WHERE
+            order_id IN ( ${orderIds} )
+        GROUP BY
+            order_id
+    </select>
+
+    <delete id="deleteDiffInfoByOrderId">
+       DELETE
+        FROM
+            order_diff_info
+        WHERE
+            order_id = #{orderId}
+    </delete>
+
+</mapper>

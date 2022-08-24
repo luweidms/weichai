@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.AdvanceExpireInfoMapper">
+
+    <select id="queryUndueExpires" resultType="com.youming.youche.order.domain.order.OrderLimit"></select>
+
+    <select id="getAdvanceExpireInfoByFlowId" resultType="com.youming.youche.finance.domain.AdvanceExpireInfo">
+
+    </select>
+
+    <select id="getAdvanceExpireInfoByIds" resultType="java.lang.Long">
+        select SUM(margin_balance) marginBalance
+        from advance_expire_info
+        where from_flow_id in (#{flowIds}) and SIGN_TYPE=#{signType}
+    </select>
+
+    <update id="updateOrderLimit">
+        UPDATE order_limit
+        SET expire_type=#{expireType},final_plan_date=#{finalPlanDate}
+        WHERE order_id=#{orderId}
+    </update>
+
+    <update id="updateConsumeOilFlow">
+        UPDATE consume_oil_flow
+            SET get_date=#{getDate},EXPIRE_TYPE=1
+        WHERE id=#{fromFlowId}
+    </update>
+
+    <update id="updateUserRepairMargin">
+        UPDATE user_repair_margin
+            set get_date=#{getDate},EXPIRE_TYPE=1
+        WHERE id=#{orderId}
+    </update>
+</mapper>

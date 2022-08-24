@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderInfoExtMapper">
+
+    <select id="getOrderVerifyInfoOut" resultType="com.youming.youche.order.vo.OrderVerifyInfoOut">
+
+        SELECT *
+            from order_info o
+            LEFT JOIN order_info_ext ie ON o.order_id = ie.order_id
+            LEFT JOIN order_scheduler s ON s.order_id = o.order_id
+            LEFT JOIN order_goods g ON g.order_id = o.order_id
+        WHERE o.is_Need_Bill = 2
+        <if test="orderId != null and orderId > 0">
+            AND o.ORDER_ID= #{orderId}
+        </if>
+        <if test="userId != null and userId > 0">
+            AND s.CAR_DRIVER_ID= #{userId}
+        </if>
+        <if test="plateNumber != null and plateNumber > 0">
+            AND s.PLATE_NUMBER= #{plateNumber}
+        </if>
+        <if test="isQueryLastOrder != null and dependTime == ture">
+            <if test="dependTime != null and dependTime > 0">
+                AND s.depend_time &lt;= #{dependTime}
+            </if>
+        </if>
+        <if test="isQueryLastOrder != null and dependTime == false">
+            <if test="dependTime != null and dependTime > 0">
+                AND s.depend_time &gt;= #{dependTime}
+            </if>
+        </if>
+        <if test="orderStateLT != null and orderStateLT > 0">
+            AND o.order_state &lt;= #{orderStateLT}
+        </if>
+            ORDER BY s.depend_time DESC
+        LIMIT 1
+
+
+    </select>
+
+    <select id="getOrderVerifyInfoOutH" resultType="com.youming.youche.order.vo.OrderVerifyInfoOut">
+
+        SELECT *
+            from order_info_h o
+            LEFT JOIN payout_intf p ON p.ORDER_ID = o.order_id
+            LEFT JOIN order_info_ext_h ie ON ie.ORDER_ID = o.order_id
+            LEFT JOIN order_scheduler_h s ON s.ORDER_ID = o.order_id
+            LEFT JOIN order_goods_h g ON g.ORDER_ID = o.order_id
+        where p.ordeR_id > 0 AND p.IS_AUTOMATIC = 1 and o.is_Need_Bill = 2
+        <if test="orderId != null and orderId > 0">
+            AND o.ORDER_ID= #{orderId}
+        </if>
+        <if test="orderStateLT != null and orderStateLT > 0">
+            AND o.order_state = #{orderStateLT}
+        </if>
+        ORDER BY s.depend_time DESC
+        LIMIT 1
+
+
+    </select>
+</mapper>

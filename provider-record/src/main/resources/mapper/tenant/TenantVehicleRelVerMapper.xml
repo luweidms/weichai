@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantVehicleRelVerMapper">
+
+    <!---->
+     <update id="updTenantVehicleRelVer">
+         update tenant_vehicle_rel_ver set ver_state=#{destVerState} where vehicle_code= #{vehicleCode} and ver_state=1 and tenant_id= #{tenantId}
+     </update>
+
+    <update id="upDriverUserIdNull">
+        update tenant_vehicle_rel_ver set driver_User_Id=null where id=#{id}
+    </update>
+
+
+    <select id="getTenantVehicleRelVer" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRelVer">
+        select * from tenant_vehicle_rel_ver where REL_ID = #{relId} and VER_STATE = #{verState} limit 0,1
+    </select>
+
+    <select id="getTenantVehicleInfoVer" resultType="java.util.Map">
+        SELECT tenant_vehicle_rel_ver.plate_number              plateNumber,
+               tenant_vehicle_rel_ver.load_empty_pil_cost       loadEmptyOilCost,
+               tenant_vehicle_rel_ver.load_full_pil_cost        loadFullOilCost,
+               tenant_vehicle_rel_ver.is_user_car_oil_cost      isUseCarOilCost,
+               tenant_vehicle_rel_ver.vehicle_class             vehicleClass,
+               tenant_vehicle_rel_ver.org_id                    orgId,
+               tenant_vehicle_rel_ver.user_id                   userId,
+               tenant_vehicle_rel_ver.share_flg                 shareFlg,
+               tenant_vehicle_rel_ver.link_user_id              linkUserId,
+               tenant_vehicle_rel_ver.rel_id                    relId,
+               tenant_vehicle_rel_ver.bill_receiver_mobile      billReceiverMobile,
+               tenant_vehicle_rel_ver.bill_receiver_user_id     billReceiverUserId,
+               tenant_vehicle_rel_ver.bill_receiver_name        billReceiverName,
+               tenant_vehicle_rel_ver.invest_contract_file_pic  investContractFilePic,
+               tenant_vehicle_rel_ver.attach_conteract_file_pic attachContractFilePic,
+               tenant_vehicle_rel_ver.id                        vehicleRelHisId,
+               vehicle_data_info_ver.id                     hisId,
+               tenant_vehicle_rel_ver.driver_user_id            driverUserId,
+               vehicle_data_info_ver.tenant_id                  tenantId,
+               vehicle_data_info_ver.copilot_driver_id          copilotDriverId,
+               vehicle_data_info_ver.vehicle_validity_time      vehicleValidityTime,
+               vehicle_data_info_ver.follow_driver_id           followDriverId,
+               vehicle_data_info_ver.operate_validity_time      operateValidityTime,
+               vehicle_data_info_ver.licence_type               licenceType,
+               vehicle_data_info_ver.vehicle_length             vehicleLength,
+               vehicle_data_info_ver.vehicle_status             vehicleStatus,
+               vehicle_data_info_ver.light_goods_square         lightGoodsSquare,
+               vehicle_data_info_ver.vehicle_load               vehicleLoad,
+               vehicle_data_info_ver.vin_no                     vinNo,
+               vehicle_data_info_ver.oper_certi                 operCerti,
+               vehicle_data_info_ver.oper_certi_id              operCertiId,
+               vehicle_data_info_ver.oper_certi_url             operCertiUrl,
+               vehicle_data_info_ver.driving_license_owner      drivingLicenseOwner,
+               vehicle_data_info_ver.rent_agreement_id          rentAgreementId,
+               vehicle_data_info_ver.rent_agreement_url         rentAgreementUrl,
+               vehicle_data_info_ver.brand_model                brandModel,
+               vehicle_data_info_ver.engine_no                  engineNo,
+               vehicle_data_info_ver.driving_license_sn         drivingLicenseSn,
+               vehicle_data_info_ver.etc_card_number            etcCardNumber,
+               vehicle_data_info_ver.equipment_code             equipmentCode,
+               vehicle_data_info_ver.vehicle_picture            vehiclePicture,
+               vehicle_data_info_ver.vehicle_pic_url            vehiclePicUrl,
+               vehicle_data_info_ver.driving_license            drivingLicense,
+               vehicle_data_info_ver.driving_license_url        drivingLicenseUrl,
+               vehicle_data_info_ver.adriving_license_copy      adriverLicenseCopy,
+               vehicle_data_info_ver.adriver_license_copy_url   adriverLicenseCopyUrl,
+               vehicle_data_info_ver.special_oper_cert_file_id  specialOperCertFileId,
+               vehicle_data_info_ver.special_oper_cert_file_url  specialOperCertFileUrl,
+               vehicle_data_info_ver.vehicle_code               vehicleCode,
+               vehicle_data_info_ver.vehicle_model              vehicleModel
+        FROM vehicle_data_info_ver,
+             tenant_vehicle_rel_ver
+        WHERE vehicle_data_info_ver.vehicle_Code = tenant_vehicle_rel_ver.vehicle_Code
+          AND vehicle_data_info_ver.vehicle_code = #{vehicleCode}
+          AND tenant_vehicle_rel_ver.ver_state = #{verState}
+          AND vehicle_data_info_ver.ver_state = #{verState}
+          AND tenant_vehicle_rel_ver.tenant_id = #{tenantId}
+        ORDER BY vehicle_data_info_ver.id DESC,
+                 tenant_vehicle_rel_ver.id DESC limit 1
+    </select>
+    <select id="getVehicle" resultType="com.youming.youche.record.domain.tenant.TenantVehicleRelVer">
+        SELECT a.*
+        FROM Tenant_Vehicle_Rel a,
+        Vehicle_Data_Info b
+        WHERE a.vehicle_Code = b.id
+        and b.driver_User_Id = #{userId}
+        <if test="tenantId != null">
+            and a.tenant_Id = #{tenantId}
+        </if>
+    </select>
+
+    <sql id="tableUnionSql">
+        SELECT
+        REL_ID,
+        BILL_RECEIVER_MOBILE,
+        BILL_RECEIVER_NAME,
+        BILL_RECEIVER_USER_ID,
+        TENANT_ID,
+        PLATE_NUMBER,
+        VEHICLE_CODE,
+        VEHICLE_CLASS,
+        CREATE_DATE
+        FROM
+        tenant_vehicle_rel
+        WHERE
+        VEHICLE_CLASS IN ( 2, 4 )
+        AND trim( BILL_RECEIVER_MOBILE ) != '' UNION ALL
+        SELECT
+        REL_ID,
+        BILL_RECEIVER_MOBILE,
+        BILL_RECEIVER_NAME,
+        BILL_RECEIVER_USER_ID,
+        TENANT_ID,
+        PLATE_NUMBER,
+        VEHICLE_CODE,
+        VEHICLE_CLASS,
+        CREATE_DATE
+        FROM
+        tenant_vehicle_rel_ver
+        WHERE
+        ver_state = 9
+        AND VEHICLE_CLASS IN ( 2, 4 )
+        AND trim( BILL_RECEIVER_MOBILE ) != ''
+        AND DATE_FORMAT( CREATE_DATE, '%Y-%m' ) in
+        <foreach collection="tenantVehicleRelQueryVo.monList" item="item" close="(" open=")" separator=",">
+            #{item}
+        </foreach>
+
+    </sql>
+
+    <select id="doQueryVehicleSimpleInfoNoPage" parameterType="com.youming.youche.record.vo.tenant.TenantVehicleRelQueryVo" resultType="com.youming.youche.record.dto.tenant.TenantVehicleRelQueryDto">
+        SELECT vehicleRel.id relId,
+        CONCAT(vehicleRel.id,'') vehicleCode,
+        vehicleRel.BILL_RECEIVER_MOBILE billReceiverMobile ,
+        CONCAT(vehicleRel.BILL_RECEIVER_USER_ID,'') billReceiverUserId,
+        vehicleRel.BILL_RECEIVER_NAME billReceiverName,
+        vehicleRel.VEHICLE_CLASS AS vehicleClass,
+        vehicleInfo.PLATE_NUMBER plateNumber,
+        CONCAT(vehicleInfo.DRIVER_USER_ID,'') driverUserId,
+        userInfo.LINKMAN linkman,
+        userInfo.MOBILE_PHONE mobilePhone
+        FROM
+        <if test="tenantVehicleRelQueryVo.monList != null and tenantVehicleRelQueryVo.monList.size() > 0">
+            <include refid="tableUnionSql" />
+        </if>
+        <if test="tenantVehicleRelQueryVo.monList == null">
+            tenant_vehicle_rel
+        </if>
+        vehicleRel
+        LEFT JOIN vehicle_data_info vehicleInfo ON vehicleInfo.id = vehicleRel.VEHICLE_CODE
+        LEFT JOIN user_data_info userInfo ON userInfo.id = vehicleInfo.DRIVER_USER_ID
+        WHERE vehicleRel.TENANT_ID = #{tenantVehicleRelQueryVo.tenantId} AND trim(vehicleInfo.PLATE_NUMBER) != ''
+        <if test="tenantVehicleRelQueryVo.plateNumber != null and tenantVehicleRelQueryVo.plateNumber != ''">
+            AND vehicleInfo.PLATE_NUMBER like CONCAT("%", #{tenantVehicleRelQueryVo.plateNumber}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.linkman != null and tenantVehicleRelQueryVo.linkman != ''">
+            AND userInfo.LINKMAN like CONCAT("%", #{tenantVehicleRelQueryVo.linkman}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.mobilePhone != null and tenantVehicleRelQueryVo.mobilePhone != ''">
+            AND userInfo.MOBILE_PHONE like CONCAT("%", #{tenantVehicleRelQueryVo.mobilePhone}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.billReceiverMobile != null and tenantVehicleRelQueryVo.billReceiverMobile != ''">
+            AND vehicleRel.BILL_RECEIVER_MOBILE like CONCAT("%", #{tenantVehicleRelQueryVo.billReceiverMobile}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.billReceiverName != null and tenantVehicleRelQueryVo.billReceiverName != ''">
+            AND vehicleRel.BILL_RECEIVER_NAME like CONCAT("%", #{tenantVehicleRelQueryVo.billReceiverName}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.vehicleCode != null and tenantVehicleRelQueryVo.vehicleCode.size() > 0">
+            AND vehicleRel.VEHICLE_CODE in
+            <foreach collection="tenantVehicleRelQueryVo.vehicleCode" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="tenantVehicleRelQueryVo.driverUserId != null and tenantVehicleRelQueryVo.driverUserId.size() > 0">
+            AND vehicleInfo.DRIVER_USER_ID in
+            <foreach collection="tenantVehicleRelQueryVo.driverUserId" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="tenantVehicleRelQueryVo.vehicleClass != null and tenantVehicleRelQueryVo.vehicleClass > 0">
+            AND vehicleRel.VEHICLE_CLASS = #{tenantVehicleRelQueryVo.vehicleClass}
+        </if>
+        <if test="tenantVehicleRelQueryVo.notInPlateNumber != null and tenantVehicleRelQueryVo.notInPlateNumber.size() > 0">
+            AND vehicleRel.PLATE_NUMBER NOT IN
+            <foreach collection="tenantVehicleRelQueryVo.notInPlateNumber" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY vehicleRel.CREATE_DATE DESC
+    </select>
+
+    <select id="doQueryBillReceiverNoPage" parameterType="com.youming.youche.record.vo.tenant.TenantVehicleRelQueryVo" resultType="com.youming.youche.record.dto.tenant.TenantVehicleRelQueryDto">
+        SELECT rel.BILL_RECEIVER_MOBILE AS billReceiverMobile,
+        CONCAT(rel.BILL_RECEIVER_USER_ID,'') AS billReceiverUserId,
+        rel.BILL_RECEIVER_NAME AS billReceiverName,
+        rel.VEHICLE_CLASS AS vehicleClass,
+        CASE WHEN std.ADMIN_USER IS NOT NULL THEN 6 WHEN std.ADMIN_USER IS NULL AND udi.USER_ID IS NOT NULL THEN 3 ELSE NULL END AS userType,
+        (SELECT COUNT(1) FROM
+        <if test="tenantVehicleRelQueryVo.monList != null and tenantVehicleRelQueryVo.monList.size() > 0">
+            <include refid="tableUnionSql" />
+        </if>
+        <if test="tenantVehicleRelQueryVo.monList = null">
+            tenant_vehicle_rel
+        </if>
+        tvr WHERE tvr.BILL_RECEIVER_MOBILE = rel.BILL_RECEIVER_MOBILE AND tvr.TENANT_ID = #{tenantId}) AS vehicleNum
+        FROM
+        <if test="tenantVehicleRelQueryVo.monList != null and tenantVehicleRelQueryVo.monList.size() > 0">
+            <include refid="tableUnionSql" />
+        </if>
+        <if test="tenantVehicleRelQueryVo.monList = null">
+            tenant_vehicle_rel
+        </if>
+        rel
+        LEFT JOIN sys_tenant_def std ON std.ADMIN_USER = rel.BILL_RECEIVER_USER_ID
+        LEFT JOIN user_data_info udi ON udi.USER_ID = rel.BILL_RECEIVER_USER_ID
+        WHERE rel.BILL_RECEIVER_MOBILE IS NOT NULL AND TRIM(rel.BILL_RECEIVER_MOBILE) != ''
+        AND rel.TENANT_ID = #{tenantVehicleRelQueryVo.tenantId}
+        <if test="tenantVehicleRelQueryVo.billReceiverMobile != null and tenantVehicleRelQueryVo.billReceiverMobile != ''">
+            AND rel.BILL_RECEIVER_MOBILE = #{tenantVehicleRelQueryVo.billReceiverMobile}
+        </if>
+        <if test="tenantVehicleRelQueryVo.billReceiverName != null and tenantVehicleRelQueryVo.billReceiverName != ''">
+            AND rel.BILL_RECEIVER_NAME like CONCAT("%", #{tenantVehicleRelQueryVo.billReceiverName}, "%")
+        </if>
+        <if test="tenantVehicleRelQueryVo.vehicleClass != null and tenantVehicleRelQueryVo.vehicleClass > 0">
+            AND rel.VEHICLE_CLASS = #{tenantVehicleRelQueryVo.vehicleClass}
+        </if>
+        GROUP BY rel.BILL_RECEIVER_MOBILE,rel.BILL_RECEIVER_NAME,rel.BILL_RECEIVER_USER_ID ORDER BY rel.CREATE_DATE DESC
+    </select>
+</mapper>

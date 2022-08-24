@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.youming.youche</groupId>
+            <artifactId>youche-commons</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
+    <parent>
+        <groupId>com.youming.youche</groupId>
+        <artifactId>youming-youche</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tongxin-motorcade</artifactId>
+    <groupId>cd.tongxin.cn</groupId>
+    <name>motorcade</name>
+    <packaging>pom</packaging>
+
+
+    <modules>
+        <module>api-system</module>
+        <module>api-capital</module>
+        <module>api-cloud</module>
+        <module>api-finance</module>
+        <module>api-market</module>
+        <module>api-order</module>
+        <module>api-record</module>
+        <module>api-table</module>
+        <module>business-capital</module>
+        <module>business-cloud</module>
+        <module>business-finance</module>
+        <module>business-market</module>
+        <module>business-order</module>
+        <module>business-record</module>
+        <module>business-system</module>
+        <module>business-table</module>
+        <module>provider-capital</module>
+        <module>provider-cloud</module>
+        <module>provider-finance</module>
+        <module>provider-market</module>
+        <module>provider-order</module>
+        <module>provider-record</module>
+        <module>provider-system</module>
+        <module>provider-table</module>
+        <module>youche-task</module>
+        <module>youche-utils</module>
+    </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus Release Repository</name>
+            <!--                        <url>http://192.168.188.36:8083/repository/maven-releases/</url>-->
+            <url>http://ym.niuniufit.com:8083/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <!--                        <url>http://192.168.188.36:8083/repository/maven-snapshots/</url>-->
+            <url>http://ym.niuniufit.com:8083/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+</project>

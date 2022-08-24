@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.ac.CmSalaryInfoNewMapper">
+
+
+    <select id="getSubsidyInfo" resultType="com.youming.youche.finance.dto.SubsidyInfoDto">
+        SELECT c.car_driver_name,c.car_driver_phone,t.salary,s.subsidy_fee_sum
+        FROM cm_salary_info_new c
+                 LEFT JOIN tenant_user_salary_rel t
+                           ON c.id=t.id
+                 LEFT JOIN order_driver_subsidy_info s
+                           ON c.id=s.id
+        WHERE c.id=#{id}
+          and c.tenant_id=#{tenantId}
+    </select>
+
+    <update id="balanceSubsidy">
+        UPDATE order_driver_subsidy_info
+        SET settle_money=#{salary}
+        WHERE order_id=#{orderId}
+    </update>
+    <update id="subsidyState">
+        UPDATE order_driver_subsidy_info
+        SET subsidy_fee_sum_state=5
+        WHERE order_id=#{orderId}
+    </update>
+    <update id="subsidyTotal">
+        UPDATE cm_salary_info_new
+        SET paid_salary_fee=#{paidSalaryFee}
+        WHERE id=#{salaryId}
+    </update>
+    <select id="getCmSalaryTemplate" resultType="com.youming.youche.finance.domain.ac.CmSalaryTemplate">
+        SELECT * FROM cm_salary_template
+        WHERE tenant_id = #{tenantId}
+          AND state = 1
+        order by create_time desc
+        limit 1
+    </select>
+    <select id="getCmSalaryTemplateMonth" resultType="com.youming.youche.finance.domain.ac.CmSalaryTemplate">
+        select * from cm_salary_template
+        where (tenant_id = #{tenantId} or tenant_id = -1 or tenant_id is null)
+        and template_month &lt;= #{templateMonth}
+        order by template_month desc limit 0,1
+    </select>
+    <select id="getCmSalaryInfoCount" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM cm_salary_info_new
+        WHERE SETTLE_MONTH=#{settleMonth}
+          and TENANT_ID=#{tenantId}
+        <if test="state>-1"> and state=#{state}</if>
+        <if test="userType>-1"> and user_type=#{userType}</if>
+    </select>
+    <select id="getCmSalaryTemplateByMon" resultType="com.youming.youche.finance.domain.ac.CmTemplateField">
+        select * from cm_template_field where template_id =
+        (select id from cm_salary_template
+        where (tenant_id = #{tenantId} or tenant_id = -1 or tenant_id is null)
+        and template_month &lt;= #{month} order by template_month desc,id desc  limit 0,1 )
+        and is_select = 1 order by field_index
+    </select>
+
+    <update id="changeSubsidy">
+        UPDATE order_driver_subsidy_info
+        SET subsidy_fee_sum=#{subsidy}
+        where order_id=#{id}
+    </update>
+    <update id="modifySalaryInfo">
+        UPDATE cm_salary_info_new
+        set save_oil_bonus=#{modifySalaryInfoVo.saveOilBonus},basic_salary_fee=#{modifySalaryInfoVo.basicSalaryFee},update_date=#{modifySalaryInfoVo.updateDate},
+            update_op_id=#{modifySalaryInfoVo.updateOpId}
+        where id=#{modifySalaryInfoVo.id}
+    </update>
+    <select id="salaryInfoById" resultType="com.youming.youche.finance.domain.ac.CmSalaryInfoNew">
+        SELECT
+            `id`, `answer_subsidy_fee`, `basic_salary_fee`, `car_driver_id`, `car_driver_name`, `car_driver_phone`, `channel_type`, `check_date`, `complain_count`, `create_date`, `last_month_debt`, `month_mileage`, `op_id`, `order_count`, `paid_date`, `paid_salary_fee`, `real_salary_fee`, `remark`, `salary_files`, `save_oil_bonus`, `send_date`, `settle_month`, `state`, `tenant_id`, `trip_pay_fee`, `unwritten_loan_fee`, `update_date`, `update_op_id`, `user_type`
+        FROM cm_salary_info_new WHERE id=#{id}
+    </select>
+    <select id="selectSalary" resultType="com.youming.youche.finance.domain.ac.CmSalaryInfoNew">
+        select c.id,c.car_driver_phone from cm_salary_info_new c where c.TENANT_ID=#{tenantId} and c.car_driver_phone=#{phone} and c.SETTLE_MONTH=#{settleMonth}
+    </select>
+
+    <select id="getOrderSalaryInfo" resultType="com.youming.youche.finance.vo.OrderSalaryInfoVo">
+        SELECT * FROM (
+                          SELECT
+                              o.ORDER_ID AS orderId,
+                              s.DEPEND_TIME AS dependDate,
+                              g.custom_name AS customName,
+                              s.SOURCE_NAME AS sourceName,
+                              s.plate_Number AS plateNumber
+                          FROM
+                              order_info o
+                                  LEFT JOIN order_goods g ON o.ORDER_ID = g.ORDER_ID
+                                  LEFT JOIN order_scheduler s ON o.ORDER_ID = s.ORDER_ID
+                          WHERE
+                              o.TENANT_ID = #{tenantId}
+                            AND o.ORDER_ID = #{orderId}
+                          UNION
+                          SELECT
+                              o.ORDER_ID AS orderId,
+                              s.DEPEND_TIME AS dependDate,
+                              g.custom_name AS customName,
+                              s.SOURCE_NAME AS sourceName,
+                              s.plate_Number AS plateNumber
+                          FROM
+                              order_info_h o
+                                  LEFT JOIN order_goods_h g ON o.ORDER_ID = g.ORDER_ID
+                                  LEFT JOIN order_scheduler_h s ON o.ORDER_ID = s.ORDER_ID
+                          WHERE
+                              o.TENANT_ID = #{tenantId}
+                            AND o.ORDER_ID = #{orderId}
+                      ) AS temp ORDER BY dependDate DESC ,orderId
+    </select>
+</mapper>

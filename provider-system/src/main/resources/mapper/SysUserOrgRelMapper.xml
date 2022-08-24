@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysUserOrgRelMapper">
+    <delete id="deleteByOrgIdAndUserInfoIdAndTenantId">
+
+        DELETE FROM sys_user_org_rel WHERE
+        user_info_id in
+        <foreach item="item" index="index" collection="userIds" open="(" separator="," close=")">
+              #{item}
+        </foreach>
+        AND org_id = #{orgId}
+        AND tenant_id = #{tenantId}
+    </delete>
+    <delete id="deleteByUserInfoIdAndTenantId">
+        DELETE FROM sys_user_org_rel WHERE
+        user_info_id in
+        <foreach item="item" index="index" collection="userIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND tenant_id = #{tenantId}
+    </delete>
+
+    <select id="selectByTenantIdAndOrgIds" resultType="com.youming.youche.system.domain.SysUserOrgRel">
+        SELECT
+        *
+        FROM
+        sys_user_org_rel sr
+        WHERE
+        sr.org_id in
+        <foreach item="item" index="index" collection="orgId" open="(" separator="," close=")">
+             #{item}
+        </foreach>
+        AND sr.tenant_id = #{tenantId}
+
+    </select>
+
+    <!--根据用户id关联查询部门-->
+    <select id="getOrgNameByUserId" resultType="java.lang.String">
+        select so.org_name FROM sys_user_org_rel suor left join sys_organize so on suor.org_id = so.id where suor.user_info_id = #{userId}
+    </select>
+
+</mapper>

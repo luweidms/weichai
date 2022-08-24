@@ -1,0 +1,78 @@
+base:
+  config:
+    nacos:
+      hostname: 10.45.6.8
+      port: 8848
+    oauth:
+      hostname: 10.45.6.8
+      port: 9002
+    redis:
+      hostname: 10.45.6.219
+      port: 6379
+      password: ngtms123
+#    mongodb:
+#      hostname: 192.168.188.36
+#      port: 27017
+spring:
+  application:
+    name: business-cloud
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${base.config.nacos.hostname}:${base.config.nacos.port}
+        group: YOUCHE_GROUP
+        ip: 192.168.20.104
+    inetutils:
+      preferred-networks: 192.168.20
+  redis:
+    # Redis数据库索引（默认为0)
+    database: 0
+    # Redis服务器地址
+    host: ${base.config.redis.hostname}
+    # Redis服务器连接端口
+    port: ${base.config.redis.port}
+    # Redis服务器连接密码（默认为空）
+    password: ${base.config.redis.password}
+server:
+  port: 9007
+
+logging:
+  level:
+    com.youming.youche.cloud.business.controller: debug
+  #将日志输出到文件
+  config: classpath:dev-log.xml
+
+
+
+dubbo:
+  scan:
+    base-packages: com.youming.youche.cloud.business.controller
+  protocol:
+    name: dubbo
+    port: -1
+#    host: 192.168.20.104
+#    serialization: kryo
+  registry:
+    address: nacos://${base.config.nacos.hostname}
+    port: ${base.config.nacos.port}
+    group: YOUCHE_GROUP
+  metadata-report:
+    address: nacos://${base.config.nacos.hostname}:${base.config.nacos.port}
+  provider:
+    loadbalance: roundrobin
+    timeout: 5000
+  consumer:
+    timeout: 50000
+    retries: 0
+
+security:
+  oauth2:
+    client:
+      client-id: system
+      client-secret: system
+      access-token-uri: http://${base.config.oauth.hostname}:${base.config.oauth.port}/oauth/token
+      user-authorization-uri: http://${base.config.oauth.hostname}:${base.config.oauth.port}/oauth/authorize
+    resource:
+      token-info-uri: http://${base.config.oauth.hostname}:${base.config.oauth.port}/oauth/check_token

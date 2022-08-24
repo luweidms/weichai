@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.monitor.MonitorOrderAgingDependMapper">
+
+    <select id="queryAgingDependList"
+            resultType="com.youming.youche.order.domain.monitor.MonitorOrderAgingDepend">
+        SELECT
+        moad.id AS id,
+        moad.order_id AS orderId,
+        moad.plate_number AS plateNumber,
+        moad.depend_time AS dependTime,
+        moad.car_depend_time AS carDependTime,
+        moad.line_detail AS lineDetail,
+        moad.curr_nand AS currNand,
+        moad.curr_eand AS currEand,
+        moad.depend_nand AS dependNand,
+        moad.depend_eand AS dependEand,
+        moad.type AS type,
+        moad.line_type AS lineType,
+        moad.surplus_date AS surplusDate,
+        moad.surplus_distance AS surplusDistance,
+        moad.create_time AS createTime,
+        moad.update_time AS updateTime,
+        moad.tenant_id AS tenantId
+        FROM
+        <if test="isHis == 'true'">
+            monitor_order_aging_depend_h moad,
+        </if>
+        <if test="isHis == 'false'">
+            monitor_order_aging_depend moad,
+        </if>
+        ( SELECT o.order_id FROM
+        <if test="isOrderHis == 'true'">
+            order_info_h o LEFT JOIN order_transit_line_info_h
+        </if>
+        <if test="isOrderHis == 'false'">
+            order_info o LEFT JOIN order_transit_line_info
+        </if>
+        t ON t.order_id = o.order_id
+        <where>
+            1 = 1
+            <if test="tenantId != null and tenantId > 0">
+                AND o.tenant_id = #{tenantId}
+            </if>
+            <if test="orderId != null and orderId >0">
+                AND o.order_id = #{orderId}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND (o.source_region = #{sourceRegion} OR t.region = #{sourceRegion})
+            </if>
+            <if test="desRegion != null and desRegion > 0">
+                AND (o.des_region = #{desRegion} OR t.region = #{desRegion} )
+            </if>
+        </where>
+        GROUP BY order_id ) o, tenant_vehicle_rel v
+        WHERE
+        moad.plate_number = v.plate_number
+        AND moad.order_id = o.order_id
+        AND v.tenant_id = moad.tenant_id
+        <if test="orderId != null and orderId > 0">
+            AND moad.order_id= #{orderId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND moad.plate_number = #{plateNumber}
+        </if>
+        <if test="orderId != null and orderId > 0">
+            AND v.org_id = #{orgId}
+        </if>
+        <if test="orgId != null and orgId > 0">
+            AND moad.type = #{type}
+        </if>
+        <if test="tenantId != null and tenantId > 0">
+            AND moad.tenant_id = #{tenantId}
+        </if>
+        GROUP BY moad.plate_number
+    </select>
+
+    <select id="queryAgingDependListNew" resultType="java.util.Map">
+        SELECT
+        o.order_id orderId,
+        s.vehicle_code vehicleCode,
+        s.plate_number plateNumber,
+        s.car_driver_phone carDriverPhone
+        FROM
+        order_scheduler s,
+        order_info o
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_state != 15
+        AND o.order_state != 14
+        AND car_depend_date > depend_time
+        AND o.tenant_id = #{tenantId}
+        <if test="orgId != null and orgId > 0">
+            AND o.org_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="sourceRegion != null and sourceRegion > 0">
+            AND o.source_region = #{sourceRegion}
+        </if>
+        <if test="desRegion != null and desRegion > 0">
+            AND o.des_region = #{desRegion}
+        </if>
+        UNION ALL
+        SELECT
+        o.order_id orderId,
+        s.vehicle_code vehicleCode,
+        s.plate_number plateNumber,
+        s.car_driver_phone carDriverPhone
+        FROM
+        order_scheduler_h s,
+        order_info_h o
+        WHERE
+        o.order_id = s.order_id
+        AND o.order_state != 15
+        AND o.order_state != 14
+        AND car_arrive_date > depend_time
+        AND o.tenant_id = #{tenantId}
+        <if test="orgId != null and orgId > 0">
+            AND o.org_id = #{orgId}
+        </if>
+        <if test="plateNumber != null and plateNumber != ''">
+            AND s.plate_number = #{plateNumber}
+        </if>
+        <if test="sourceRegion != null and sourceRegion > 0">
+            AND o.source_region = #{sourceRegion}
+        </if>
+        <if test="desRegion != null and desRegion > 0">
+            AND o.des_region = #{desRegion}
+        </if>
+    </select>
+
+</mapper>

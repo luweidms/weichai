@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.service.ServiceRepairItemsMapper">
+
+    <select id="getServiceProductByStationId" resultType="com.youming.youche.record.domain.service.ServiceProduct">
+        SELECT
+        SERVICE_USER_ID AS serviceUserId,
+        ADDRESS AS address,
+        SERVICE_CALL AS serviceCall
+        FROM
+        service_product
+        WHERE
+        STATION_ID = #{stationId}
+        <if test="productType != null">
+            AND PRODUCT_TYPE = #{productType}
+        </if>
+        LIMIT 1
+    </select>
+
+    <select id="getRepairOrderItems" resultType="com.youming.youche.record.domain.service.ServiceRepairItems">
+        SELECT
+            ID AS id,
+            ITEM_ID AS itemId,
+            REPAIR_ORDER_ID AS repairOrderId,
+            ITEM_NAME AS itemName,
+            ITEM_MAN_HOUR AS itemManHour,
+            ITEM_PRICE AS itemPrice,
+            TOTAL_ITEM_PRICE AS totalItemPrice,
+            CREATE_TIME AS createTime,
+            TENANT_ID AS tenantId
+        FROM
+            service_repair_items
+        WHERE
+            REPAIR_ORDER_ID = #{repairOrderId}
+    </select>
+
+    <delete id="delRepairItems">
+        delete from service_repair_items where repair_order_id = #{id}
+    </delete>
+
+    <delete id="delRepairParts">
+        delete from service_repair_parts where repair_order_id = #{id}
+    </delete>
+
+    <update id="updataRepairItemsVer">
+        update service_repair_items_ver set id = #{pid} where his_id = #{id}
+    </update>
+
+    <select id="getRepairOrderItemsVer" resultType="com.youming.youche.record.domain.service.ServiceRepairItemsVer">
+        SELECT
+            HIS_ID  AS hisId,
+            ITEM_ID AS itemId,
+            REPAIR_ORDER_ID AS repairOrderId,
+            ITEM_NAME AS itemName,
+            ITEM_MAN_HOUR AS itemManHour,
+            ITEM_PRICE AS itemPrice,
+            TOTAL_ITEM_PRICE AS totalItemPrice,
+            TENANT_ID AS tenantId,
+            REPAIR_HIS_ID AS repairHisId
+        FROM
+            service_repair_items_ver
+        WHERE
+            REPAIR_ORDER_ID = #{repairOrderId}
+            AND REPAIR_HIS_ID = #{repairHisId}
+        ORDER BY
+            HIS_ID DESC
+    </select>
+
+</mapper>

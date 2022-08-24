@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.capital.provider.mapper.audit.AuditNodeConfigMapper">
+
+    <!--获取审核流程配置-->
+    <select id="getFirstAuditNodeConfig" resultType="com.youming.youche.capital.domain.audit.AuditNodeConfig">
+      select * from audit_node_config where AUDIT_ID = #{auditId} and TENANT_ID = #{tenantId} and PARENT_NODE_ID = -1
+  </select>
+
+    <select id="countId" resultType="java.lang.Integer">
+        SELECT count(id) from audit_node_config
+        <where>
+            <if test="version == null">
+                version is null
+            </if>
+            <if test="version != null">
+                and version = #{version}
+            </if>
+            <if test="nodeId !=null">
+                parent_node_id = #{nodeId}
+            </if>
+        </where>
+    </select>
+
+    <select id="checkVersionNode" resultType="java.lang.Integer">
+        SELECT
+        COUNT( 1 )
+        FROM
+        audit_node_config
+        WHERE
+        <if test="version == null">
+            version IS NULL
+        </if>
+        <if test="version != null">
+            AND version = #{version}
+        </if>
+        AND id = #{nodeId}
+    </select>
+
+    <!--根据节点id查询列表-->
+    <select id="getNextAuditNodeConfigList" resultType="com.youming.youche.capital.domain.audit.AuditNodeConfig">
+       select * from audit_node_config where parent_node_id = #{nodeId}
+   </select>
+
+    <select id="getAuditRuleVersionNo" resultType="java.lang.Integer">
+        SELECT
+            c.version
+        FROM
+            audit_node_rule_config c,
+            audit_rule_config r
+        WHERE
+            c.rule_Id = r.Id
+            AND c.node_Id = #{nodeId}
+    </select>
+
+</mapper>

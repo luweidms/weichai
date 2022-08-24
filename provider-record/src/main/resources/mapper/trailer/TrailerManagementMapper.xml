@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.trailer.TrailerManagementMapper">
+
+    <sql id="query">
+        SELECT
+        t.id,
+        t.trailer_number as trailerNumber,
+        t.source_province as sourceProvince,
+        t.source_region as sourceRegion,
+        t.is_state as isState,
+        t.idle as idle,
+        (SELECT COUNT( * ) FROM((SELECT o.order_id,o.trailer_id,o.tenant_id,i.order_state FROM order_scheduler
+        o,order_info i
+        WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) UNION
+        (SELECT o.order_id,o.tariler_id,o.tenant_id,i.order_state FROM order_scheduler_h o,order_info_h i WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) ) AS tt
+        WHERE tt.trailer_id = t.id )as usageCount,t.trailer_material as trailerMaterial,(SELECT COUNT( * ) FROM
+        ( ( SELECT trailer_id FROM trailer_management_ver WHERE is_autit = 0 ) UNION ( SELECT id FROM trailer_management
+        WHERE is_autit = 0 ) ) AS ver WHERE
+        ver.trailer_id = t.id) as isAutit,
+        t.source_county as sourceCounty,
+        t.is_autit as auditState
+        FROM
+        trailer_management t,
+        tenant_trailer_rel r
+        <where>
+            t.id = r.TRAILER_ID
+            <if test="tenantId != null">
+                and r.tenant_id = #{tenantId}
+            </if>
+            <if test="trailerNumber != null">
+                and t.trailer_number LIKE concat('%',#{trailerNumber},'%')
+            </if>
+            <if test="trailerMaterial != null and trailerMaterial > 0">
+                and t.trailer_material = #{trailerMaterial}
+            </if>
+            <if test="isState != null and isState > 0">
+                AND t.is_state = #{isState}
+            </if>
+            <if test="sourceProvince != null and sourceProvince >0">
+                AND t.source_province = #{sourceProvince}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND t.source_region = #{sourceRegion}
+            </if>
+            <if test="sourceCounty != null and sourceCounty >0">
+                AND t.source_county = #{sourceCounty}
+            </if>
+        </where>
+        ORDER BY t.id DESC
+    </sql>
+
+    <!--分页查询挂车列表-->
+    <select id="doQueryTrailerList" resultType="com.youming.youche.record.vo.TrailerManagementVo">
+        <include refid="query"/>
+    </select>
+
+    <!--通过部门id分页查询挂车列表-->
+    <select id="doQueryTrailerListByOrgId" resultType="com.youming.youche.record.vo.TrailerManagementVo">
+        SELECT
+        t.id,
+        t.trailer_number as trailerNumber,
+        t.source_province as sourceProvince,
+        t.source_region as sourceRegion,
+        t.is_state as isState,
+        t.idle as idle,
+        (SELECT COUNT( * ) FROM((SELECT o.order_id,o.trailer_id,o.tenant_id,i.order_state FROM order_scheduler
+        o,order_info i
+        WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) UNION
+        (SELECT o.order_id,o.tariler_id,o.tenant_id,i.order_state FROM order_scheduler_h o,order_info_h i WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) ) AS tt
+        WHERE tt.trailer_id = t.id )as usageCount,t.trailer_material as trailerMaterial,(SELECT COUNT( * ) FROM
+        ( ( SELECT trailer_id FROM trailer_management_ver WHERE is_autit = 0 ) UNION ( SELECT id FROM trailer_management
+        WHERE is_autit = 0 ) ) AS ver WHERE
+        ver.trailer_id = t.id) as isAutit,
+        t.source_county as sourceCounty,
+        t.is_autit as auditState
+        FROM
+        trailer_management t,
+        tenant_trailer_rel r
+        <where>
+            t.id = r.TRAILER_ID
+            <if test="tenantId != null">
+                and r.tenant_id = #{tenantId}
+            </if>
+            <if test="trailerNumber != null">
+                and t.trailer_number LIKE concat('%',#{trailerNumber},'%')
+            </if>
+            <if test="trailerMaterial != null and trailerMaterial > 0">
+                and t.trailer_material = #{trailerMaterial}
+            </if>
+            <if test="isState != null and isState > 0">
+                AND t.is_state = #{isState}
+            </if>
+            <if test="sourceProvince != null and sourceProvince >0">
+                AND t.source_province = #{sourceProvince}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND t.source_region = #{sourceRegion}
+            </if>
+            <if test="sourceCounty != null and sourceCounty >0">
+                AND t.source_county = #{sourceCounty}
+            </if>
+            <if test="orgId != null and orgId >0">
+                AND r.attached_root_org_two_id = #{orgId}
+            </if>
+        </where>
+        ORDER BY t.id DESC
+    </select>
+
+    <select id="doQueryTrailerListExport" resultType="com.youming.youche.record.vo.TrailerManagementVo">
+        <include refid="query"/>
+    </select>
+
+    <sql id="del">
+        SELECT
+        t.id,
+        t.trailer_number as trailerNumber,
+        t.source_province as sourceProvince,
+        t.source_region as sourceRegion,
+        t.is_state as isState,
+        (SELECT COUNT( * ) FROM((SELECT o.order_id,o.trailer_id,o.tenant_id,i.order_state FROM order_scheduler
+        o,order_info i
+        WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) UNION
+        (SELECT o.order_id,o.tariler_id,o.tenant_id,i.order_state FROM order_scheduler_h o,order_info_h i WHERE
+        o.order_id = i.order_id
+        AND o.tenant_id = #{tenantId}
+        AND i.order_state != 15 ) ) AS tt
+        WHERE tt.trailer_id = t.id )as usageCount,t.trailer_material as trailerMaterial,(SELECT COUNT( * ) FROM
+        ( ( SELECT trailer_id FROM trailer_management_ver WHERE is_autit = 0 ) UNION ( SELECT id FROM trailer_management
+        WHERE is_autit = 0 ) ) AS ver WHERE
+        ver.trailer_id = t.id) as isAutit,
+        t.source_county as sourceCounty,
+        t.is_autit as auditState
+        FROM
+        trailer_management t,
+        tenant_trailer_rel_ver r
+        <where>
+            t.id = r.TRAILER_ID
+            and
+            r.DELETE_FLAG = 9
+            <if test="tenantId != null">
+                and r.tenant_id = #{tenantId}
+            </if>
+            <if test="trailerNumber != null">
+                and t.trailer_number LIKE concat('%',#{trailerNumber},'%')
+            </if>
+            <if test="trailerMaterial != null and trailerMaterial > 0">
+                and t.trailer_material = #{trailerMaterial}
+            </if>
+            <if test="isState != null and isState > 0">
+                AND t.is_state = #{isState}
+            </if>
+            <if test="sourceProvince != null and sourceProvince >0">
+                AND t.source_province = #{sourceProvince}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND t.source_region = #{sourceRegion}
+            </if>
+            <if test="sourceCounty != null and sourceCounty >0">
+                AND t.source_county = #{sourceCounty}
+            </if>
+        </where>
+        ORDER BY r.id DESC
+    </sql>
+
+    <!--分页查询挂车历史列表-->
+    <select id="doQueryTrailerListDel" resultType="com.youming.youche.record.vo.TrailerManagementVo">
+        <include refid="del"/>
+    </select>
+
+    <select id="doQueryTrailerListDelExport" resultType="com.youming.youche.record.vo.TrailerManagementVo">
+        <include refid="del"/>
+    </select>
+
+    <!--根据车牌查询挂车信息-->
+    <select id="getTrailerManagement" resultType="com.youming.youche.record.domain.trailer.TrailerManagement">
+        SELECT * from trailer_management where trailer_number = #{trailerNumber} and tenant_id = #{tenantId} ORDER BY id limit 0,1
+    </select>
+
+    <!--查询最大id-->
+    <select id="maxId" resultType="java.lang.Long">
+        select max(id) from trailer_management
+    </select>
+
+    <!--查询挂车使用情况-->
+    <select id="queryTrailerOrderList" resultType="com.youming.youche.record.vo.OrderInfoVo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        o.order_id AS orderId,
+        s.TRAILER_PLATE AS trailerPlate,
+        s.PLATE_NUMBER AS plateNumber,
+        s.CAR_DRIVER_PHONE AS carDriverPhone,
+        s.CAR_DRIVER_MAN AS carDriverMan,
+        s.DEPEND_TIME AS dependTime,
+        o.SOURCE_REGION AS sourceRegion,
+        o.DES_REGION AS desRegion
+        FROM
+        order_info o,
+        `order_scheduler` s
+        <where>
+            o.order_id = s.order_id
+            AND o.ORDER_STATE !=15
+            AND o.TENANT_ID =#{tenantId}
+            AND s.TRAILER_PLATE = #{trailerPlate}
+            <if test="plateNumber != null and plateNumber != ''">
+                AND s.PLATE_NUMBER LIKE concat('%',#{plateNumber},'%')
+            </if>
+            <if test="carUserName != null and carUserName != ''">
+                AND s.CAR_DRIVER_MAN LIKE concat('%',#{carUserName},'%')
+            </if>
+            <if test="carUserPhone != null and carUserPhone != ''">
+                AND s.CAR_DRIVER_PHONE LIKE concat('%',#{carUserPhone},'%')
+            </if>
+            <if test="orderId != null and orderId > 0">
+                AND o.order_id =#{orderId}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND  o.SOURCE_REGION= #{sourceRegion}
+            </if>
+            <if test="desRegion != null and desRegion > 0">
+                AND o.DES_REGION =#{desRegion}
+            </if>
+            <if test="dependTimeBegin != null and dependTimeBegin != ''">
+                AND s.DEPEND_TIME  <![CDATA[>= ]]> CONCAT(#{dependTimeBegin},' 00:00:00')
+            </if>
+            <if test="dependTimeEnd != null and dependTimeEnd != ''">
+                AND s.DEPEND_TIME  <![CDATA[<= ]]> CONCAT(#{dependTimeEnd},' 23:59:59')
+            </if>
+        </where>
+        UNION ALL
+        SELECT
+        o.order_id AS orderId,
+        s.TRAILER_PLATE AS trailerPlate,
+        s.PLATE_NUMBER AS plateNumber,
+        s.CAR_DRIVER_PHONE AS carDriverPhone,
+        s.CAR_DRIVER_MAN AS carDriverMan,
+        s.DEPEND_TIME AS dependTime,
+        o.SOURCE_REGION AS sourceRegion,
+        o.DES_REGION AS desRegion
+        FROM
+        order_info_h o,
+        `order_scheduler_h` s
+        <where>
+            o.order_id = s.order_id
+            AND o.ORDER_STATE !=15
+            AND o.TENANT_ID =#{tenantId}
+            AND s.TRAILER_PLATE = #{trailerPlate}
+            <if test="plateNumber != null and plateNumber != ''">
+                AND s.PLATE_NUMBER LIKE concat('%',#{plateNumber},'%')
+            </if>
+            <if test="carUserName != null and carUserName != ''">
+                AND s.CAR_DRIVER_MAN LIKE concat('%',#{carUserName},'%')
+            </if>
+            <if test="carUserPhone != null and carUserPhone != ''">
+                AND s.CAR_DRIVER_PHONE LIKE concat('%',#{carUserPhone},'%')
+            </if>
+            <if test="orderId != null and orderId > 0">
+                AND o.order_id =#{orderId}
+            </if>
+            <if test="sourceRegion != null and sourceRegion > 0">
+                AND  o.SOURCE_REGION= #{sourceRegion}
+            </if>
+            <if test="desRegion != null and desRegion > 0">
+                AND o.DES_REGION =#{desRegion}
+            </if>
+            <if test="dependTimeBegin != null and dependTimeBegin != ''">
+                AND s.DEPEND_TIME  <![CDATA[>= ]]> CONCAT(#{dependTimeBegin},' 00:00:00')
+            </if>
+            <if test="dependTimeEnd != null and dependTimeEnd != ''">
+                AND s.DEPEND_TIME  <![CDATA[<= ]]> CONCAT(#{dependTimeEnd},' 23:59:59')
+            </if>
+        </where>
+        ) tmp
+        ORDER BY
+        tmp.dependTime DESC
+    </select>
+
+    <!--查询省份-->
+    <select id="getSourceProvince" resultType="java.lang.String">
+        SELECT  NAME FROM  province where id = #{id}
+    </select>
+
+    <!--查询市-->
+    <select id="getSourceRegion" resultType="java.lang.String">
+        SELECT NAME FROM city WHERE id = #{id}
+    </select>
+
+    <!--查询区-->
+    <select id="getSourceCounty" resultType="java.lang.String">
+        SELECT name FROM district where id = #{id}
+    </select>
+    <select id="getTrailerQuery" resultType="com.youming.youche.record.domain.trailer.TrailerManagement">
+        SELECT
+            b.*
+        FROM
+            Tenant_Trailer_Rel a,
+            Trailer_Management b
+        WHERE
+            a.trailer_Id = b.Id
+          AND a.is_autit = 1
+          AND b.is_autit = 1
+          and a.trailer_Number like CONCAT('%',#{trailerNumber},'%')
+          and a.tenant_Id=#{tenantId}
+    </select>
+
+    <select id="getTableTrailerCarCount" resultType="com.youming.youche.components.workbench.WorkbenchDto">
+        SELECT tenant_id, IFNULL(COUNT(1), 0) AS count from tenant_trailer_rel group by tenant_id
+    </select>
+
+    <select id="getLocalNotUsedTrailerPage" resultType="com.youming.youche.record.domain.trailer.TrailerManagement">
+        SELECT
+        t.*
+        FROM
+        trailer_management t,
+        tenant_trailer_rel r
+        WHERE
+        t.id = r.TRAILER_ID
+        AND r.tenant_id = #{tenantId}
+        <if test="trailerNumber!=null and trailerNumber!=''">
+            and t.trailer_number like CONCAT('%',#{trailerNumber},'%')
+        </if>
+
+    </select>
+</mapper>

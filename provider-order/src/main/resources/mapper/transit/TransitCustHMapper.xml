@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.transit.TransitCustHMapper">
+
+    <insert id="insertTransitCustHByTransitCust">
+        INSERT INTO transit_cust_h ( cust_id, transit_line_id, order_id, customer_code, company_name, create_time, update_time, tenant_id ) SELECT
+        *
+        FROM
+            transit_cust
+        WHERE
+            order_id = #{orderId}
+    </insert>
+
+</mapper>

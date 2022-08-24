@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderBillCheckInfoHMapper">
+
+    <insert id="insertCheckInfoH">
+        INSERT INTO order_bill_check_info_h SELECT NULL
+        ,
+        o.id,
+        o.bill_number,
+        o.check_fee,
+        o.check_desc,
+        check_type,
+        o.file_ids,
+        o.file_urls,
+        o.creator_id,
+        o.create_time,
+        o.oper_id,
+        o.oper_date,
+        ${userId},
+        now(),
+        o.tenant_id,
+        NULL
+        FROM
+            order_bill_check_info o
+        WHERE
+            o.bill_number = #{billNumber}
+            AND o.TENANT_ID = #{tenantId}
+    </insert>
+
+    <select id="queryRecentRecordByBillNumber" resultType="com.youming.youche.finance.dto.order.OrderCheckInfoDto">
+        SELECT
+            check_fee AS checkFee,
+            DATE_FORMAT( create_time, '%Y-%m-%d' ) AS createTime
+        FROM
+            order_bill_check_info_h AS a
+        WHERE
+            bill_number = #{billNumber}
+            AND create_time = (
+            SELECT
+                MAX( create_time ) AS max_date
+            FROM
+                order_bill_check_info_h
+        WHERE
+            bill_number = #{billNumber})
+        ORDER BY check_id
+    </select>
+
+</mapper>

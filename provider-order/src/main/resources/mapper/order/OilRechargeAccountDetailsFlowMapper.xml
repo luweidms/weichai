@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OilRechargeAccountDetailsFlowMapper">
+
+
+    <select id="selectAllByBatchId" resultType="com.youming.youche.capital.domain.SysTenantDef">
+        SELECT s.* FROM sys_tenant_def s WHERE 1=1
+        <if test="relationName!=null and relationName!=''">
+            AND s.name like CONCAT('%',#{relationName},'%')
+        </if>
+        <if test="relationPhone!=null and relationPhone!=''">
+            AND s.linkman like CONCAT('%',#{relationPhone},'%')
+        </if>
+    </select>
+    <select id="searchAllByBatchIdUserDataInfos" resultType="com.youming.youche.capital.domain.UserDataInfo">
+        SELECT u.* FROM user_data_info u WHERE 1=1
+        <if test="relationName!=null and relationName!=''">
+            AND u.name like CONCAT('%',#{relationName},'%')
+        </if>
+        <if test="relationPhone!=null and relationPhone!=''">
+            AND u.linkman like CONCAT('%',#{relationPhone},'%')
+        </if>
+    </select>
+
+    <select id="searchAllByBatchIdDetailsFlows" resultType="com.youming.youche.order.domain.order.OilRechargeAccountDetailsFlow">
+        SELECT c.* from oil_recharge_account_details_flow c where 1=1
+        <if test="userIds!=null and userIds.size &gt; 0">
+            and c.user_id in
+            <foreach collection="userIds" index="index" item="userId" open="(" separator="," close=")">
+                #{userId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="searchAllByAccountTypeFlows" resultType="com.youming.youche.order.domain.order.OilRechargeAccountDetailsFlow">
+        SELECT
+        c.*
+        from
+        oil_recharge_account_details_flow c
+         where 1=1
+         and user_id=#{adminUser}
+        <if test="vo.startTime!=null ">
+            AND c.create_time<![CDATA[ >= ]]>#{vo.startTime1}
+        </if>
+        <if test="vo.endTime!=null ">
+            and c.create_time <![CDATA[ <= ]]> #{vo.endTime1}
+        </if>
+
+        <if test="vo.sourTypes!=null and vo.sourTypes.length &gt; 0">
+             AND c.source_type in
+            <foreach collection="vo.sourTypes" index="index" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="vo.accIds!=null and vo.accIds.size &gt; 0">
+            AND c.PINGAN_ACC_ID in
+            <foreach collection="vo.accIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="busiTypeStr!=null and busiTypeStr.size &gt; 0">
+            and c.busi_type in
+            <foreach collection="busiTypeStr" index="index" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="vo.busiCode!=null and vo.busiCode!='' ">
+             and  c.busi_code LIKE CONCAT('%',#{vo.busiCode},'%')
+        </if>
+        <if test="vo.busiCodes!=null and vo.busiCodes.size &gt; 0">
+            and c.busi_code in
+            <foreach collection="vo.busiCodes" index="index" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        <if test="vo.orderNum!=null  and vo.orderNum!=''">
+            and c.order_num = #{vo.orderNum}
+        </if>
+        <if test="vo.orders!=null and vo.orders.size &gt; 0">
+            and c.order_num in
+            <foreach collection="vo.orders" index="index" item="order" open="(" separator="," close=")">
+                #{order}
+            </foreach>
+        </if>
+        order by c.create_time desc
+    </select>
+<!--    查询操作员 列表-->
+    <select id="selectAllByBatchIdSysOperators" resultType="com.youming.youche.finance.domain.payable.SysOperator">
+        SELECT a.* FROM sys_operator a
+        WHERE
+        <if test="opIdSet!=null and opIdSet.size &gt; 0">
+            and a.operator_id in
+            <foreach collection="opIdSet" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+<!--   查询关联的流水 -->
+    <select id="selectAllByOtherBatchIdFlows" resultType="com.youming.youche.order.domain.order.OilRechargeAccountDetailsFlow">
+        SELECT f.* FROM
+        oil_recharge_account_details_flow f
+        WHERE
+        <if test="busiCodeSet!=null and busiCodeSet.size &gt; 0 ">
+            f.busi_code IN
+            <foreach collection="busiCodeSet" index="index" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+         AND f.user_id !=#{userId}
+    </select>
+
+    <select id="relationUserList" resultType="com.youming.youche.capital.domain.UserDataInfo">
+        SELECT
+        u.*
+        FROM user_data_info u
+        <if test="userIds!=null and userIds.size &gt; 0 ">
+            WHERE  u.id in
+            <foreach collection="userIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="relationTenantList" resultType="com.youming.youche.capital.domain.SysTenantDef">
+        SELECT
+        s.*
+         FROM sys_tenant_def s
+         <if test="userIds!=null and userIds.size &gt; 0 ">
+             WHERE  s.admin_user in
+             <foreach collection="userIds" index="index" item="id" open="(" separator="," close=")">
+                 #{id}
+             </foreach>
+         </if>
+    </select>
+</mapper>

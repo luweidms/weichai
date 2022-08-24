@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.system.provider.mapper.SysPermissionMenuMapper">
+
+<!--    <delete id="deleteBatchByPermissionIds">-->
+<!--        DELETE FROM sys_permission_menu  WHERE-->
+<!--         id IN-->
+<!--        <foreach collection="permissionId" item="item" index="index" open="(" separator="," close=")">-->
+<!--            #{item,jdbcType=VARCHAR}-->
+<!--        </foreach>-->
+
+<!--    </delete>-->
+    <insert id="insertBatchByMenuIds">
+        INSERT INTO sys_permission_menu(permission_id,menu_id)
+        VALUES
+        <foreach collection="menuIds" item="menuId" separator=",">
+            (#{permissionId},#{menuId})
+        </foreach>
+
+    </insert>
+</mapper>

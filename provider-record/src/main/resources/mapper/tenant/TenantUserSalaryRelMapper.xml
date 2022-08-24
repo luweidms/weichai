@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.record.provider.mapper.tenant.TenantUserSalaryRelMapper">
+    <resultMap id="userSalaryDto" type="com.youming.youche.record.dto.UserSalaryDto">
+        <association property="userDataInfo" javaType="com.youming.youche.system.domain.UserDataInfo">
+            <id column="a_id" property="id" />
+            <result column="a_linkman" property="linkman" />
+            <result column="a_email" property="email" />
+            <result column="a_contact_number" property="contactNumber" />
+            <result column="a_mobile_phone" property="mobilePhone" />
+            <result column="a_identification" property="identification" />
+            <result column="a_login_name" property="loginName" />
+            <result column="a_user_type" property="userType" />
+            <result column="a_user_price" property="userPrice" />
+            <result column="a_user_price_url" property="userPriceUrl" />
+            <result column="a_iden_picture_front" property="idenPictureFront" />
+            <result column="a_iden_picture_front_url" property="idenPictureFrontUrl" />
+            <result column="a_iden_picture_back" property="idenPictureBack" />
+            <result column="a_iden_picture_back_url" property="idenPictureBackUrl" />
+            <result column="a_channel_type" property="channelType" />
+            <result column="a_driving_license" property="drivingLicense" />
+            <result column="a_driving_license_url" property="drivingLicenseUrl" />
+            <result column="a_adriver_license_original" property="adriverLicenseOriginal" />
+            <result column="a_adriver_license_original_url" property="adriverLicenseOriginalUrl" />
+            <result column="a_adriver_license_duplicate" property="adriverLicenseDuplicate" />
+            <result column="a_adriver_license_duplicate_url" property="adriverLicenseDuplicateUrl" />
+            <result column="a_op_id" property="opId" />
+            <result column="a_op_date" property="opDate" />
+            <result column="a_id_type" property="idType" />
+            <result column="a_notarize_count" property="notarizeCount" />
+            <result column="a_is_perfect_info" property="isPerfectInfo" />
+            <result column="a_qr_code_id" property="qrCodeId" />
+            <result column="a_qr_code_url" property="qrCodeUrl" />
+            <result column="a_source_flag" property="sourceFlag" />
+            <result column="a_qc_certi" property="qcCerti" />
+            <result column="a_qc_certi_url" property="qcCertiUrl" />
+            <result column="a_tenant_id" property="tenantId" />
+            <result column="a_adriver_license_sn" property="adriverLicenseSn" />
+            <result column="a_auth_state" property="authState" />
+            <result column="a_acc_password" property="accPassword" />
+            <result column="a_mod_pwdtime" property="modPwdtime" />
+            <result column="a_has_ver" property="hasVer" />
+            <result column="a_verif_reason" property="verifReason" />
+            <result column="a_auth_man_id" property="authManId" />
+            <result column="a_attached_user_id" property="attachedUserId" />
+            <result column="a_attached_org_id" property="attachedOrgId" />
+            <result column="a_vehicle_type" property="vehicleType" />
+            <result column="a_completeness" property="completeness" />
+            <result column="a_quick_flag" property="quickFlag" />
+            <result column="a_driver_license_time" property="driverLicenseTime" />
+            <result column="a_driver_license_expired_time" property="driverLicenseExpiredTime" />
+            <result column="a_qc_certi_time" property="qcCertiTime" />
+            <result column="a_qc_certi_expired_time" property="qcCertiExpiredTime" />
+            <result column="a_luge_agreement" property="lugeAgreement" />
+            <result column="a_luge_agreement_url" property="lugeAgreementUrl" />
+            <result column="a_create_time" property="createTime" />
+            <result column="a_update_time" property="updateTime" />
+        </association>
+        <association property="tenantUserSalaryRel" javaType="com.youming.youche.record.domain.tenant.TenantUserSalaryRel">
+            <id column="t_id" property="id" />
+            <result column="t_user_id" property="userId" />
+            <result column="t_tenant_id" property="tenantId" />
+            <result column="t_rel_id" property="relId" />
+            <result column="t_state" property="state" />
+            <result column="t_account_period" property="accountPeriod" />
+            <result column="t_salary" property="salary" />
+            <result column="t_dispatch_cash" property="dispatchCash" />
+            <result column="t_subsidy" property="subsidy" />
+            <result column="t_repair_subsidy" property="repairSubsidy" />
+            <result column="t_acc_day" property="accDay" />
+            <result column="t_staff_state" property="staffState" />
+            <result column="t_entry_date" property="entryDate" />
+            <result column="t_attached_province" property="attachedProvince" />
+            <result column="t_attached_region" property="attachedRegion" />
+            <result column="t_attached_root_org_id" property="attachedRootOrgId" />
+            <result column="t_attached_root_org_two_id" property="attachedRootOrgTwoId" />
+            <result column="t_salary_pattern" property="salaryPattern" />
+            <result column="t_op_id" property="opId" />
+            <result column="t_create_date" property="createDate" />
+            <result column="t_create_time" property="createTime" />
+            <result column="t_update_time" property="updateTime" />
+        </association>
+    </resultMap>
+
+    <select id="doQueryUserSalaryList" resultMap="userSalaryDto">
+        select
+        a.id	as a_id,
+        a.linkman	as a_linkman,
+        a.email	as a_email,
+        a.contact_number	as a_contact_number,
+        a.mobile_phone	as a_mobile_phone,
+        a.identification	as a_identification,
+        a.login_name	as a_login_name,
+        a.user_type	as a_user_type,
+        a.user_price	as a_user_price,
+        a.user_price_url as a_user_price_url,
+        a.iden_picture_front	as a_iden_picture_front,
+        a.iden_picture_front_url	as a_iden_picture_front_url,
+        a.iden_picture_back	as a_iden_picture_back,
+        a.iden_picture_back_url	as a_iden_picture_back_url,
+        a.channel_type	as a_channel_type,
+        a.driving_license	as a_driving_license,
+        a.driving_license_url	as a_driving_license_url,
+        a.adriver_license_original	as a_adriver_license_original,
+        a.adriver_license_original_url	as a_adriver_license_original_url,
+        a.adriver_license_duplicate	as a_adriver_license_duplicate,
+        a.adriver_license_duplicate_url	as a_adriver_license_duplicate_url,
+        a.op_id	as a_op_id,
+        a.op_date	as a_op_date,
+        a.id_type	as a_id_type,
+        a.notarize_count	as a_notarize_count,
+        a.is_perfect_info	as a_is_perfect_info,
+        a.qr_code_id	as a_qr_code_id,
+        a.qr_code_url	as a_qr_code_url,
+        a.source_flag	as a_source_flag,
+        a.qc_certi	as a_qc_certi,
+        a.qc_certi_url	as a_qc_certi_url,
+        a.tenant_id	as a_tenant_id,
+        a.adriver_license_sn	as a_adriver_license_sn,
+        a.auth_state	as a_auth_state,
+        a.acc_password	as a_acc_password,
+        a.mod_pwdtime	as a_mod_pwdtime,
+        a.has_ver	as a_has_ver,
+        a.verif_reason	as a_verif_reason,
+        a.auth_man_id	as a_auth_man_id,
+        a.attached_user_id	as a_attached_user_id,
+        a.attached_org_id	as a_attached_org_id,
+        a.vehicle_type	as a_vehicle_type,
+        a.completeness	as a_completeness,
+        a.quick_flag	as a_quick_flag,
+        a.driver_license_time	as a_driver_license_time,
+        a.driver_license_expired_time	as a_driver_license_expired_time,
+        a.qc_certi_time	as a_qc_certi_time,
+        a.qc_certi_expired_time	as a_qc_certi_expired_time,
+        a.luge_agreement	as a_luge_agreement,
+        a.luge_agreement_url	as a_luge_agreement_url,
+        a.create_time	as a_create_time,
+        a.update_time	as a_update_time,
+        a.create_date 	as a_create_date,
+        t.id	as t_id,
+        t.acc_day	as t_acc_day,
+        t.account_period	as t_account_period,
+        t.attached_province	as t_attached_province,
+        t.attached_region	as t_attached_region,
+        t.attached_root_org_id	as t_attached_root_org_id,
+        t.attached_root_org_two_id	as t_attached_root_org_two_id,
+        t.create_date	as t_create_date,
+        t.dispatch_cash	as t_dispatch_cash,
+        t.entry_date	as t_entry_date,
+        t.op_id	as t_op_id,
+        t.rel_id	as t_rel_id,
+        t.repair_subsidy	as t_repair_subsidy,
+        t.salary	as t_salary,
+        t.salary_pattern	as t_salary_pattern,
+        t.staff_state	as t_staff_state,
+        t.state	as t_state,
+        t.subsidy	as t_subsidy,
+        t.tenant_id	as t_tenant_id,
+        t.user_id	as t_user_id,
+        t.create_time	as t_create_time,
+        t.update_time	as t_update_time
+        from user_data_info a,tenant_user_rel b,tenant_user_salary_rel t
+        where a.id=b.user_id
+        and a.id=t.user_id
+        and t.tenant_id= #{tenantId}
+        and b.tenant_id=#{tenantId}
+        and b.car_user_type= 1
+        and b.state= 2
+        <if test="userId != null and userId > 0">
+            and a.id= #{userId}
+        </if>
+    </select>
+</mapper>

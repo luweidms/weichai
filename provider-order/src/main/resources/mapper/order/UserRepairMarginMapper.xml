@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.UserRepairMarginMapper">
+
+
+    <select id="queryUserRepairMargins" resultType="com.youming.youche.order.domain.order.UserRepairMargin">
+        select `ID`, `USER_ID`, `USER_BILL`, `USER_NAME`, `COST_TYPE`, `REPAIR_ID`, `ORDER_ID`, `AMOUNT`, `PLATFORM_AMOUNT`, `PLATFORM_RATE`, `OTHER_USER_ID`, `OTHER_USER_BILL`, `OTHER_NAME`, `VEHICLE_AFFILIATION`, `TENANT_ID`, `PRODUCT_ID`, `STATE`, `EXPIRE_TYPE`, `EXPIRED_AMOUNT`, `UNDUE_AMOUNT`, `SERVICE_CHARGE`, `GET_DATE`, `GET_RESULT`, `IS_NEED_BILL`, `PRODUCT_NAME`, `SERVICE_CALL`, `ADDRESS`, `REPAIR_BALANCE`, `BALANCE`, `MARGIN_BALANCE`, `ADVANCE_FEE`, `CREATE_TIME`, `UPDATE_TIME`, `OP_ID`, `UPDATE_OP_ID`, `REMARK`, `OIL_AFFILIATION`
+        from user_repair_margin where 1=1
+        <if test="advanceExpireOutVo.orderId!=null and advanceExpireOutVo.orderId>0"> AND ID = #{advanceExpireOutVo.orderId}</if>
+        <if test="advanceExpireOutVo.busiCode!=null and advanceExpireOutVo.busiCode != ''"> AND order_id = #{advanceExpireOutVo.busiCode}</if>
+        <if test="advanceExpireOutVo.userName!=null and advanceExpireOutVo.userName!=''"> AND user_Name like CONCAT('%',#{advanceExpireOutVo.userName},'%')</if>
+        <if test="advanceExpireOutVo.userPhone!=null and advanceExpireOutVo.userPhone!=''"> AND USER_BILL = #{advanceExpireOutVo.userPhone}</if>
+        <if test="advanceExpireOutVo.state!=null and advanceExpireOutVo.state>-1 "> AND state=#{advanceExpireOutVo.state}</if>
+        <choose>
+            <when test="advanceExpireOutVo.isIncludeManual">
+                AND (state=0 OR EXPIRE_TYPE=1)
+            </when>
+            <otherwise>
+                AND get_Date >NOW() AND state = 0
+            </otherwise>
+        </choose>
+        <if test="advanceExpireOutVo.mainDriver!=null and advanceExpireOutVo.mainDriver!=''"> AND other_name like CONCAT('%',#{advanceExpireOutVo.mainDriver},'%')</if>
+        AND tenant_Id = #{advanceExpireOutVo.tenantId}
+    </select>
+    <select id="getUserRepairMargin" resultType="com.youming.youche.order.domain.order.UserRepairMargin">
+        select `id`, `user_id`, `user_bill`, `user_name`, `cost_type`, `repair_id`, `order_id`, `amount`, `platform_amount`, `platform_rate`, `other_user_id`, `other_user_bill`, `other_name`, `vehicle_affiliation`, `tenant_id`, `product_id`, `state`, `expire_type`, `expired_amount`, `undue_amount`, `service_charge`, `get_date`, `get_result`, `is_need_bill`, `product_name`, `service_call`, `address`, `repair_balance`, `balance`, `margin_balance`, `advance_fee`, `create_time`, `update_time`, `op_id`, `update_op_id`, `remark`, `oil_affiliation`
+        from user_repair_margin
+        where id=#{flowId}
+    </select>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderProblemInfoMapper">
+
+    <select id="checkOrderExceptionCreateBill" resultType="java.util.Map">
+        SELECT
+            order_id AS orderId,
+            state AS state
+        FROM
+            order_problem_info
+        WHERE
+            problem_condition = 2
+            AND state NOT IN ( 3, 2, 8 )
+            AND order_id IN (${orderIds})
+        GROUP BY
+            order_id
+    </select>
+
+</mapper>

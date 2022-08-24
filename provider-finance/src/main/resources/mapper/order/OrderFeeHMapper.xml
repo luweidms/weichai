@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.order.OrderFeeHMapper">
+
+    <select id="getOrderFeeHByOrderId" resultType="com.youming.youche.finance.domain.order.OrderFeeH">
+        SELECT
+            cost_price AS costprice,
+            income_exception_fee AS incomeexceptionfee
+        FROM
+            order_fee_h
+        WHERE
+            order_id = #{orderId}
+    </select>
+
+</mapper>

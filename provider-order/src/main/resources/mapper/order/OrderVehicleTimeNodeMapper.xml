@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.order.provider.mapper.order.OrderVehicleTimeNodeMapper">
+
+
+    <select id="queryOrderVehicleTimeNode"
+            resultType="com.youming.youche.order.domain.order.OrderVehicleTimeNode">
+        SELECT
+        *
+        FROM
+        order_vehicle_time_node
+        <where>
+            PLATE_NUMBER =''
+            AND DATE_FORMAT(START_DATE, '%Y-%m') = #{month}
+            <if test="endDate != null and endDate != ''">
+                AND end_date = #{endDate}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND START_DATE = #{startDate}
+            </if>
+            <if test="id != null and id &gt; 0">
+                AND ID != #{id}
+            </if>
+            <if test="startOrderId != null and startOrderId &gt; 0">
+                AND START_ORDER_ID = #{startOrderId}
+            </if>
+            <if test="endOrderId != null and endOrderId &gt; 0">
+                AND END_ORDER_ID = #{endOrderId}
+            </if>
+        </where>
+
+
+    </select>
+    <sql id="OrderVehicleTimeNodeData">
+            `id`,
+            `create_time`,
+            `end_date`,
+            `end_order_id`,
+            `plate_number`,
+            `start_date`,
+            `start_order_id`,
+            `update_time`
+    </sql>
+    <select id="queryOrderVehicleTimeNodeByMonth"
+            resultType="com.youming.youche.order.domain.order.OrderVehicleTimeNode">
+        SELECT
+        <include refid="OrderVehicleTimeNodeData"></include>
+        FROM
+        order_vehicle_time_node
+        <where>
+            PLATE_NUMBER= #{plateNumber}
+            AND DATE_FORMAT(START_DATE, '%Y-%m') =#{month}
+            <if test="isSelelctNullEndDate">
+                AND end_date is null
+            </if>
+             <choose>
+                 <when test="endDate != null and endDate != ''">
+                     AND end_date <![CDATA[> ]]> #{endDate} ORDER BY end_date
+                 </when>
+                <otherwise>
+                    ORDER BY START_DATE
+                </otherwise>
+             </choose>
+        </where>
+
+    </select>
+
+    <select id="queryOrderVehicleTimeNodeNew"
+            resultType="com.youming.youche.order.domain.order.OrderVehicleTimeNode">
+        SELECT * FROM order_vehicle_time_node WHERE (( start_date <![CDATA[ < ]]> #{dependDate} AND end_date <![CDATA[ >= ]]> #{dependDate} )
+        OR ( start_date <![CDATA[ <= ]]> #{dependDate} AND end_date IS NULL )
+        OR start_order_id = #{orderId}
+        OR end_order_id = #{orderId}
+        )
+        AND date_format( start_date, '%y-%m' ) = #{month}
+        AND plate_number = #{plateNumber}
+        ORDER BY
+        start_date
+        LIMIT 0,
+        1
+    </select>
+
+</mapper>

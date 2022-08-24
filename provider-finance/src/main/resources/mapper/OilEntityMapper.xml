@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youming.youche.finance.provider.mapper.OilEntityMapper">
+    <select id="selectOr" resultType="com.youming.youche.finance.vo.OilEntityInfoDto">
+        select i.ID id,i.VEHICLE_CODE vehicleCode,i.ORDER_ID orderId,i.SOURCE_REGION sourceRegion,i.DES_REGION desRegion,i.PLATE_NUMBER plateNumber,i.USER_ID userId,
+        i.VEHICLE_LENGH vehicleLengh,i.VEHICLE_STATUS vehicleStatus,i.DEPEND_TIME dependTime,i.VEHICLE_CLASS as carStatus,i.NO_VERIFICATE_ENTITY_FEE noVerificateEntityFee,
+        i.PRE_OIL_FEE costEntityOil,i.SERVICE_NAME serviceName,i.OIL_CAR_NUM oilCarNum,i.TENANT_ID tenantId,i.VERIFICATION_STATE verificationState,i.VERIFICATION_DATE  verificationDate,i.recharge_state rechargeState,i.line_state lineState,i.voucher_amount voucherAmount,i.CREATION_TIME createTime,
+        i.OIL_TYPE oilType,i.CAR_DRIVER_MAN carDriverMan,i.CAR_DRIVER_PHONE carDriverPhone,i.CUSTOM_NAME customName,i.SOURCE_NAME sourceName
+        from oil_entity i where i.TENANT_ID=#{tenantId}
+        <if test="oilEntityVo.oilCarNum != null and oilEntityVo.oilCarNum != ''">
+        and i.OIL_CAR_NUM = #{oilEntityVo.oilCarNum}
+        </if>
+        <if test="oilEntityVo.createTime != null and oilEntityVo.createTime != ''">
+            and i.VERIFICATION_DATE <![CDATA[ >= ]]>  #{oilEntityVo.createTime}
+        </if>
+        <if test="oilEntityVo.updateTime != null and oilEntityVo.updateTime != ''">
+            and i.VERIFICATION_DATE <![CDATA[ <= ]]>  #{oilEntityVo.updateTime}
+        </if>
+        <if test="oilEntityVo.sourceRegion != null and oilEntityVo.sourceRegion>0">
+            and i.source_Region = #{oilEntityVo.sourceRegion}
+        </if>
+        <if test="oilEntityVo.desRegion != null and oilEntityVo.desRegion>0">
+            and i.des_Region = #{oilEntityVo.desRegion}
+        </if>
+        <if test="oilEntityVo.verifySts != null and oilEntityVo.verifySts>0">
+            and i.recharge_state = #{oilEntityVo.verifySts}
+        </if>
+        <if test="oilEntityVo.orderId != null and oilEntityVo.orderId !=''">
+            and i.ORDER_ID = #{oilEntityVo.orderId}
+        </if>
+        <if test="oilEntityVo.companyName != null and oilEntityVo.companyName !=''">
+            AND i.SERVICE_NAME LIKE concat ("%",#{oilEntityVo.companyName},"%")
+        </if>
+        <if test="oilEntityVo.carNo != null and oilEntityVo.carNo !=''">
+            and i.PLATE_NUMBER=#{oilEntityVo.carNo}
+        </if>
+        <if test="oilEntityVo.busiCode != null and oilEntityVo.busiCode !=''">
+            and i.busi_code=#{oilEntityVo.busiCode}
+        </if>
+        <if test="oilEntityVo.customName != null and oilEntityVo.customName !=''">
+            and i.CUSTOM_NAME like concat ("%",#{oilEntityVo.customName},"%")
+        </if>
+        <if test="oilEntityVo.carDriverMan != null and oilEntityVo.carDriverMan !=''">
+            and i.CAR_DRIVER_MAN like concat ("%",#{oilEntityVo.carDriverMan},"%")
+        </if>
+        <if test="oilEntityVo.carDriverPhone != null and oilEntityVo.carDriverPhone !=''">
+            and i.CAR_DRIVER_PHONE like concat ("%",#{oilEntityVo.carDriverPhone},"%")
+        </if>
+        <if test="oilEntityVo.vehicleClass != null and oilEntityVo.vehicleClass >0">
+            and i.VEHICLE_CLASS = #{oilEntityVo.vehicleClass}
+        </if>
+        <if test="oilEntityVo.sourceName != null and oilEntityVo.sourceName >0">
+            and i.SOURCE_NAME like concat ("%",#{oilEntityVo.sourceName},"%")
+        </if>
+
+        ORDER BY i.CREATION_TIME DESC
+
+    </select>
+</mapper>
